@@ -47,12 +47,14 @@
    the status bar: the camera sits in the top bezel, so nothing in the
    screen is covered or clipped by the rounded corners. */
 .phone {
-  @apply relative w-full max-w-[290px] rounded-[2.6rem] bg-slate-900 px-[9px] pt-[30px] pb-[18px] shadow-[0_20px_50px_-15px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/10;
+  @apply relative w-full max-w-[290px] rounded-[2.6rem] bg-[#1b1d1c] px-[9px] pt-[30px] pb-[18px] shadow-[0_20px_50px_-15px_rgba(15,23,42,0.35)] ring-1 ring-black/10;
 }
+/* Un filo chiaro sul bordo dello schermo: con il tema scuro dell'app
+   altrimenti schermo e cornice si confondono. */
 .phone img {
-  @apply block w-full h-auto rounded-[0.9rem];
+  @apply block w-full h-auto rounded-[0.9rem] shadow-[0_0_0_1px_rgba(255,255,255,0.14)];
 }
 .phone::before {
   content: "";
-  @apply absolute left-1/2 top-[11px] h-[9px] w-[9px] -translate-x-1/2 rounded-full bg-slate-700 ring-2 ring-slate-800;
+  @apply absolute left-1/2 top-[11px] h-[9px] w-[9px] -translate-x-1/2 rounded-full bg-[#2c302e] ring-2 ring-[#232625];
 }
