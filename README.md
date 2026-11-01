@@ -22,10 +22,10 @@ total. No account, no cloud, no internet permission.
 From the original idea of PyReceipt: <https://emanuelegaliano.github.io/PyReceiptWebsitePage/>
 
 <p align="center">
-  <img src="site/public/screenshots/scan.jpg" width="200" alt="Scanned receipt" />
-  <img src="site/public/screenshots/dashboard.jpg" width="200" alt="Monthly summary" />
-  <img src="site/public/screenshots/breakdown.jpg" width="200" alt="Per-category bars" />
-  <img src="site/public/screenshots/limit-alert.jpg" width="200" alt="Limit alert" />
+  <img src="site/screenshots/scan.jpg" width="200" alt="Scanned receipt" />
+  <img src="site/screenshots/dashboard.jpg" width="200" alt="Monthly summary" />
+  <img src="site/screenshots/breakdown.jpg" width="200" alt="Per-category bars" />
+  <img src="site/screenshots/limit-alert.jpg" width="200" alt="Limit alert" />
 </p>
 <p align="center"><sub>Screenshots from the Android emulator with made-up data.</sub></p>
 
