@@ -176,14 +176,14 @@ class AppLock extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  Future<bool> _authenticate(String reason) async {
+  Future<bool> _authenticate(String reason, String cancel) async {
     _authenticating = true;
     try {
       return await _auth.authenticate(
         localizedReason: reason,
         biometricOnly: true,
-        authMessages: const [
-          AndroidAuthMessages(signInTitle: 'Receipt', cancelButton: 'Usa la password'),
+        authMessages: [
+          AndroidAuthMessages(signInTitle: 'Receipt', cancelButton: cancel),
         ],
       );
     } catch (_) {
@@ -193,9 +193,10 @@ class AppLock extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  Future<bool> unlockWithBiometric() async {
+  /// [reason] e [cancel] sono i testi del dialogo di sistema, già tradotti.
+  Future<bool> unlockWithBiometric({required String reason, required String cancel}) async {
     if (!_biometric) return false;
-    final ok = await _authenticate('Sblocca Receipt');
+    final ok = await _authenticate(reason, cancel);
     if (ok) {
       _failures = 0;
       _retryAt = null;
@@ -205,8 +206,8 @@ class AppLock extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   /// Attiva l'impronta solo dopo averla verificata una volta.
-  Future<bool> setBiometric(bool enabled) async {
-    if (enabled && !await _authenticate('Conferma l\'impronta per sbloccare Receipt')) return false;
+  Future<bool> setBiometric(bool enabled, {required String reason, required String cancel}) async {
+    if (enabled && !await _authenticate(reason, cancel)) return false;
     _biometric = enabled;
     await _store.write('lock_biometric', enabled ? '1' : '0');
     notifyListeners();

@@ -1,0 +1,458 @@
+{
+  "@@locale": "it",
+  "cancel": "Annulla",
+  "undo": "Annulla",
+  "save": "Salva",
+  "delete": "Elimina",
+  "add": "Aggiungi",
+  "name": "Nome",
+  "today": "Oggi",
+  "yesterday": "Ieri",
+  "catGroceries": "Spesa",
+  "catRestaurants": "Ristoranti e bar",
+  "catTransport": "Trasporti",
+  "catHome": "Casa e bollette",
+  "catHealth": "Salute",
+  "catShopping": "Shopping",
+  "catLeisure": "Svago",
+  "catOther": "Altro",
+  "accountCard": "Carta",
+  "accountCash": "Contanti",
+  "accountOther": "Altro",
+  "navSummary": "Riepilogo",
+  "navTransactions": "Movimenti",
+  "navCategories": "Categorie",
+  "addScanTitle": "Fotografa uno scontrino",
+  "addScanSubtitle": "Importo, data ed esercente letti in automatico",
+  "addGalleryTitle": "Scegli dalla galleria",
+  "addGallerySubtitle": "Usa una foto di uno scontrino già scattata",
+  "addManualTitle": "Inserisci a mano",
+  "addManualSubtitle": "Per spese senza scontrino, es. in contanti",
+  "previousMonth": "Mese precedente",
+  "nextMonth": "Mese successivo",
+  "receiptTitle": "Scontrino",
+  "scanPreparing": "Preparo il lettore…",
+  "scanReading": "Leggo lo scontrino…",
+  "scanOffline": "Tutto avviene sul telefono, senza connessione.",
+  "scanFailed": "Non sono riuscito a leggere lo scontrino",
+  "scanWarnNoText": "Non ho trovato testo: prova con una foto più nitida e dritta.",
+  "scanWarnNoTotal": "Totale non trovato: inseriscilo a mano.",
+  "scanWarnNoMerchant": "Esercente non trovato.",
+  "expenseDeleted": "Spesa eliminata: {amount}",
+  "@expenseDeleted": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "searchHint": "Cerca esercente, nota, categoria",
+  "noTransactionsTitle": "Nessun movimento",
+  "noTransactionsMessage": "Le spese che aggiungi compariranno qui, divise per giorno.",
+  "noResultsTitle": "Nessun risultato",
+  "noResultsMessage": "Prova a cambiare la ricerca o i filtri.",
+  "chooseCategory": "Scegli una categoria",
+  "expenseUpdated": "Spesa aggiornata",
+  "expenseSaved": "Spesa salvata",
+  "expenseSavedIn": "Spesa salvata in {month}",
+  "@expenseSavedIn": {
+    "placeholders": {
+      "month": {
+        "type": "DateTime",
+        "format": "yMMMM"
+      }
+    }
+  },
+  "deleteExpenseTitle": "Eliminare la spesa?",
+  "deleteExpenseMessage": "La spesa e la foto dello scontrino verranno cancellate.",
+  "editExpense": "Modifica spesa",
+  "checkReceipt": "Controlla lo scontrino",
+  "newExpense": "Nuova spesa",
+  "amount": "Importo",
+  "enterAmount": "Inserisci un importo",
+  "merchant": "Esercente",
+  "merchantHint": "Es. Conad, Bar Roma",
+  "category": "Categoria",
+  "paidWith": "Pagato con",
+  "dateNotFound": "Data non trovata sullo scontrino",
+  "noteOptional": "Nota (facoltativa)",
+  "suggestedLearned": "Suggerita: l'hai già usata per questo esercente",
+  "suggestedKeyword": "Suggerita dalla parola \"{word}\"",
+  "@suggestedKeyword": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "suggestedKeywordReceipt": "Suggerita dalla parola \"{word}\" sullo scontrino",
+  "@suggestedKeywordReceipt": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptText": "Testo letto dallo scontrino",
+  "budgetNear": "{category}: hai usato il {percent}% del limite, restano {left}",
+  "@budgetNear": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetExhausted": "{category}: limite mensile esaurito",
+  "@budgetExhausted": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetOver": "{category}: sei {over} oltre il limite",
+  "@budgetOver": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "over": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetReachedTitle": "Limite di {category} raggiunto",
+  "@budgetReachedTitle": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetReachedExact": "Questo mese hai speso esattamente il limite di {limit}.",
+  "@budgetReachedExact": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetReachedOver": "Questo mese hai speso {spent} su un limite di {limit}: {over} in più.",
+  "@budgetReachedOver": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      },
+      "over": {
+        "type": "String"
+      }
+    }
+  },
+  "gotIt": "Ho capito",
+  "summaryTitle": "Riepilogo",
+  "settings": "Impostazioni",
+  "noSpendingTitle": "Nessuna spesa questo mese",
+  "noSpendingMessage": "Tocca \"Aggiungi\" per fotografare uno scontrino o inserire una spesa a mano.",
+  "spentThisMonth": "Speso questo mese",
+  "sameAsMonth": "Come {prep, select, ad{ad} other{a}} {month}",
+  "@sameAsMonth": {
+    "placeholders": {
+      "prep": {
+        "type": "String"
+      },
+      "month": {
+        "type": "DateTime",
+        "format": "MMMM"
+      }
+    }
+  },
+  "percentVsMonth": "{change}% rispetto {prep, select, ad{ad} other{a}} {month}",
+  "@percentVsMonth": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      },
+      "prep": {
+        "type": "String"
+      },
+      "month": {
+        "type": "DateTime",
+        "format": "MMMM"
+      }
+    }
+  },
+  "amountVsMonth": "{change} rispetto {prep, select, ad{ad} other{a}} {month}",
+  "@amountVsMonth": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      },
+      "prep": {
+        "type": "String"
+      },
+      "month": {
+        "type": "DateTime",
+        "format": "MMMM"
+      }
+    }
+  },
+  "nothingInMonth": "Niente {prep, select, ad{ad} other{a}} {month}",
+  "@nothingInMonth": {
+    "placeholders": {
+      "prep": {
+        "type": "String"
+      },
+      "month": {
+        "type": "DateTime",
+        "format": "MMMM"
+      }
+    }
+  },
+  "last6Months": "Ultimi 6 mesi",
+  "byCategory": "Per categoria",
+  "legendLimit": "limite",
+  "remaining": "Restano {amount}",
+  "@remaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "limitExhausted": "Limite esaurito",
+  "overBy": "Superato di {amount}",
+  "@overBy": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "recentTransactions": "Ultimi movimenti",
+  "seeAll": "Vedi tutti",
+  "newCategory": "Nuova categoria",
+  "editCategory": "Modifica categoria",
+  "categoriesIntro": "Totali di {month}. Tocca una categoria per cambiarne nome, icona, colore o le parole che servono a riconoscerla sugli scontrini.",
+  "@categoriesIntro": {
+    "placeholders": {
+      "month": {
+        "type": "DateTime",
+        "format": "yMMMM"
+      }
+    }
+  },
+  "expenseCount": "{count, plural, =0{Nessuna spesa} =1{1 spesa} other{{count} spese}}",
+  "@expenseCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthlyLimitPerMonth": "Limite {amount} al mese",
+  "@monthlyLimitPerMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "limitInvalid": "Scrivi un importo, es. 100",
+  "onlyCategory": "È l'unica categoria: creane un'altra prima di eliminarla",
+  "deleteCategoryTitle": "Eliminare {name}?",
+  "@deleteCategoryTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryEmpty": "Non ci sono spese in questa categoria.",
+  "moveExpensesTo": "{count, plural, =1{{name} ha 1 spesa. Spostala in:} other{{name} ha {count} spese. Spostale in:}}",
+  "@moveExpensesTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moveAndDelete": "Sposta ed elimina",
+  "monthlyLimitLabel": "Limite mensile (facoltativo)",
+  "monthlyLimitHelper": "Ti avviso all'80% e quando lo raggiungi. Lascia vuoto per nessun limite.",
+  "icon": "Icona",
+  "color": "Colore",
+  "keywords": "Parole chiave",
+  "keywordsHelper": "Parole che compaiono sugli scontrini, separate da virgola (es. farmacia, parafarmacia). Servono per gli esercenti mai visti: per quelli già usati l'app ricorda la tua scelta.",
+  "sectionAppearance": "Aspetto",
+  "themeSystem": "Sistema",
+  "themeLight": "Chiaro",
+  "themeDark": "Scuro",
+  "appLanguage": "Lingua dell'app",
+  "languageSystem": "Sistema",
+  "languageItalian": "Italiano",
+  "languageEnglish": "English",
+  "accentGreen": "Verde",
+  "accentBlue": "Blu",
+  "accentPurple": "Viola",
+  "accentPink": "Rosa",
+  "accentOrange": "Arancio",
+  "accentGraphite": "Grafite",
+  "sectionSecurity": "Sicurezza",
+  "changePassword": "Cambia password",
+  "currentPassword": "Password attuale",
+  "newPassword": "Nuova password",
+  "repeatNewPassword": "Ripeti la nuova password",
+  "newPasswordTooShort": "La nuova password deve avere almeno 4 caratteri",
+  "newPasswordsMismatch": "Le nuove password non coincidono",
+  "currentPasswordWrong": "La password attuale è sbagliata",
+  "passwordChanged": "Password cambiata",
+  "biometricUnlock": "Sblocca con l'impronta",
+  "biometricKeepsPassword": "La password resta sempre valida",
+  "biometricNone": "Nessuna impronta registrata sul telefono",
+  "sectionReceipts": "Scontrini",
+  "receiptLanguage": "Lingua degli scontrini",
+  "receiptLanguageHint": "Cambia le parole che il lettore cerca per trovare totale e data",
+  "receiptLangItalian": "Italiano",
+  "receiptLangEnglish": "Inglese",
+  "tryReader": "Prova il lettore",
+  "tryReaderHint": "Mostra il testo letto e i riquadri, senza salvare nulla",
+  "sectionAccounts": "Conti",
+  "addAccount": "Aggiungi conto",
+  "newAccount": "Nuovo conto",
+  "editAccount": "Modifica conto",
+  "accountNameHint": "Es. Carta prepagata",
+  "archive": "Archivia",
+  "sectionData": "Dati",
+  "dataStaysOnPhone": "Tutto resta sul telefono",
+  "dataStaysOnPhoneHint": "Spese, foto e lettura degli scontrini non lasciano mai il dispositivo.",
+  "exportData": "Esporta i dati",
+  "exportDataHint": "Database e foto in un file .zip da salvare dove vuoi, es. su Drive. Il file non è cifrato.",
+  "exportShareTitle": "Esporta i dati di Receipt",
+  "exportFailed": "Esportazione non riuscita: {error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "importBackup": "Importa da backup",
+  "importBackupHint": "Ripristina da uno zip di \"Esporta i dati\". Sostituisce i dati attuali.",
+  "chooseBackup": "Scegli il backup (.zip)",
+  "restoreTitle": "Ripristinare il backup?",
+  "restoreSummary": "Backup: {expenses, plural, =1{1 spesa} other{{expenses} spese}}, {photos} foto.",
+  "@restoreSummary": {
+    "placeholders": {
+      "expenses": {
+        "type": "int"
+      },
+      "photos": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreSummaryDated": "Backup del {date}: {expenses, plural, =1{1 spesa} other{{expenses} spese}}, {photos} foto.",
+  "@restoreSummaryDated": {
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "d MMMM y, HH:mm",
+        "isCustomDateFormat": "true"
+      },
+      "expenses": {
+        "type": "int"
+      },
+      "photos": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreReplaceWarning": "Tutti i dati attuali ({current, plural, =1{1 spesa} other{{current} spese}}, categorie, conti, limiti) verranno sostituiti. Se vuoi tenerli, esportali prima.",
+  "@restoreReplaceWarning": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      }
+    }
+  },
+  "replace": "Sostituisci",
+  "restoreDone": "{count, plural, =1{Dati ripristinati: 1 spesa} other{Dati ripristinati: {count} spese}}",
+  "@restoreDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreFailed": "Ripristino non riuscito: {error}",
+  "@restoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "backupNotZip": "Il file non è uno zip valido.",
+  "backupNotReceipt": "Questo zip non è un backup di Receipt.",
+  "backupDamaged": "Il backup è danneggiato (manifest illeggibile).",
+  "backupNewer": "Il backup viene da una versione più nuova dell'app: aggiorna Receipt e riprova.",
+  "autoBackup": "Backup automatico cifrato",
+  "comingSoon": "In arrivo",
+  "loadDemo": "Carica dati di prova",
+  "loadDemoHint": "Spese inventate a ottobre e settembre 2026, con alcuni limiti",
+  "hidePassword": "Nascondi",
+  "showPassword": "Mostra",
+  "passwordTooShort": "Almeno 4 caratteri",
+  "passwordsMismatch": "Le password non coincidono",
+  "useBiometricTitle": "Vuoi usare l'impronta?",
+  "useBiometricMessage": "Potrai aprire Receipt con l'impronta invece di scrivere ogni volta la password. La password resta valida e la puoi sempre usare.",
+  "useBiometric": "Usa l'impronta",
+  "notNow": "Non ora",
+  "setupTitle": "Proteggi le tue spese",
+  "setupMessage": "Scegli una password per aprire Receipt. Non c'è modo di recuperarla: tienila a mente o salvala nel tuo gestore di password.",
+  "password": "Password",
+  "repeatPassword": "Ripeti la password",
+  "continueLabel": "Continua",
+  "wrongPassword": "Password sbagliata",
+  "lockedTitle": "Receipt è bloccata",
+  "lockedMessage": "Inserisci la password per continuare.",
+  "tooManyAttempts": "Troppi tentativi: riprova tra {seconds} s",
+  "@tooManyAttempts": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "unlock": "Sblocca",
+  "biometricPromptUnlock": "Sblocca Receipt",
+  "biometricPromptConfirm": "Conferma l'impronta per sbloccare Receipt",
+  "biometricUsePassword": "Usa la password",
+  "ocrTitle": "Lettore scontrini",
+  "copyText": "Copia testo",
+  "textCopied": "Testo copiato",
+  "takePhoto": "Scatta",
+  "gallery": "Galleria",
+  "ocrIntro": "Il testo viene letto con RapidOCR direttamente sul telefono, senza connessione.",
+  "ocrLines": "{count, plural, =1{1 riga} other{{count} righe}}",
+  "@ocrLines": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ocrBoxes": "Riquadri"
+}

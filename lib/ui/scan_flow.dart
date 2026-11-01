@@ -7,6 +7,7 @@ import '../app_services.dart';
 import '../receipt/categorizer.dart';
 import '../receipt/payment_detector.dart';
 import 'expense_form_screen.dart';
+import 'l10n.dart';
 
 /// Scatta o sceglie una foto e apre la schermata di lettura.
 Future<void> startScan(BuildContext context, {required bool fromCamera}) async {
@@ -33,7 +34,7 @@ class ScanProcessingScreen extends StatefulWidget {
 }
 
 class _ScanProcessingScreenState extends State<ScanProcessingScreen> {
-  String _status = 'Preparo il lettore…';
+  bool _reading = false;
   String? _error;
   bool _started = false;
 
@@ -47,10 +48,11 @@ class _ScanProcessingScreenState extends State<ScanProcessingScreen> {
 
   Future<void> _run() async {
     final services = AppServices.of(context);
+    final l = context.l10n;
     try {
       final scanner = await services.scanner();
       if (!mounted) return;
-      setState(() => _status = 'Leggo lo scontrino…');
+      setState(() => _reading = true);
       final lang = await services.db.setting('receipt_lang') ?? 'it';
       final result = await scanner.scan(widget.bytes, lang: lang);
       debugPrint('Scansione: ${result.ocr.lines.length} righe, tempi ${result.ocr.timingsMs}');
@@ -70,9 +72,9 @@ class _ScanProcessingScreenState extends State<ScanProcessingScreen> {
       final account = kind == null ? null : accounts.where((a) => a.kind == kind).firstOrNull;
 
       final warnings = <String>[
-        if (result.ocr.lines.isEmpty) 'Non ho trovato testo: prova con una foto più nitida e dritta.',
-        if (result.ocr.lines.isNotEmpty && !result.hasTotal) 'Totale non trovato: inseriscilo a mano.',
-        if (result.ocr.lines.isNotEmpty && merchant.isEmpty) 'Esercente non trovato.',
+        if (result.ocr.lines.isEmpty) l.scanWarnNoText,
+        if (result.ocr.lines.isNotEmpty && !result.hasTotal) l.scanWarnNoTotal,
+        if (result.ocr.lines.isNotEmpty && merchant.isEmpty) l.scanWarnNoMerchant,
       ];
 
       if (!mounted) return;
@@ -87,7 +89,7 @@ class _ScanProcessingScreenState extends State<ScanProcessingScreen> {
               merchant: merchant,
               ocrText: result.ocr.text,
               categoryId: suggestion.categoryId ?? categories.where((c) => c.name == 'Altro').firstOrNull?.id,
-              categoryReason: suggestion.categoryId == null ? null : describeSuggestion(suggestion),
+              categoryReason: suggestion.categoryId == null ? null : describeSuggestion(suggestion, l),
               accountId: account?.id,
               warnings: warnings,
             ),
@@ -102,8 +104,9 @@ class _ScanProcessingScreenState extends State<ScanProcessingScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Scontrino')),
+      appBar: AppBar(title: Text(l.receiptTitle)),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -118,12 +121,11 @@ class _ScanProcessingScreenState extends State<ScanProcessingScreen> {
             if (_error == null) ...[
               const LinearProgressIndicator(),
               const SizedBox(height: 12),
-              Text(_status, style: Theme.of(context).textTheme.titleMedium),
+              Text(_reading ? l.scanReading : l.scanPreparing, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 4),
-              Text('Tutto avviene sul telefono, senza connessione.',
-                  style: TextStyle(color: scheme.onSurfaceVariant)),
+              Text(l.scanOffline, style: TextStyle(color: scheme.onSurfaceVariant)),
             ] else ...[
-              Text('Non sono riuscito a leggere lo scontrino', style: Theme.of(context).textTheme.titleMedium),
+              Text(l.scanFailed, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 4),
               Text(_error!, style: TextStyle(color: scheme.error), maxLines: 4, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 12),
@@ -132,7 +134,7 @@ class _ScanProcessingScreenState extends State<ScanProcessingScreen> {
                   context,
                   MaterialPageRoute(builder: (_) => const ExpenseFormScreen()),
                 ),
-                child: const Text('Inserisci a mano'),
+                child: Text(l.addManualTitle),
               ),
             ],
           ],

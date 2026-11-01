@@ -61,26 +61,26 @@ void main() {
 
   test('rifiuta file che non sono backup o sono di una versione più nuova', () async {
     final db = AppDatabase(NativeDatabase.memory());
-    Future<String> error(File f, {int schema = 2}) async {
+    Future<BackupError?> error(File f, {int schema = 2}) async {
       try {
         await openBackup(f, tmpDir: tmp.path, currentSchema: schema);
-        return 'accettato';
+        return null;
       } on BackupException catch (e) {
-        return e.message;
+        return e.error;
       }
     }
 
     final notZip = File(p.join(tmp.path, 'foto.zip'))..writeAsStringSync('non sono uno zip');
-    expect(await error(notZip), contains('zip valido'));
+    expect(await error(notZip), BackupError.notZip);
 
     final otherZip = p.join(tmp.path, 'altro.zip');
     final enc = ZipFileEncoder()..create(otherZip);
     await enc.addFile(notZip, 'documento.txt');
     await enc.close();
-    expect(await error(File(otherZip)), contains('non è un backup'));
+    expect(await error(File(otherZip)), BackupError.notReceiptBackup);
 
     final zip = await exportBackupTo(db, tmp.path);
-    expect(await error(zip, schema: 1), contains('più nuova'));
+    expect(await error(zip, schema: 1), BackupError.newerVersion);
     // Nessuna cartella temporanea lasciata indietro dai tentativi falliti.
     expect(tmp.listSync().whereType<Directory>().where((d) => p.basename(d.path).startsWith('import')), isEmpty);
     await db.close();

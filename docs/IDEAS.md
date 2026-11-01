@@ -3,7 +3,6 @@
 ## Ideas
 - **Recurring payments**: expenses that repeat (rent, subscriptions, bills),
   added automatically every month or week.
-- **English interface**: a language setting for the app (today it is Italian only).
 
 ## To do (already discussed)
 - Encrypted automatic backup to Google Drive (password, app-private folder).

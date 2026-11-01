@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'app_services.dart';
 import 'data/database.dart';
+import 'l10n/app_localizations.dart';
 import 'receipt/receipt_scanner.dart';
 import 'security/app_lock.dart';
 import 'security/lock_screens.dart';
@@ -15,7 +15,8 @@ import 'ui/home_shell.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('it_IT');
+  await initializeDateFormatting('it');
+  await initializeDateFormatting('en');
 
   final db = AppDatabase();
   final appearance = ValueNotifier(await AppearanceSettings.load(db));
@@ -77,13 +78,12 @@ class ReceiptApp extends StatelessWidget {
           darkTheme: theme(Brightness.dark),
           themeMode: appearance.mode,
           builder: (context, child) => LockGate(lock: AppServices.of(context).lock, child: child!),
-          locale: const Locale('it', 'IT'),
-          supportedLocales: const [Locale('it', 'IT')],
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          locale: appearance.locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          // Con la lingua di sistema: italiano solo se il telefono è in
+          // italiano, altrimenti inglese.
+          localeResolutionCallback: (device, _) => device?.languageCode == 'it' ? const Locale('it') : const Locale('en'),
           home: const HomeShell(),
         );
       },

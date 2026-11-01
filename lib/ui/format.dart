@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../data/database.dart';
+import 'l10n.dart';
 
-final _euro = NumberFormat.currency(locale: 'it_IT', symbol: '€', decimalDigits: 2);
-
-String formatCents(int cents) => _euro.format(cents / 100);
+/// Euro nel formato della lingua dell'app: "57,46 €", "€57.46".
+String formatCents(BuildContext context, int cents) =>
+    NumberFormat.currency(locale: context.localeTag, symbol: '€', decimalDigits: 2).format(cents / 100);
 
 /// "12,50", "12.50", "€ 1.234,56" -> centesimi. null se non è un importo.
 int? parseCents(String input) {
@@ -22,24 +23,29 @@ int? parseCents(String input) {
   return (v * 100).round();
 }
 
-String centsToInput(int cents) => (cents / 100).toStringAsFixed(2).replaceAll('.', ',');
+/// Importo da mettere in un campo di testo, col separatore decimale della lingua.
+String centsToInput(BuildContext context, int cents) {
+  final s = (cents / 100).toStringAsFixed(2);
+  return context.localeTag.startsWith('en') ? s : s.replaceAll('.', ',');
+}
 
-String formatMonth(DateTime m) {
-  final s = DateFormat.yMMMM('it_IT').format(m);
+String formatMonth(BuildContext context, DateTime m) {
+  final s = DateFormat.yMMMM(context.localeTag).format(m);
   return s[0].toUpperCase() + s.substring(1);
 }
 
-String formatDay(DateTime d) {
+String formatDay(BuildContext context, DateTime d) {
   final today = DateTime.now();
   final day = DateTime(d.year, d.month, d.day);
   final diff = DateTime(today.year, today.month, today.day).difference(day).inDays;
-  if (diff == 0) return 'Oggi';
-  if (diff == 1) return 'Ieri';
-  final s = DateFormat(d.year == today.year ? 'EEEE d MMMM' : 'EEEE d MMMM y', 'it_IT').format(d);
+  if (diff == 0) return context.l10n.today;
+  if (diff == 1) return context.l10n.yesterday;
+  final locale = context.localeTag;
+  final s = (d.year == today.year ? DateFormat.MMMMEEEEd(locale) : DateFormat.yMMMMEEEEd(locale)).format(d);
   return s[0].toUpperCase() + s.substring(1);
 }
 
-String formatShortDate(DateTime d) => DateFormat('d MMM y', 'it_IT').format(d);
+String formatShortDate(BuildContext context, DateTime d) => DateFormat.yMMMd(context.localeTag).format(d);
 
 /// Icone disponibili per le categorie (chiave salvata nel database).
 const categoryIcons = <String, IconData>{

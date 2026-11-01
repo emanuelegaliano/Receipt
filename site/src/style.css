@@ -43,14 +43,16 @@
   background-size: 24px 24px;
 }
 
-/* Phone frame around the app screenshots */
+/* Phone frame around the app screenshots. The screenshots are cropped below
+   the status bar: the camera sits in the top bezel, so nothing in the
+   screen is covered or clipped by the rounded corners. */
 .phone {
-  @apply relative w-full max-w-[290px] rounded-[2.4rem] bg-slate-900 p-[9px] shadow-[0_20px_50px_-15px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/10;
+  @apply relative w-full max-w-[290px] rounded-[2.6rem] bg-slate-900 px-[9px] pt-[30px] pb-[18px] shadow-[0_20px_50px_-15px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/10;
 }
 .phone img {
-  @apply block w-full h-auto rounded-[1.9rem];
+  @apply block w-full h-auto rounded-[0.9rem];
 }
 .phone::before {
   content: "";
-  @apply absolute left-1/2 top-[16px] z-10 h-[10px] w-[10px] -translate-x-1/2 rounded-full bg-slate-900;
+  @apply absolute left-1/2 top-[11px] h-[9px] w-[9px] -translate-x-1/2 rounded-full bg-slate-700 ring-2 ring-slate-800;
 }

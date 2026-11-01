@@ -56,11 +56,14 @@ Future<File> exportBackupTo(AppDatabase db, String outDir, {DateTime? now}) asyn
   return File(out);
 }
 
+/// Perché un file non si può ripristinare. Il testo per l'utente è nella UI.
+enum BackupError { notZip, notReceiptBackup, damaged, newerVersion }
+
 class BackupException implements Exception {
-  final String message;
-  const BackupException(this.message);
+  final BackupError error;
+  const BackupException(this.error);
   @override
-  String toString() => message;
+  String toString() => 'BackupException: ${error.name}';
 }
 
 /// Un backup estratto e controllato, pronto per [restore].
@@ -86,10 +89,10 @@ Future<BackupPreview> openBackup(File zip, {required String tmpDir, required int
     try {
       archive = ZipDecoder().decodeStream(input);
     } catch (_) {
-      throw const BackupException('Il file non è uno zip valido.');
+      throw const BackupException(BackupError.notZip);
     }
     // Un file qualsiasi non fa fallire il decoder: risulta solo vuoto.
-    if (archive.isEmpty) throw const BackupException('Il file non è uno zip valido.');
+    if (archive.isEmpty) throw const BackupException(BackupError.notZip);
     for (final entry in archive) {
       if (!entry.isFile) continue;
       // Solo i nomi attesi, e mai percorsi che escono dalla cartella.
@@ -110,17 +113,17 @@ Future<BackupPreview> openBackup(File zip, {required String tmpDir, required int
 
     final manifestFile = File(p.join(dir.path, 'manifest.json'));
     if (!await manifestFile.exists() || !await File(p.join(dir.path, 'receipt.sqlite')).exists()) {
-      throw const BackupException('Questo zip non è un backup di Receipt.');
+      throw const BackupException(BackupError.notReceiptBackup);
     }
     final Map<String, dynamic> m;
     try {
       m = jsonDecode(await manifestFile.readAsString()) as Map<String, dynamic>;
     } catch (_) {
-      throw const BackupException('Il backup è danneggiato (manifest illeggibile).');
+      throw const BackupException(BackupError.damaged);
     }
-    if (m['app'] != 'Receipt') throw const BackupException('Questo zip non è un backup di Receipt.');
+    if (m['app'] != 'Receipt') throw const BackupException(BackupError.notReceiptBackup);
     if ((m['format'] as num? ?? 0) > backupFormat || (m['schemaVersion'] as num? ?? 0) > currentSchema) {
-      throw const BackupException('Il backup viene da una versione più nuova dell\'app: aggiorna Receipt e riprova.');
+      throw const BackupException(BackupError.newerVersion);
     }
     return BackupPreview._(
       dir,

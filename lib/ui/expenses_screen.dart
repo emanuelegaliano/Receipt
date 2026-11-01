@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_services.dart';
 import '../data/database.dart';
 import 'format.dart';
+import 'l10n.dart';
 import 'widgets.dart';
 
 /// Movimenti del mese raggruppati per giorno, con ricerca e filtri.
@@ -25,7 +26,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     final q = _query.toLowerCase();
     return e.expense.merchant.toLowerCase().contains(q) ||
         e.expense.note.toLowerCase().contains(q) ||
-        e.category.name.toLowerCase().contains(q);
+        e.category.name.toLowerCase().contains(q) ||
+        categoryLabel(e.category, context.l10n).toLowerCase().contains(q);
   }
 
   Future<void> _deleteWithUndo(ExpenseView item) async {
@@ -36,9 +38,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(SnackBar(
-        content: Text('Spesa eliminata: ${formatCents(e.amountCents)}'),
+        content: Text(context.l10n.expenseDeleted(formatCents(context, e.amountCents))),
         action: SnackBarAction(
-          label: 'Annulla',
+          label: context.l10n.undo,
           onPressed: () => db.restoreExpense(e),
         ),
       ));
@@ -48,8 +50,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   Widget build(BuildContext context) {
     final services = AppServices.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Movimenti')),
+      appBar: AppBar(title: Text(l.navTransactions)),
       body: ValueListenableBuilder<DateTime>(
         valueListenable: services.month,
         builder: (context, month, _) => StreamBuilder<List<ExpenseView>>(
@@ -74,9 +77,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                     child: TextField(
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.search),
-                        hintText: 'Cerca esercente, nota, categoria',
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search),
+                        hintText: l.searchHint,
                         isDense: true,
                       ),
                       onChanged: (v) => setState(() => _query = v.trim()),
@@ -96,7 +99,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                               padding: const EdgeInsets.only(right: 8),
                               child: FilterChip(
                                 avatar: Icon(accountIcon(a.kind), size: 18),
-                                label: Text(a.name),
+                                label: Text(accountLabel(a, l)),
                                 selected: _accountFilter == a.id,
                                 onSelected: (s) => setState(() => _accountFilter = s ? a.id : null),
                               ),
@@ -106,7 +109,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                               padding: const EdgeInsets.only(right: 8),
                               child: FilterChip(
                                 avatar: Icon(iconOf(c), size: 18, color: Color(c.color)),
-                                label: Text(c.name),
+                                label: Text(categoryLabel(c, l)),
                                 selected: _categoryFilter == c.id,
                                 onSelected: (s) => setState(() => _categoryFilter = s ? c.id : null),
                               ),
@@ -118,15 +121,15 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 if (snap.hasData && items.isEmpty)
                   SliverToBoxAdapter(
                     child: all.isEmpty
-                        ? const EmptyState(
+                        ? EmptyState(
                             icon: Icons.receipt_long_outlined,
-                            title: 'Nessun movimento',
-                            message: 'Le spese che aggiungi compariranno qui, divise per giorno.',
+                            title: l.noTransactionsTitle,
+                            message: l.noTransactionsMessage,
                           )
-                        : const EmptyState(
+                        : EmptyState(
                             icon: Icons.search_off,
-                            title: 'Nessun risultato',
-                            message: 'Prova a cambiare la ricerca o i filtri.',
+                            title: l.noResultsTitle,
+                            message: l.noResultsMessage,
                           ),
                   ),
                 for (final entry in groups.entries) ...[
@@ -136,10 +139,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                       child: Row(
                         children: [
                           Expanded(
-                            child: Text(formatDay(entry.key),
+                            child: Text(formatDay(context, entry.key),
                                 style: Theme.of(context).textTheme.labelLarge?.copyWith(color: scheme.primary)),
                           ),
-                          Text(formatCents(entry.value.fold(0, (s, e) => s + e.expense.amountCents)),
+                          Text(formatCents(context, entry.value.fold(0, (s, e) => s + e.expense.amountCents)),
                               style: Theme.of(context).textTheme.labelLarge?.copyWith(color: scheme.onSurfaceVariant)),
                         ],
                       ),

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:drift/drift.dart' show Value;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -14,6 +13,7 @@ import '../data/database.dart';
 import '../data/demo_data.dart';
 import '../screens/ocr_screen.dart';
 import 'format.dart';
+import 'l10n.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -41,7 +41,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _import() async {
     final services = AppServices.of(context);
     final messenger = ScaffoldMessenger.of(context);
-    final picked = await services.lock.whileAway(() => FilePicker.pickFile(dialogTitle: 'Scegli il backup (.zip)'));
+    final l = context.l10n;
+    final picked = await services.lock.whileAway(() => FilePicker.pickFile(dialogTitle: l.chooseBackup));
     if (picked == null || !mounted) return;
     setState(() => _importing = true);
     BackupPreview? backup;
@@ -61,16 +62,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           icon: const Icon(Icons.settings_backup_restore),
-          title: const Text('Ripristinare il backup?'),
+          title: Text(l.restoreTitle),
           content: Text(
-            '${b.createdAt == null ? 'Backup' : 'Backup del ${DateFormat('d MMMM y, HH:mm', 'it_IT').format(b.createdAt!)}'}: '
-            '${b.expenses} ${b.expenses == 1 ? 'spesa' : 'spese'}, ${b.photos} foto.\n\n'
-            'Tutti i dati attuali ($current ${current == 1 ? 'spesa' : 'spese'}, categorie, conti, limiti) '
-            'verranno sostituiti. Se vuoi tenerli, esportali prima.',
+            '${b.createdAt == null ? l.restoreSummary(b.expenses, b.photos) : l.restoreSummaryDated(b.createdAt!, b.expenses, b.photos)}'
+            '\n\n${l.restoreReplaceWarning(current)}',
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sostituisci')),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l.replace)),
           ],
         ),
       );
@@ -79,11 +78,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await restore(services.db, b, receiptsDir: p.join(docs, 'receipts'));
       // Il tema fa parte delle impostazioni ripristinate.
       services.appearance.value = await AppearanceSettings.load(services.db);
-      messenger.showSnackBar(SnackBar(content: Text('Dati ripristinati: ${b.expenses} spese')));
+      messenger.showSnackBar(SnackBar(content: Text(l.restoreDone(b.expenses))));
     } on BackupException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      messenger.showSnackBar(SnackBar(content: Text(backupErrorText(e.error, l))));
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Ripristino non riuscito: $e')));
+      messenger.showSnackBar(SnackBar(content: Text(l.restoreFailed('$e'))));
     } finally {
       await backup?.dispose();
       if (copy != null && await copy.exists()) await copy.delete();
@@ -93,17 +92,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _export() async {
     final services = AppServices.of(context);
+    final l = context.l10n;
     setState(() => _exporting = true);
     try {
       final file = await exportBackup(services.db);
       // Il foglio di condivisione porta fuori dall'app: niente blocco al ritorno.
       await services.lock.whileAway(() => SharePlus.instance.share(ShareParams(
             files: [XFile(file.path, mimeType: 'application/zip')],
-            title: 'Esporta i dati di Receipt',
+            title: l.exportShareTitle,
           )));
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Esportazione non riuscita: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.exportFailed('$e'))));
       }
     } finally {
       if (mounted) setState(() => _exporting = false);
@@ -112,6 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _changePassword() async {
     final lock = AppServices.of(context).lock;
+    final l = context.l10n;
     final current = TextEditingController();
     final next = TextEditingController();
     final confirm = TextEditingController();
@@ -120,7 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialog) => AlertDialog(
-          title: const Text('Cambia password'),
+          title: Text(l.changePassword),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -128,12 +129,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 controller: current,
                 obscureText: true,
                 autofocus: true,
-                decoration: const InputDecoration(labelText: 'Password attuale'),
+                decoration: InputDecoration(labelText: l.currentPassword),
               ),
               const SizedBox(height: 12),
-              TextField(controller: next, obscureText: true, decoration: const InputDecoration(labelText: 'Nuova password')),
+              TextField(controller: next, obscureText: true, decoration: InputDecoration(labelText: l.newPassword)),
               const SizedBox(height: 12),
-              TextField(controller: confirm, obscureText: true, decoration: const InputDecoration(labelText: 'Ripeti la nuova password')),
+              TextField(
+                  controller: confirm,
+                  obscureText: true,
+                  decoration: InputDecoration(labelText: l.repeatNewPassword)),
               if (error != null) ...[
                 const SizedBox(height: 12),
                 Text(error!, style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
@@ -141,29 +145,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
             FilledButton(
               onPressed: () async {
                 String? e;
                 if (next.text.length < 4) {
-                  e = 'La nuova password deve avere almeno 4 caratteri';
+                  e = l.newPasswordTooShort;
                 } else if (next.text != confirm.text) {
-                  e = 'Le nuove password non coincidono';
+                  e = l.newPasswordsMismatch;
                 } else if (!await lock.checkPassword(current.text)) {
-                  e = 'La password attuale è sbagliata';
+                  e = l.currentPasswordWrong;
                 }
                 if (e != null) return setDialog(() => error = e);
                 await lock.setPassword(next.text);
                 if (ctx.mounted) Navigator.pop(ctx, true);
               },
-              child: const Text('Salva'),
+              child: Text(l.save),
             ),
           ],
         ),
       ),
     );
     if (ok == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password cambiata')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.passwordChanged)));
     }
   }
 
@@ -177,13 +181,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _editAccount(Account? account) async {
     final db = AppServices.of(context).db;
-    final name = TextEditingController(text: account?.name ?? '');
+    final l = context.l10n;
+    // I conti predefiniti si aprono col nome nella lingua dell'app.
+    final shown = account == null ? '' : accountLabel(account, l);
+    final name = TextEditingController(text: shown);
     var kind = account?.kind ?? AccountKind.other;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialog) => AlertDialog(
-          title: Text(account == null ? 'Nuovo conto' : 'Modifica conto'),
+          title: Text(account == null ? l.newAccount : l.editAccount),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -191,14 +198,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 controller: name,
                 autofocus: true,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(labelText: 'Nome', hintText: 'Es. Carta prepagata'),
+                decoration: InputDecoration(labelText: l.name, hintText: l.accountNameHint),
               ),
               const SizedBox(height: 16),
               SegmentedButton<AccountKind>(
-                segments: const [
-                  ButtonSegment(value: AccountKind.card, label: Text('Carta')),
-                  ButtonSegment(value: AccountKind.cash, label: Text('Contanti')),
-                  ButtonSegment(value: AccountKind.other, label: Text('Altro')),
+                segments: [
+                  ButtonSegment(value: AccountKind.card, label: Text(l.accountCard)),
+                  ButtonSegment(value: AccountKind.cash, label: Text(l.accountCash)),
+                  ButtonSegment(value: AccountKind.other, label: Text(l.accountOther)),
                 ],
                 selected: {kind},
                 showSelectedIcon: false,
@@ -213,18 +220,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   await db.saveAccount(AccountsCompanion(id: Value(account.id), archived: const Value(true)));
                   if (ctx.mounted) Navigator.pop(ctx, false);
                 },
-                child: const Text('Archivia'),
+                child: Text(l.archive),
               ),
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salva')),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l.save)),
           ],
         ),
       ),
     );
     if (ok == true && name.text.trim().isNotEmpty) {
+      // Nome predefinito non toccato: resta quello salvato, che segue la lingua.
+      final newName = account != null && name.text.trim() == shown ? account.name : name.text.trim();
       await db.saveAccount(AccountsCompanion(
         id: account == null ? const Value.absent() : Value(account.id),
-        name: Value(name.text.trim()),
+        name: Value(newName),
         kind: Value(kind),
       ));
     }
@@ -235,17 +244,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final db = AppServices.of(context).db;
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
+    final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Impostazioni')),
+      appBar: AppBar(title: Text(l.settings)),
       body: ListView(
         children: [
-          ListTile(title: Text('Aspetto', style: text.titleSmall?.copyWith(color: scheme.primary))),
+          ListTile(title: Text(l.sectionAppearance, style: text.titleSmall?.copyWith(color: scheme.primary))),
           const _AppearancePicker(),
           const Divider(),
-          ListTile(title: Text('Sicurezza', style: text.titleSmall?.copyWith(color: scheme.primary))),
+          ListTile(title: Text(l.sectionSecurity, style: text.titleSmall?.copyWith(color: scheme.primary))),
           ListTile(
             leading: const Icon(Icons.password),
-            title: const Text('Cambia password'),
+            title: Text(l.changePassword),
             onTap: _changePassword,
           ),
           ListenableBuilder(
@@ -254,28 +264,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
               final lock = AppServices.of(context).lock;
               return SwitchListTile(
                 secondary: const Icon(Icons.fingerprint),
-                title: const Text('Sblocca con l\'impronta'),
-                subtitle: Text(_biometricAvailable
-                    ? 'La password resta sempre valida'
-                    : 'Nessuna impronta registrata sul telefono'),
+                title: Text(l.biometricUnlock),
+                subtitle: Text(_biometricAvailable ? l.biometricKeepsPassword : l.biometricNone),
                 value: lock.biometricEnabled,
-                onChanged: _biometricAvailable || lock.biometricEnabled ? (v) => lock.setBiometric(v) : null,
+                onChanged: _biometricAvailable || lock.biometricEnabled
+                    ? (v) => lock.setBiometric(v, reason: l.biometricPromptConfirm, cancel: l.biometricUsePassword)
+                    : null,
               );
             },
           ),
           const Divider(),
-          ListTile(title: Text('Scontrini', style: text.titleSmall?.copyWith(color: scheme.primary))),
+          ListTile(title: Text(l.sectionReceipts, style: text.titleSmall?.copyWith(color: scheme.primary))),
           ListTile(
-            title: const Text('Lingua degli scontrini'),
-            subtitle: const Text('Cambia le parole che il lettore cerca per trovare totale e data'),
+            title: Text(l.receiptLanguage),
+            subtitle: Text(l.receiptLanguageHint),
             isThreeLine: true,
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'it', label: Text('Italiano')),
-                ButtonSegment(value: 'en', label: Text('Inglese')),
+              segments: [
+                ButtonSegment(value: 'it', label: Text(l.receiptLangItalian)),
+                ButtonSegment(value: 'en', label: Text(l.receiptLangEnglish)),
               ],
               selected: {_lang},
               onSelectionChanged: (s) {
@@ -286,12 +296,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.document_scanner_outlined),
-            title: const Text('Prova il lettore'),
-            subtitle: const Text('Mostra il testo letto e i riquadri, senza salvare nulla'),
+            title: Text(l.tryReader),
+            subtitle: Text(l.tryReaderHint),
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OcrScreen())),
           ),
           const Divider(),
-          ListTile(title: Text('Conti', style: text.titleSmall?.copyWith(color: scheme.primary))),
+          ListTile(title: Text(l.sectionAccounts, style: text.titleSmall?.copyWith(color: scheme.primary))),
           StreamBuilder<List<Account>>(
             stream: db.watchAccounts(),
             builder: (context, snap) => Column(
@@ -299,32 +309,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 for (final a in snap.data ?? const <Account>[])
                   ListTile(
                     leading: Icon(accountIcon(a.kind)),
-                    title: Text(a.name),
+                    title: Text(accountLabel(a, l)),
                     trailing: const Icon(Icons.edit_outlined),
                     onTap: () => _editAccount(a),
                   ),
                 ListTile(
                   leading: const Icon(Icons.add),
-                  title: const Text('Aggiungi conto'),
+                  title: Text(l.addAccount),
                   onTap: () => _editAccount(null),
                 ),
               ],
             ),
           ),
           const Divider(),
-          ListTile(title: Text('Dati', style: text.titleSmall?.copyWith(color: scheme.primary))),
-          const ListTile(
-            leading: Icon(Icons.lock_outline),
-            title: Text('Tutto resta sul telefono'),
-            subtitle: Text('Spese, foto e lettura degli scontrini non lasciano mai il dispositivo.'),
+          ListTile(title: Text(l.sectionData, style: text.titleSmall?.copyWith(color: scheme.primary))),
+          ListTile(
+            leading: const Icon(Icons.lock_outline),
+            title: Text(l.dataStaysOnPhone),
+            subtitle: Text(l.dataStaysOnPhoneHint),
           ),
           ListTile(
             leading: _exporting
                 ? const SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.ios_share),
-            title: const Text('Esporta i dati'),
-            subtitle: const Text('Database e foto in un file .zip da salvare dove vuoi, es. su Drive. '
-                'Il file non è cifrato.'),
+            title: Text(l.exportData),
+            subtitle: Text(l.exportDataHint),
             isThreeLine: true,
             enabled: !_exporting,
             onTap: _export,
@@ -333,22 +342,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: _importing
                 ? const SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.settings_backup_restore),
-            title: const Text('Importa da backup'),
-            subtitle: const Text('Ripristina da uno zip di "Esporta i dati". Sostituisce i dati attuali.'),
+            title: Text(l.importBackup),
+            subtitle: Text(l.importBackupHint),
             enabled: !_importing,
             onTap: _import,
           ),
-          const ListTile(
+          ListTile(
             enabled: false,
-            leading: Icon(Icons.backup_outlined),
-            title: Text('Backup automatico cifrato'),
-            subtitle: Text('In arrivo'),
+            leading: const Icon(Icons.backup_outlined),
+            title: Text(l.autoBackup),
+            subtitle: Text(l.comingSoon),
           ),
           if (demoEnabled)
             ListTile(
               leading: const Icon(Icons.science_outlined),
-              title: const Text('Carica dati di prova'),
-              subtitle: const Text('Spese inventate a ottobre e settembre 2026, con alcuni limiti'),
+              title: Text(l.loadDemo),
+              subtitle: Text(l.loadDemoHint),
               onTap: () async {
                 final month = AppServices.of(context).month;
                 await loadDemoData(db, DateTime(2026, 10));
@@ -369,6 +378,15 @@ class _AppearancePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final services = AppServices.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final l = context.l10n;
+    final accentNames = [
+      l.accentGreen,
+      l.accentBlue,
+      l.accentPurple,
+      l.accentPink,
+      l.accentOrange,
+      l.accentGraphite,
+    ];
     return ValueListenableBuilder(
       valueListenable: services.appearance,
       builder: (context, appearance, _) {
@@ -383,14 +401,28 @@ class _AppearancePicker extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SegmentedButton<ThemeMode>(
-                segments: const [
-                  ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto_outlined), label: Text('Sistema')),
-                  ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_outlined), label: Text('Chiaro')),
-                  ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_outlined), label: Text('Scuro')),
+                segments: [
+                  ButtonSegment(
+                      value: ThemeMode.system, icon: const Icon(Icons.brightness_auto_outlined), label: Text(l.themeSystem)),
+                  ButtonSegment(value: ThemeMode.light, icon: const Icon(Icons.light_mode_outlined), label: Text(l.themeLight)),
+                  ButtonSegment(value: ThemeMode.dark, icon: const Icon(Icons.dark_mode_outlined), label: Text(l.themeDark)),
                 ],
                 selected: {appearance.mode},
                 showSelectedIcon: false,
                 onSelectionChanged: (s) => update(appearance.copyWith(mode: s.first)),
+              ),
+              const SizedBox(height: 16),
+              Text(l.appLanguage, style: Theme.of(context).textTheme.bodyLarge),
+              const SizedBox(height: 8),
+              SegmentedButton<String>(
+                segments: [
+                  ButtonSegment(value: 'system', icon: const Icon(Icons.language), label: Text(l.languageSystem)),
+                  ButtonSegment(value: 'it', label: Text(l.languageItalian)),
+                  ButtonSegment(value: 'en', label: Text(l.languageEnglish)),
+                ],
+                selected: {appearance.language},
+                showSelectedIcon: false,
+                onSelectionChanged: (s) => update(appearance.copyWith(language: s.first)),
               ),
               const SizedBox(height: 16),
               Wrap(
@@ -399,7 +431,7 @@ class _AppearancePicker extends StatelessWidget {
                 children: [
                   for (var i = 0; i < accentColors.length; i++)
                     Tooltip(
-                      message: accentColors[i].$1,
+                      message: accentNames[i],
                       child: InkWell(
                         customBorder: const CircleBorder(),
                         onTap: () => update(appearance.copyWith(accent: i)),
@@ -408,7 +440,7 @@ class _AppearancePicker extends StatelessWidget {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: accentColors[i].$2,
+                            color: accentColors[i],
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: i == appearance.accent ? scheme.onSurface : Colors.transparent,

@@ -11,6 +11,7 @@ import '../data/budget.dart';
 import '../data/database.dart';
 import '../receipt/categorizer.dart';
 import 'format.dart';
+import 'l10n.dart';
 
 /// Dati precompilati da uno scontrino scansionato.
 class ScanDraft {
@@ -101,7 +102,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       _rules = rules;
       _existing = existing;
       if (existing != null) {
-        _amount.text = centsToInput(existing.amountCents);
+        _amount.text = centsToInput(context, existing.amountCents);
         _merchant.text = existing.merchant;
         _note.text = existing.note;
         _date = existing.date;
@@ -111,7 +112,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       } else {
         final d = widget.draft;
         if (d != null) {
-          if (d.amountCents != null) _amount.text = centsToInput(d.amountCents!);
+          if (d.amountCents != null) _amount.text = centsToInput(context, d.amountCents!);
           _merchant.text = d.merchant;
           _date = d.date ?? DateTime.now();
           _categoryId = d.categoryId;
@@ -134,7 +135,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     if (s.categoryId != null) {
       setState(() {
         _categoryId = s.categoryId;
-        _categoryReason = describeSuggestion(s, fromReceipt: widget.draft != null);
+        _categoryReason = describeSuggestion(s, context.l10n, fromReceipt: widget.draft != null);
       });
     }
   }
@@ -149,8 +150,9 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final l = context.l10n;
     if (_categoryId == null || _accountId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Scegli una categoria')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.chooseCategory)));
       return;
     }
     setState(() => _saving = true);
@@ -167,7 +169,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       final old = _existing;
       final wasHere = old != null && old.categoryId == category.id && monthOf(old.date) == monthOf(day);
       final alert = budgetAlert(
-        category: category.name,
+        category: categoryLabel(category, l),
         limit: category.monthlyLimitCents,
         before: others + (wasHere ? old.amountCents : 0),
         after: others + cents,
@@ -193,14 +195,12 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       final month = monthOf(_date);
       final moved = services.month.value != month;
       services.month.value = month;
-      final saved = _existing != null
-          ? 'Spesa aggiornata'
-          : 'Spesa salvata${moved ? ' in ${formatMonth(month).toLowerCase()}' : ''}';
+      final saved = _existing != null ? l.expenseUpdated : (moved ? l.expenseSavedIn(month) : l.expenseSaved);
       if (alert != null && alert.crossed && alert.level == BudgetLevel.reached) {
         await showBudgetReachedDialog(context, alert);
         if (!mounted) return;
       }
-      final note = alert == null || (alert.crossed && alert.level == BudgetLevel.reached) ? null : budgetNote(alert);
+      final note = alert == null || (alert.crossed && alert.level == BudgetLevel.reached) ? null : budgetNote(context, alert);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(note == null ? saved : '$saved. $note'),
         duration: Duration(seconds: note == null ? 4 : 6),
@@ -212,14 +212,15 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   }
 
   Future<void> _delete() async {
+    final l = context.l10n;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eliminare la spesa?'),
-        content: const Text('La spesa e la foto dello scontrino verranno cancellate.'),
+        title: Text(l.deleteExpenseTitle),
+        content: Text(l.deleteExpenseMessage),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Elimina')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l.delete)),
         ],
       ),
     );
@@ -247,14 +248,15 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final draft = widget.draft;
-    final title = _existing != null ? 'Modifica spesa' : (draft != null ? 'Controlla lo scontrino' : 'Nuova spesa');
+    final l = context.l10n;
+    final title = _existing != null ? l.editExpense : (draft != null ? l.checkReceipt : l.newExpense);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
         actions: [
           if (_existing != null)
-            IconButton(tooltip: 'Elimina', icon: const Icon(Icons.delete_outline), onPressed: _delete),
+            IconButton(tooltip: l.delete, icon: const Icon(Icons.delete_outline), onPressed: _delete),
         ],
       ),
       body: !_loaded
@@ -277,10 +279,10 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                     autofocus: draft == null && _existing == null,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     style: text.headlineMedium,
-                    decoration: const InputDecoration(labelText: 'Importo', prefixText: '€ '),
+                    decoration: InputDecoration(labelText: l.amount, prefixText: '€ '),
                     validator: (v) {
                       final c = parseCents(v ?? '');
-                      if (c == null || c == 0) return 'Inserisci un importo';
+                      if (c == null || c == 0) return l.enterAmount;
                       return null;
                     },
                   ),
@@ -298,7 +300,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                       controller: controller,
                       focusNode: focus,
                       textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(labelText: 'Esercente', hintText: 'Es. Conad, Bar Roma'),
+                      decoration: InputDecoration(labelText: l.merchant, hintText: l.merchantHint),
                       onFieldSubmitted: (_) => onSubmit(),
                     ),
                     optionsViewBuilder: (context, onSelected, options) => Align(
@@ -320,7 +322,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text('Categoria', style: text.titleSmall),
+                  Text(l.category, style: text.titleSmall),
                   if (_categoryReason != null && !_categoryTouched)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
@@ -334,7 +336,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                       for (final c in _categories)
                         ChoiceChip(
                           avatar: Icon(iconOf(c), size: 18, color: Color(c.color)),
-                          label: Text(c.name),
+                          label: Text(categoryLabel(c, l)),
                           selected: _categoryId == c.id,
                           onSelected: (_) => setState(() {
                             _categoryId = c.id;
@@ -344,7 +346,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  Text('Pagato con', style: text.titleSmall),
+                  Text(l.paidWith, style: text.titleSmall),
                   const SizedBox(height: 8),
                   StreamBuilder<List<Account>>(
                     stream: _db.watchAccounts(),
@@ -354,7 +356,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                       return SegmentedButton<int>(
                         segments: [
                           for (final a in accounts)
-                            ButtonSegment(value: a.id, label: Text(a.name), icon: Icon(accountIcon(a.kind))),
+                            ButtonSegment(value: a.id, label: Text(accountLabel(a, l)), icon: Icon(accountIcon(a.kind))),
                         ],
                         selected: {?_accountId},
                         emptySelectionAllowed: true,
@@ -367,9 +369,9 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.event_outlined),
-                    title: Text(formatDay(_date)),
+                    title: Text(formatDay(context, _date)),
                     subtitle: draft != null && draft.date == null
-                        ? Text('Data non trovata sullo scontrino', style: TextStyle(color: scheme.error))
+                        ? Text(l.dateNotFound, style: TextStyle(color: scheme.error))
                         : null,
                     trailing: const Icon(Icons.edit_calendar_outlined),
                     onTap: () async {
@@ -385,7 +387,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _note,
-                    decoration: const InputDecoration(labelText: 'Nota (facoltativa)'),
+                    decoration: InputDecoration(labelText: l.noteOptional),
                     textCapitalization: TextCapitalization.sentences,
                   ),
                   const SizedBox(height: 24),
@@ -394,7 +396,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                     icon: _saving
                         ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.check),
-                    label: const Text('Salva'),
+                    label: Text(l.save),
                     style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
                   ),
                 ],
@@ -404,10 +406,11 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   }
 }
 
-String describeSuggestion(CategorySuggestion s, {bool fromReceipt = true}) => switch (s.source) {
-      SuggestionSource.learned => 'Suggerita: l\'hai già usata per questo esercente',
-      SuggestionSource.keyword =>
-        'Suggerita dalla parola "${s.matched?.toLowerCase()}"${fromReceipt ? ' sullo scontrino' : ''}',
+String describeSuggestion(CategorySuggestion s, AppLocalizations l, {bool fromReceipt = true}) => switch (s.source) {
+      SuggestionSource.learned => l.suggestedLearned,
+      SuggestionSource.keyword => fromReceipt
+          ? l.suggestedKeywordReceipt('${s.matched?.toLowerCase()}')
+          : l.suggestedKeyword('${s.matched?.toLowerCase()}'),
       SuggestionSource.none => '',
     };
 
@@ -446,7 +449,7 @@ class _ReceiptPreviewState extends State<_ReceiptPreview> {
                 context,
                 MaterialPageRoute(
                   builder: (_) => Scaffold(
-                    appBar: AppBar(title: const Text('Scontrino')),
+                    appBar: AppBar(title: Text(context.l10n.receiptTitle)),
                     body: InteractiveViewer(maxScale: 6, child: Center(child: Image(image: image))),
                   ),
                 ),
@@ -468,7 +471,7 @@ class _ReceiptPreviewState extends State<_ReceiptPreview> {
           if (widget.ocrText != null && widget.ocrText!.isNotEmpty) ...[
             ListTile(
               dense: true,
-              title: const Text('Testo letto dallo scontrino'),
+              title: Text(context.l10n.receiptText),
               trailing: Icon(_showText ? Icons.expand_less : Icons.expand_more),
               onTap: () => setState(() => _showText = !_showText),
             ),
@@ -485,27 +488,29 @@ class _ReceiptPreviewState extends State<_ReceiptPreview> {
 }
 
 /// Testo breve per gli avvisi meno gravi (80% o limite già superato).
-String budgetNote(BudgetAlert a) => switch (a.level) {
-      BudgetLevel.near =>
-        '${a.category}: hai usato il ${(a.spent * 100 / a.limit).floor()}% del limite, restano ${formatCents(a.left)}',
-      BudgetLevel.reached => a.over == 0
-          ? '${a.category}: limite mensile esaurito'
-          : '${a.category}: sei ${formatCents(a.over)} oltre il limite',
-      BudgetLevel.ok => '',
-    };
+String budgetNote(BuildContext context, BudgetAlert a) {
+  final l = context.l10n;
+  return switch (a.level) {
+    BudgetLevel.near => l.budgetNear(a.category, (a.spent * 100 / a.limit).floor(), formatCents(context, a.left)),
+    BudgetLevel.reached =>
+      a.over == 0 ? l.budgetExhausted(a.category) : l.budgetOver(a.category, formatCents(context, a.over)),
+    BudgetLevel.ok => '',
+  };
+}
 
 Future<void> showBudgetReachedDialog(BuildContext context, BudgetAlert a) {
   final scheme = Theme.of(context).colorScheme;
+  final l = context.l10n;
+  String money(int cents) => formatCents(context, cents);
   return showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
       icon: Icon(Icons.warning_amber_rounded, color: scheme.error, size: 36),
-      title: Text('Limite di ${a.category} raggiunto'),
+      title: Text(l.budgetReachedTitle(a.category)),
       content: Text(a.over == 0
-          ? 'Questo mese hai speso esattamente il limite di ${formatCents(a.limit)}.'
-          : 'Questo mese hai speso ${formatCents(a.spent)} su un limite di ${formatCents(a.limit)}: '
-              '${formatCents(a.over)} in più.'),
-      actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('Ho capito'))],
+          ? l.budgetReachedExact(money(a.limit))
+          : l.budgetReachedOver(money(a.spent), money(a.limit), money(a.over))),
+      actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(l.gotIt))],
     ),
   );
 }

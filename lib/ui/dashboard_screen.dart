@@ -8,6 +8,7 @@ import '../app_services.dart';
 import '../data/budget.dart';
 import '../data/database.dart';
 import 'format.dart';
+import 'l10n.dart';
 import 'settings_screen.dart';
 import 'widgets.dart';
 
@@ -18,12 +19,13 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final services = AppServices.of(context);
+    final l = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Riepilogo'),
+        title: Text(l.summaryTitle),
         actions: [
           IconButton(
-            tooltip: 'Impostazioni',
+            tooltip: l.settings,
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
@@ -64,15 +66,15 @@ class DashboardScreen extends StatelessWidget {
                         categories: catSnap.data ?? const [],
                         current: current,
                         previous: previous,
-                        previousName: _monthName(prevMonth),
+                        previousMonth: prevMonth,
                       ),
                       const SizedBox(height: 16),
                     ],
                     if (current.isEmpty && snap.hasData)
-                      const EmptyState(
+                      EmptyState(
                         icon: Icons.savings_outlined,
-                        title: 'Nessuna spesa questo mese',
-                        message: 'Tocca "Aggiungi" per fotografare uno scontrino o inserire una spesa a mano.',
+                        title: l.noSpendingTitle,
+                        message: l.noSpendingMessage,
                       )
                     else if (current.isNotEmpty)
                       _Recent(current, onSeeAll: onSeeAll),
@@ -89,12 +91,6 @@ class DashboardScreen extends StatelessWidget {
 
 int _sum(Iterable<ExpenseView> xs) => xs.fold(0, (s, e) => s + e.expense.amountCents);
 
-/// "settembre", "ottobre"...
-String _monthName(DateTime m) => DateFormat.MMMM('it_IT').format(m);
-
-/// "a settembre", "ad agosto".
-String _toMonth(String name) => '${RegExp('^[aeiou]').hasMatch(name) ? 'ad' : 'a'} $name';
-
 class _TotalCard extends StatelessWidget {
   final DateTime month;
   final List<ExpenseView> current;
@@ -106,6 +102,7 @@ class _TotalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final l = context.l10n;
     final total = _sum(current);
     final prevTotal = _sum(previous);
 
@@ -119,8 +116,10 @@ class _TotalCard extends StatelessWidget {
     String? comparison;
     if (prevTotal > 0) {
       final pct = ((total - prevTotal) / prevTotal * 100).round();
-      final prevName = _monthName(DateTime(month.year, month.month - 1));
-      comparison = pct == 0 ? 'Come ${_toMonth(prevName)}' : '${pct > 0 ? '+' : ''}$pct% rispetto ${_toMonth(prevName)}';
+      final prev = DateTime(month.year, month.month - 1);
+      comparison = pct == 0
+          ? l.sameAsMonth(monthPrep(prev), prev)
+          : l.percentVsMonth('${pct > 0 ? '+' : ''}$pct', monthPrep(prev), prev);
     }
 
     return Card(
@@ -130,9 +129,9 @@ class _TotalCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Speso questo mese', style: text.labelLarge?.copyWith(color: scheme.onPrimaryContainer)),
+            Text(l.spentThisMonth, style: text.labelLarge?.copyWith(color: scheme.onPrimaryContainer)),
             const SizedBox(height: 4),
-            Text(formatCents(total),
+            Text(formatCents(context, total),
                 style: text.displaySmall?.copyWith(color: scheme.onPrimaryContainer, fontWeight: FontWeight.w600)),
             if (comparison != null) ...[
               const SizedBox(height: 2),
@@ -147,7 +146,7 @@ class _TotalCard extends StatelessWidget {
                   for (final (account, cents) in byAccount.values)
                     Chip(
                       avatar: Icon(accountIcon(account.kind), size: 18),
-                      label: Text('${account.name} ${formatCents(cents)}'),
+                      label: Text('${accountLabel(account, l)} ${formatCents(context, cents)}'),
                       backgroundColor: scheme.surface.withValues(alpha: 0.6),
                       side: BorderSide.none,
                     ),
@@ -182,7 +181,7 @@ class _MonthsChart extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Ultimi 6 mesi', style: text.labelMedium?.copyWith(color: ink.withValues(alpha: 0.8))),
+        Text(context.l10n.last6Months, style: text.labelMedium?.copyWith(color: ink.withValues(alpha: 0.8))),
         const SizedBox(height: 8),
         SizedBox(
           height: 96,
@@ -208,7 +207,7 @@ class _MonthsChart extends StatelessWidget {
                         meta: meta,
                         space: 4,
                         child: Text(
-                          DateFormat.MMM('it_IT').format(m).replaceAll('.', ''),
+                          DateFormat.MMM(context.localeTag).format(m).replaceAll('.', ''),
                           style: text.labelSmall?.copyWith(
                             color: ink.withValues(alpha: isSel ? 1 : 0.7),
                             fontWeight: isSel ? FontWeight.w700 : null,
@@ -256,17 +255,18 @@ class _Categories extends StatelessWidget {
   final List<Category> categories;
   final List<ExpenseView> current;
   final List<ExpenseView> previous;
-  final String previousName;
+  final DateTime previousMonth;
   const _Categories({
     required this.categories,
     required this.current,
     required this.previous,
-    required this.previousName,
+    required this.previousMonth,
   });
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final l = context.l10n;
     Map<int, int> totals(List<ExpenseView> xs) {
       final m = <int, int>{};
       for (final e in xs) {
@@ -292,15 +292,16 @@ class _Categories extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Per categoria', style: text.titleMedium),
+            Text(l.byCategory, style: text.titleMedium),
             if (showPrevKey || showLimitKey) ...[
               const SizedBox(height: 6),
               Wrap(
                 spacing: 16,
                 runSpacing: 4,
                 children: [
-                  if (showPrevKey) _Key(marker: _Marker.previous, label: previousName),
-                  if (showLimitKey) const _Key(marker: _Marker.limit, label: 'limite'),
+                  if (showPrevKey)
+                    _Key(marker: _Marker.previous, label: DateFormat.MMMM(context.localeTag).format(previousMonth)),
+                  if (showLimitKey) _Key(marker: _Marker.limit, label: l.legendLimit),
                 ],
               ),
             ],
@@ -319,8 +320,8 @@ class _Categories extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Expanded(child: Text(cat.name, style: text.bodyLarge)),
-                              Text(formatCents(cents), style: text.titleSmall),
+                              Expanded(child: Text(categoryLabel(cat, l), style: text.bodyLarge)),
+                              Text(formatCents(context, cents), style: text.titleSmall),
                             ],
                           ),
                           const SizedBox(height: 6),
@@ -332,7 +333,7 @@ class _Categories extends StatelessWidget {
                             color: Color(cat.color),
                           ),
                           const SizedBox(height: 4),
-                          _RowNote(spent: cents, previous: prev, limit: cat.monthlyLimitCents, previousName: previousName),
+                          _RowNote(spent: cents, previous: prev, limit: cat.monthlyLimitCents, previousMonth: previousMonth),
                         ],
                       ),
                     ),
@@ -489,34 +490,36 @@ class _BarPainter extends CustomPainter {
 class _RowNote extends StatelessWidget {
   final int spent, previous;
   final int? limit;
-  final String previousName;
-  const _RowNote({required this.spent, required this.previous, required this.limit, required this.previousName});
+  final DateTime previousMonth;
+  const _RowNote({required this.spent, required this.previous, required this.limit, required this.previousMonth});
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final style = Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant);
+    final l = context.l10n;
+    final prep = monthPrep(previousMonth);
     final parts = <InlineSpan>[];
     final diff = spent - previous;
     if (previous > 0) {
       parts.add(TextSpan(
         text: diff == 0
-            ? 'Come ${_toMonth(previousName)}'
-            : '${diff > 0 ? '+' : '−'}${formatCents(diff.abs())} rispetto ${_toMonth(previousName)}',
+            ? l.sameAsMonth(prep, previousMonth)
+            : l.amountVsMonth('${diff > 0 ? '+' : '−'}${formatCents(context, diff.abs())}', prep, previousMonth),
       ));
     } else if (spent > 0) {
-      parts.add(TextSpan(text: 'Niente ${_toMonth(previousName)}'));
+      parts.add(TextSpan(text: l.nothingInMonth(prep, previousMonth)));
     }
     if (limit != null) {
       if (parts.isNotEmpty) parts.add(const TextSpan(text: ' · '));
       parts.add(switch (budgetLevel(spent, limit!)) {
-        BudgetLevel.ok => TextSpan(text: 'Restano ${formatCents(limit! - spent)}'),
+        BudgetLevel.ok => TextSpan(text: l.remaining(formatCents(context, limit! - spent))),
         BudgetLevel.near => TextSpan(
-            text: 'Restano ${formatCents(limit! - spent)}',
+            text: l.remaining(formatCents(context, limit! - spent)),
             style: TextStyle(color: warningColor(context), fontWeight: FontWeight.w600),
           ),
         BudgetLevel.reached => TextSpan(
-            text: spent == limit ? 'Limite esaurito' : 'Superato di ${formatCents(spent - limit!)}',
+            text: spent == limit ? l.limitExhausted : l.overBy(formatCents(context, spent - limit!)),
             style: TextStyle(color: scheme.error, fontWeight: FontWeight.w600),
           ),
       });
@@ -538,8 +541,8 @@ class _Recent extends StatelessWidget {
       child: Column(
         children: [
           ListTile(
-            title: Text('Ultimi movimenti', style: Theme.of(context).textTheme.titleMedium),
-            trailing: TextButton(onPressed: onSeeAll, child: const Text('Vedi tutti')),
+            title: Text(context.l10n.recentTransactions, style: Theme.of(context).textTheme.titleMedium),
+            trailing: TextButton(onPressed: onSeeAll, child: Text(context.l10n.seeAll)),
           ),
           for (final e in items.take(5)) ExpenseTile(e, showDate: true),
         ],

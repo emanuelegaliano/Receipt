@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../app_services.dart';
 import '../ocr/rapid_ocr.dart';
+import '../ui/l10n.dart';
 
 /// Prototipo: scatta o scegli uno scontrino e mostra cosa legge RapidOCR.
 class OcrScreen extends StatefulWidget {
@@ -47,17 +48,18 @@ class _OcrScreenState extends State<OcrScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lettore scontrini'),
+        title: Text(l.ocrTitle),
         actions: [
           if (_result != null)
             IconButton(
-              tooltip: 'Copia testo',
+              tooltip: l.copyText,
               icon: const Icon(Icons.copy_all_outlined),
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: _result!.text));
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Testo copiato')));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.textCopied)));
               },
             ),
         ],
@@ -72,7 +74,7 @@ class _OcrScreenState extends State<OcrScreen> {
                 child: FilledButton.icon(
                   onPressed: _busy ? null : () => _pick(ImageSource.camera),
                   icon: const Icon(Icons.photo_camera_outlined),
-                  label: const Text('Scatta'),
+                  label: Text(l.takePhoto),
                 ),
               ),
               const SizedBox(width: 12),
@@ -80,7 +82,7 @@ class _OcrScreenState extends State<OcrScreen> {
                 child: FilledButton.tonalIcon(
                   onPressed: _busy ? null : () => _pick(ImageSource.gallery),
                   icon: const Icon(Icons.photo_library_outlined),
-                  label: const Text('Galleria'),
+                  label: Text(l.gallery),
                 ),
               ),
             ],
@@ -98,10 +100,10 @@ class _OcrScreenState extends State<OcrScreen> {
             children: [
               Icon(Icons.receipt_long_outlined, size: 72, color: scheme.primary),
               const SizedBox(height: 16),
-              Text('Fotografa uno scontrino', style: Theme.of(context).textTheme.titleLarge),
+              Text(context.l10n.addScanTitle, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
               Text(
-                'Il testo viene letto con RapidOCR direttamente sul telefono, senza connessione.',
+                context.l10n.ocrIntro,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: scheme.onSurfaceVariant),
               ),
@@ -169,10 +171,10 @@ class _OcrScreenState extends State<OcrScreen> {
               ),
               Chip(
                 avatar: const Icon(Icons.notes, size: 18),
-                label: Text('${result.lines.length} righe'),
+                label: Text(context.l10n.ocrLines(result.lines.length)),
               ),
               FilterChip(
-                label: const Text('Riquadri'),
+                label: Text(context.l10n.ocrBoxes),
                 selected: _showBoxes,
                 onSelected: (v) => setState(() => _showBoxes = v),
               ),

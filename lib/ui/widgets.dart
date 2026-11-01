@@ -5,6 +5,7 @@ import '../data/budget.dart';
 import '../data/database.dart';
 import 'expense_form_screen.dart';
 import 'format.dart';
+import 'l10n.dart';
 
 /// ‹ Novembre 2026 › — cambia il mese condiviso da riepilogo e movimenti.
 class MonthSwitcher extends StatelessWidget {
@@ -21,16 +22,16 @@ class MonthSwitcher extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              tooltip: 'Mese precedente',
+              tooltip: context.l10n.previousMonth,
               icon: const Icon(Icons.chevron_left),
               onPressed: () => month.value = DateTime(m.year, m.month - 1),
             ),
             SizedBox(
               width: 170,
-              child: Text(formatMonth(m), textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium),
+              child: Text(formatMonth(context, m), textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium),
             ),
             IconButton(
-              tooltip: 'Mese successivo',
+              tooltip: context.l10n.nextMonth,
               icon: const Icon(Icons.chevron_right),
               onPressed: isCurrent ? null : () => month.value = nextMonth(m),
             ),
@@ -51,20 +52,21 @@ class ExpenseTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final e = item.expense;
     final scheme = Theme.of(context).colorScheme;
+    final category = categoryLabel(item.category, context.l10n);
     final subtitle = [
-      item.category.name,
-      if (showDate) formatShortDate(e.date),
+      category,
+      if (showDate) formatShortDate(context, e.date),
       if (e.note.isNotEmpty) e.note,
     ].join(' · ');
     return ListTile(
       leading: CategoryAvatar(item.category),
-      title: Text(e.merchant.isEmpty ? item.category.name : e.merchant, maxLines: 1, overflow: TextOverflow.ellipsis),
+      title: Text(e.merchant.isEmpty ? category : e.merchant, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text(formatCents(e.amountCents), style: Theme.of(context).textTheme.titleSmall),
+          Text(formatCents(context, e.amountCents), style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 2),
           Row(
             mainAxisSize: MainAxisSize.min,

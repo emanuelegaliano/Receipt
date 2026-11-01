@@ -4,6 +4,7 @@ import 'categories_screen.dart';
 import 'dashboard_screen.dart';
 import 'expense_form_screen.dart';
 import 'expenses_screen.dart';
+import 'l10n.dart';
 import 'scan_flow.dart';
 
 class HomeShell extends StatefulWidget {
@@ -17,6 +18,7 @@ class _HomeShellState extends State<HomeShell> {
   int _tab = 0;
 
   void _openAddSheet() {
+    final l = context.l10n;
     showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
@@ -29,8 +31,8 @@ class _HomeShellState extends State<HomeShell> {
             children: [
               _AddOption(
                 icon: Icons.photo_camera_outlined,
-                title: 'Fotografa uno scontrino',
-                subtitle: 'Importo, data ed esercente letti in automatico',
+                title: l.addScanTitle,
+                subtitle: l.addScanSubtitle,
                 onTap: () {
                   Navigator.pop(ctx);
                   startScan(context, fromCamera: true);
@@ -38,8 +40,8 @@ class _HomeShellState extends State<HomeShell> {
               ),
               _AddOption(
                 icon: Icons.photo_library_outlined,
-                title: 'Scegli dalla galleria',
-                subtitle: 'Usa una foto di uno scontrino già scattata',
+                title: l.addGalleryTitle,
+                subtitle: l.addGallerySubtitle,
                 onTap: () {
                   Navigator.pop(ctx);
                   startScan(context, fromCamera: false);
@@ -47,8 +49,8 @@ class _HomeShellState extends State<HomeShell> {
               ),
               _AddOption(
                 icon: Icons.edit_outlined,
-                title: 'Inserisci a mano',
-                subtitle: 'Per spese senza scontrino, es. in contanti',
+                title: l.addManualTitle,
+                subtitle: l.addManualSubtitle,
                 onTap: () {
                   Navigator.pop(ctx);
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const ExpenseFormScreen()));
@@ -63,6 +65,7 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return Scaffold(
       body: IndexedStack(
         index: _tab,
@@ -75,15 +78,20 @@ class _HomeShellState extends State<HomeShell> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openAddSheet,
         icon: const Icon(Icons.add),
-        label: const Text('Aggiungi'),
+        label: Text(l.add),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: 'Riepilogo'),
-          NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'Movimenti'),
-          NavigationDestination(icon: Icon(Icons.category_outlined), selectedIcon: Icon(Icons.category), label: 'Categorie'),
+        destinations: [
+          NavigationDestination(
+              icon: const Icon(Icons.pie_chart_outline), selectedIcon: const Icon(Icons.pie_chart), label: l.navSummary),
+          NavigationDestination(
+              icon: const Icon(Icons.receipt_long_outlined),
+              selectedIcon: const Icon(Icons.receipt_long),
+              label: l.navTransactions),
+          NavigationDestination(
+              icon: const Icon(Icons.category_outlined), selectedIcon: const Icon(Icons.category), label: l.navCategories),
         ],
       ),
     );

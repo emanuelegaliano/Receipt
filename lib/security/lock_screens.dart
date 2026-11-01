@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../ui/l10n.dart';
 import 'app_lock.dart';
 
 /// Copre l'app con la schermata di blocco (o di prima configurazione)
@@ -111,7 +112,7 @@ class _PasswordFieldState extends State<_PasswordField> {
         // al campo successivo, non all'occhio.
         suffixIcon: ExcludeFocus(
           child: IconButton(
-            tooltip: _visible ? 'Nascondi' : 'Mostra',
+            tooltip: _visible ? context.l10n.hidePassword : context.l10n.showPassword,
             icon: Icon(_visible ? Icons.visibility_off_outlined : Icons.visibility_outlined),
             onPressed: () => setState(() => _visible = !_visible),
           ),
@@ -154,8 +155,8 @@ class _SetupScreenState extends State<_SetupScreen> {
   Future<void> _save() async {
     final p = _password.text;
     setState(() {
-      _error = p.length < 4 ? 'Almeno 4 caratteri' : null;
-      _confirmError = _error == null && _confirm.text != p ? 'Le password non coincidono' : null;
+      _error = p.length < 4 ? context.l10n.passwordTooShort : null;
+      _confirmError = _error == null && _confirm.text != p ? context.l10n.passwordsMismatch : null;
     });
     if (_error != null || _confirmError != null) return;
     setState(() => _busy = true);
@@ -174,7 +175,9 @@ class _SetupScreenState extends State<_SetupScreen> {
 
   Future<void> _finish({required bool biometric}) async {
     setState(() => _busy = true);
-    if (biometric && !await widget.lock.setBiometric(true)) {
+    final l = context.l10n;
+    if (biometric &&
+        !await widget.lock.setBiometric(true, reason: l.biometricPromptConfirm, cancel: l.biometricUsePassword)) {
       if (mounted) setState(() => _busy = false);
       return;
     }
@@ -183,48 +186,39 @@ class _SetupScreenState extends State<_SetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     if (_askBiometric) {
       return _page(context, [
-        const _Header(
-          Icons.fingerprint,
-          'Vuoi usare l\'impronta?',
-          'Potrai aprire Receipt con l\'impronta invece di scrivere ogni volta la password. '
-              'La password resta valida e la puoi sempre usare.',
-        ),
+        _Header(Icons.fingerprint, l.useBiometricTitle, l.useBiometricMessage),
         FilledButton.icon(
           onPressed: _busy ? null : () => _finish(biometric: true),
           icon: const Icon(Icons.fingerprint),
-          label: const Text('Usa l\'impronta'),
+          label: Text(l.useBiometric),
         ),
         const SizedBox(height: 8),
         TextButton(
           onPressed: _busy ? null : () => _finish(biometric: false),
-          child: const Text('Non ora'),
+          child: Text(l.notNow),
         ),
       ]);
     }
     return _page(context, [
-      const _Header(
-        Icons.lock_outline,
-        'Proteggi le tue spese',
-        'Scegli una password per aprire Receipt. Non c\'è modo di recuperarla: '
-            'tienila a mente o salvala nel tuo gestore di password.',
-      ),
+      _Header(Icons.lock_outline, l.setupTitle, l.setupMessage),
       _PasswordField(
         controller: _password,
-        label: 'Password',
+        label: l.password,
         error: _error,
         autofocus: true,
         action: TextInputAction.next,
       ),
       const SizedBox(height: 16),
-      _PasswordField(controller: _confirm, label: 'Ripeti la password', error: _confirmError, onSubmitted: _save),
+      _PasswordField(controller: _confirm, label: l.repeatPassword, error: _confirmError, onSubmitted: _save),
       const SizedBox(height: 24),
       FilledButton(
         onPressed: _busy ? null : _save,
         child: _busy
             ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
-            : const Text('Continua'),
+            : Text(l.continueLabel),
       ),
     ]);
   }
@@ -250,7 +244,7 @@ class _LockScreenState extends State<_LockScreen> {
     super.initState();
     // Con l'impronta attiva la chiediamo subito, appena la schermata compare.
     if (widget.lock.biometricEnabled) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => widget.lock.unlockWithBiometric());
+      WidgetsBinding.instance.addPostFrameCallback((_) => _biometric());
     }
   }
 
@@ -261,6 +255,12 @@ class _LockScreenState extends State<_LockScreen> {
     super.dispose();
   }
 
+  void _biometric() {
+    if (!mounted) return;
+    final l = context.l10n;
+    widget.lock.unlockWithBiometric(reason: l.biometricPromptUnlock, cancel: l.biometricUsePassword);
+  }
+
   Future<void> _unlock() async {
     if (_password.text.isEmpty || _busy) return;
     setState(() => _busy = true);
@@ -269,7 +269,7 @@ class _LockScreenState extends State<_LockScreen> {
     _password.clear();
     setState(() {
       _busy = false;
-      _error = 'Password sbagliata';
+      _error = context.l10n.wrongPassword;
     });
     _focus.requestFocus();
     if (widget.lock.waitBeforeRetry > Duration.zero) {
@@ -283,14 +283,15 @@ class _LockScreenState extends State<_LockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final wait = widget.lock.waitBeforeRetry;
     return _page(context, [
-      const _Header(Icons.lock_outline, 'Receipt è bloccata', 'Inserisci la password per continuare.'),
+      _Header(Icons.lock_outline, l.lockedTitle, l.lockedMessage),
       _PasswordField(
         controller: _password,
         focusNode: _focus,
-        label: 'Password',
-        error: wait > Duration.zero ? 'Troppi tentativi: riprova tra ${wait.inSeconds + 1} s' : _error,
+        label: l.password,
+        error: wait > Duration.zero ? l.tooManyAttempts(wait.inSeconds + 1) : _error,
         autofocus: !widget.lock.biometricEnabled,
         onSubmitted: _unlock,
       ),
@@ -299,14 +300,14 @@ class _LockScreenState extends State<_LockScreen> {
         onPressed: _busy || wait > Duration.zero ? null : _unlock,
         child: _busy
             ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
-            : const Text('Sblocca'),
+            : Text(l.unlock),
       ),
       if (widget.lock.biometricEnabled) ...[
         const SizedBox(height: 8),
         OutlinedButton.icon(
-          onPressed: () => widget.lock.unlockWithBiometric(),
+          onPressed: _biometric,
           icon: const Icon(Icons.fingerprint),
-          label: const Text('Usa l\'impronta'),
+          label: Text(l.useBiometric),
         ),
       ],
     ]);

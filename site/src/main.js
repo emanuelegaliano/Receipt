@@ -76,3 +76,63 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+// Live APK download counter: GitHub counts every download of a release asset
+// (download_count), so the page only reads that public number. No backend,
+// no cookies. Unauthenticated API calls are limited to 60 per hour per IP:
+// one call a minute, and none while the tab is hidden.
+const RELEASES_API = 'https://api.github.com/repos/emanuelegaliano/Receipt/releases?per_page=100';
+const REFRESH_MS = 60_000;
+
+async function fetchDownloads() {
+  const res = await fetch(RELEASES_API, { headers: { Accept: 'application/vnd.github+json' } });
+  if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+  const releases = await res.json();
+  return releases
+    .flatMap((r) => r.assets || [])
+    .filter((a) => a.name.endsWith('.apk'))
+    .reduce((sum, a) => sum + a.download_count, 0);
+}
+
+function animateCount(el, from, to) {
+  const format = (n) => n.toLocaleString('en-US');
+  if (from === null || from === to || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.textContent = format(to);
+    return;
+  }
+  const start = performance.now();
+  const duration = 900;
+  const step = (now) => {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - (1 - t) ** 3;
+    el.textContent = format(Math.round(from + (to - from) * eased));
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function startDownloadCounter() {
+  const el = document.getElementById('download-count');
+  const note = document.getElementById('download-note');
+  const ping = document.getElementById('live-ping');
+  if (!el) return;
+  let last = null;
+  const refresh = async () => {
+    if (document.hidden) return;
+    try {
+      const total = await fetchDownloads();
+      animateCount(el, last, total);
+      last = total;
+      ping?.classList.remove('hidden');
+    } catch {
+      // Rate limit or offline: keep the last number and try again later.
+      ping?.classList.add('hidden');
+      if (last === null && note) note.textContent = 'Counter temporarily unavailable — see the releases on GitHub.';
+    }
+  };
+  refresh();
+  setInterval(refresh, REFRESH_MS);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+}
+
+document.addEventListener('DOMContentLoaded', startDownloadCounter);
