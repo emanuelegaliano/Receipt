@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../app_services.dart';
 import '../ocr/rapid_ocr.dart';
 
 /// Prototipo: scatta o scegli uno scontrino e mostra cosa legge RapidOCR.
@@ -23,7 +24,7 @@ class _OcrScreenState extends State<OcrScreen> {
   bool _showBoxes = true;
 
   Future<void> _pick(ImageSource source) async {
-    final file = await _picker.pickImage(source: source);
+    final file = await AppServices.of(context).lock.whileAway(() => _picker.pickImage(source: source));
     if (file == null) return;
     final bytes = await file.readAsBytes();
     setState(() {

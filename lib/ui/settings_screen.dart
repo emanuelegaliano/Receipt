@@ -1,7 +1,9 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../app_services.dart';
+import '../data/backup.dart';
 import '../data/database.dart';
 import '../screens/ocr_screen.dart';
 import 'format.dart';
@@ -15,6 +17,93 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   String _lang = 'it';
+  bool _biometricAvailable = false;
+  bool _exporting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final ok = await AppServices.of(context).lock.biometricAvailable();
+      if (mounted) setState(() => _biometricAvailable = ok);
+    });
+  }
+
+  Future<void> _export() async {
+    final services = AppServices.of(context);
+    setState(() => _exporting = true);
+    try {
+      final file = await exportBackup(services.db);
+      // Il foglio di condivisione porta fuori dall'app: niente blocco al ritorno.
+      await services.lock.whileAway(() => SharePlus.instance.share(ShareParams(
+            files: [XFile(file.path, mimeType: 'application/zip')],
+            title: 'Esporta i dati di Receipt',
+          )));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Esportazione non riuscita: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  Future<void> _changePassword() async {
+    final lock = AppServices.of(context).lock;
+    final current = TextEditingController();
+    final next = TextEditingController();
+    final confirm = TextEditingController();
+    String? error;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialog) => AlertDialog(
+          title: const Text('Cambia password'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: current,
+                obscureText: true,
+                autofocus: true,
+                decoration: const InputDecoration(labelText: 'Password attuale'),
+              ),
+              const SizedBox(height: 12),
+              TextField(controller: next, obscureText: true, decoration: const InputDecoration(labelText: 'Nuova password')),
+              const SizedBox(height: 12),
+              TextField(controller: confirm, obscureText: true, decoration: const InputDecoration(labelText: 'Ripeti la nuova password')),
+              if (error != null) ...[
+                const SizedBox(height: 12),
+                Text(error!, style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            FilledButton(
+              onPressed: () async {
+                String? e;
+                if (next.text.length < 4) {
+                  e = 'La nuova password deve avere almeno 4 caratteri';
+                } else if (next.text != confirm.text) {
+                  e = 'Le nuove password non coincidono';
+                } else if (!await lock.checkPassword(current.text)) {
+                  e = 'La password attuale è sbagliata';
+                }
+                if (e != null) return setDialog(() => error = e);
+                await lock.setPassword(next.text);
+                if (ctx.mounted) Navigator.pop(ctx, true);
+              },
+              child: const Text('Salva'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (ok == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password cambiata')));
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -91,6 +180,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(title: Text('Aspetto', style: text.titleSmall?.copyWith(color: scheme.primary))),
           const _AppearancePicker(),
           const Divider(),
+          ListTile(title: Text('Sicurezza', style: text.titleSmall?.copyWith(color: scheme.primary))),
+          ListTile(
+            leading: const Icon(Icons.password),
+            title: const Text('Cambia password'),
+            onTap: _changePassword,
+          ),
+          ListenableBuilder(
+            listenable: AppServices.of(context).lock,
+            builder: (context, _) {
+              final lock = AppServices.of(context).lock;
+              return SwitchListTile(
+                secondary: const Icon(Icons.fingerprint),
+                title: const Text('Sblocca con l\'impronta'),
+                subtitle: Text(_biometricAvailable
+                    ? 'La password resta sempre valida'
+                    : 'Nessuna impronta registrata sul telefono'),
+                value: lock.biometricEnabled,
+                onChanged: _biometricAvailable || lock.biometricEnabled ? (v) => lock.setBiometric(v) : null,
+              );
+            },
+          ),
+          const Divider(),
           ListTile(title: Text('Scontrini', style: text.titleSmall?.copyWith(color: scheme.primary))),
           ListTile(
             title: const Text('Lingua degli scontrini'),
@@ -145,10 +256,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: Text('Tutto resta sul telefono'),
             subtitle: Text('Spese, foto e lettura degli scontrini non lasciano mai il dispositivo.'),
           ),
+          ListTile(
+            leading: _exporting
+                ? const SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.ios_share),
+            title: const Text('Esporta i dati'),
+            subtitle: const Text('Database e foto in un file .zip da salvare dove vuoi, es. su Drive. '
+                'Il file non è cifrato.'),
+            isThreeLine: true,
+            enabled: !_exporting,
+            onTap: _export,
+          ),
           const ListTile(
             enabled: false,
             leading: Icon(Icons.backup_outlined),
-            title: Text('Backup cifrato'),
+            title: Text('Backup automatico cifrato'),
             subtitle: Text('In arrivo'),
           ),
         ],

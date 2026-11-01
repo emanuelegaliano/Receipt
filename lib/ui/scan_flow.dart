@@ -10,13 +10,14 @@ import 'expense_form_screen.dart';
 
 /// Scatta o sceglie una foto e apre la schermata di lettura.
 Future<void> startScan(BuildContext context, {required bool fromCamera}) async {
-  final file = await ImagePicker().pickImage(
-    source: fromCamera ? ImageSource.camera : ImageSource.gallery,
-    // RapidOCR lavora al massimo a 2000 px: oltre si perde solo tempo.
-    maxWidth: 2400,
-    maxHeight: 2400,
-    imageQuality: 92,
-  );
+  // Fotocamera e galleria mandano l'app in sottofondo: niente blocco al ritorno.
+  final file = await AppServices.of(context).lock.whileAway(() => ImagePicker().pickImage(
+        source: fromCamera ? ImageSource.camera : ImageSource.gallery,
+        // RapidOCR lavora al massimo a 2000 px: oltre si perde solo tempo.
+        maxWidth: 2400,
+        maxHeight: 2400,
+        imageQuality: 92,
+      ));
   if (file == null || !context.mounted) return;
   final bytes = await file.readAsBytes();
   if (!context.mounted) return;

@@ -9,6 +9,8 @@ import 'package:path_provider/path_provider.dart';
 import 'app_services.dart';
 import 'data/database.dart';
 import 'receipt/receipt_scanner.dart';
+import 'security/app_lock.dart';
+import 'security/lock_screens.dart';
 import 'ui/home_shell.dart';
 
 Future<void> main() async {
@@ -17,12 +19,15 @@ Future<void> main() async {
 
   final db = AppDatabase();
   final appearance = ValueNotifier(await AppearanceSettings.load(db));
+  final lock = AppLock();
+  await lock.init();
   Future<ReceiptScanner>? scanner;
   Future<ReceiptScanner> loadScanner() => scanner ??= ReceiptScanner.load();
   runApp(AppServices(
     db: db,
     month: ValueNotifier(monthOf(DateTime.now())),
     appearance: appearance,
+    lock: lock,
     scanner: loadScanner,
     child: const ReceiptApp(),
   ));
@@ -65,26 +70,23 @@ class ReceiptApp extends StatelessWidget {
           );
         }
 
-        return _app(theme(Brightness.light), theme(Brightness.dark), appearance.mode);
+        return MaterialApp(
+          title: 'Receipt',
+          debugShowCheckedModeBanner: false,
+          theme: theme(Brightness.light),
+          darkTheme: theme(Brightness.dark),
+          themeMode: appearance.mode,
+          builder: (context, child) => LockGate(lock: AppServices.of(context).lock, child: child!),
+          locale: const Locale('it', 'IT'),
+          supportedLocales: const [Locale('it', 'IT')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: const HomeShell(),
+        );
       },
-    );
-  }
-
-  Widget _app(ThemeData light, ThemeData dark, ThemeMode mode) {
-    return MaterialApp(
-      title: 'Receipt',
-      debugShowCheckedModeBanner: false,
-      theme: light,
-      darkTheme: dark,
-      themeMode: mode,
-      locale: const Locale('it', 'IT'),
-      supportedLocales: const [Locale('it', 'IT')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      home: const HomeShell(),
     );
   }
 }

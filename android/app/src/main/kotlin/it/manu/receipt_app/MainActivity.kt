@@ -1,5 +1,6 @@
 package it.manu.receipt_app
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// FragmentActivity: serve a local_auth per mostrare la richiesta dell'impronta.
+class MainActivity : FlutterFragmentActivity()
