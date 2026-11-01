@@ -1,5 +1,11 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' show Value;
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../app_services.dart';
@@ -20,6 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _lang = 'it';
   bool _biometricAvailable = false;
   bool _exporting = false;
+  bool _importing = false;
 
   @override
   void initState() {
@@ -28,6 +35,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final ok = await AppServices.of(context).lock.biometricAvailable();
       if (mounted) setState(() => _biometricAvailable = ok);
     });
+  }
+
+  /// Ripristina da uno zip di "Esporta i dati", sostituendo i dati attuali.
+  Future<void> _import() async {
+    final services = AppServices.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final picked = await services.lock.whileAway(() => FilePicker.pickFile(dialogTitle: 'Scegli il backup (.zip)'));
+    if (picked == null || !mounted) return;
+    setState(() => _importing = true);
+    BackupPreview? backup;
+    File? copy;
+    try {
+      // Il file può arrivare da Drive o da un'altra app: prima lo copiamo qui.
+      final tmp = (await getTemporaryDirectory()).path;
+      copy = File(p.join(tmp, 'import-${DateTime.now().millisecondsSinceEpoch}.zip'));
+      final sink = copy.openWrite();
+      await sink.addStream(picked.readAsByteStream());
+      await sink.close();
+      backup = await openBackup(copy, tmpDir: tmp, currentSchema: services.db.schemaVersion);
+      final current = (await services.db.select(services.db.expenses).get()).length;
+      if (!mounted) return;
+      final b = backup;
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          icon: const Icon(Icons.settings_backup_restore),
+          title: const Text('Ripristinare il backup?'),
+          content: Text(
+            '${b.createdAt == null ? 'Backup' : 'Backup del ${DateFormat('d MMMM y, HH:mm', 'it_IT').format(b.createdAt!)}'}: '
+            '${b.expenses} ${b.expenses == 1 ? 'spesa' : 'spese'}, ${b.photos} foto.\n\n'
+            'Tutti i dati attuali ($current ${current == 1 ? 'spesa' : 'spese'}, categorie, conti, limiti) '
+            'verranno sostituiti. Se vuoi tenerli, esportali prima.',
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sostituisci')),
+          ],
+        ),
+      );
+      if (ok != true) return;
+      final docs = (await getApplicationDocumentsDirectory()).path;
+      await restore(services.db, b, receiptsDir: p.join(docs, 'receipts'));
+      // Il tema fa parte delle impostazioni ripristinate.
+      services.appearance.value = await AppearanceSettings.load(services.db);
+      messenger.showSnackBar(SnackBar(content: Text('Dati ripristinati: ${b.expenses} spese')));
+    } on BackupException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Ripristino non riuscito: $e')));
+    } finally {
+      await backup?.dispose();
+      if (copy != null && await copy.exists()) await copy.delete();
+      if (mounted) setState(() => _importing = false);
+    }
   }
 
   Future<void> _export() async {
@@ -267,6 +328,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             isThreeLine: true,
             enabled: !_exporting,
             onTap: _export,
+          ),
+          ListTile(
+            leading: _importing
+                ? const SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.settings_backup_restore),
+            title: const Text('Importa da backup'),
+            subtitle: const Text('Ripristina da uno zip di "Esporta i dati". Sostituisce i dati attuali.'),
+            enabled: !_importing,
+            onTap: _import,
           ),
           const ListTile(
             enabled: false,
