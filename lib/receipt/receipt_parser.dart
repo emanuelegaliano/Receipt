@@ -286,7 +286,10 @@ class Spatial2DParser {
         }
       }
     }
-    if (legalEntity != null) company = legalEntity;
+    // "CASH TIME / DI SHADA SAS": la riga con "di" è il titolare, non il
+    // negozio. Si tiene l'insegna, che è quella che l'utente riconosce.
+    final ownerLine = legalEntity != null && RegExp(r'^\s*DI\s', caseSensitive: false).hasMatch(legalEntity);
+    if (legalEntity != null && !(ownerLine && company != legalEntity)) company = legalEntity;
 
     // 2. Data: prima vicino a un'ancora "data", poi ovunque.
     var date = '';
