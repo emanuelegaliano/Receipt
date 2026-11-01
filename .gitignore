@@ -1,0 +1,28 @@
+# Riferimento Python (repo separato, NON va versionato qui)
+reference/
+
+# Dataset locali
+datasets/
+
+.DS_Store
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+*.iml
+.idea/
+.vscode/
+
+# Android
+android/.gradle/
+android/local.properties
+android/**/GeneratedPluginRegistrant.java
+android/app/debug
+android/app/profile
+android/app/release
+*.jks
+*.keystore
+key.properties

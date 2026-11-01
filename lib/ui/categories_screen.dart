@@ -1,0 +1,215 @@
+import 'package:drift/drift.dart' show Value;
+import 'package:flutter/material.dart';
+
+import '../app_services.dart';
+import '../data/database.dart';
+import 'format.dart';
+
+class CategoriesScreen extends StatelessWidget {
+  const CategoriesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final services = AppServices.of(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Categorie'),
+        actions: [
+          IconButton(
+            tooltip: 'Nuova categoria',
+            icon: const Icon(Icons.add),
+            onPressed: () => showCategoryEditor(context),
+          ),
+        ],
+      ),
+      body: ValueListenableBuilder<DateTime>(
+        valueListenable: services.month,
+        builder: (context, month, _) => StreamBuilder<List<ExpenseView>>(
+          stream: services.db.watchExpenses(month, nextMonth(month)),
+          builder: (context, expSnap) {
+            final totals = <int, int>{};
+            final counts = <int, int>{};
+            for (final e in expSnap.data ?? const <ExpenseView>[]) {
+              totals[e.category.id] = (totals[e.category.id] ?? 0) + e.expense.amountCents;
+              counts[e.category.id] = (counts[e.category.id] ?? 0) + 1;
+            }
+            return StreamBuilder<List<Category>>(
+              stream: services.db.watchCategories(),
+              builder: (context, snap) {
+                final cats = snap.data ?? const <Category>[];
+                return ListView(
+                  padding: const EdgeInsets.only(bottom: 96),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                      child: Text(
+                        'Totali di ${formatMonth(month).toLowerCase()}. Tocca una categoria per cambiarne nome, '
+                        'icona, colore o le parole che servono a riconoscerla sugli scontrini.',
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      ),
+                    ),
+                    for (final c in cats)
+                      ListTile(
+                        leading: CategoryAvatar(c),
+                        title: Text(c.name),
+                        subtitle: Text(
+                          counts[c.id] == null
+                              ? 'Nessuna spesa'
+                              : '${counts[c.id]} ${counts[c.id] == 1 ? 'spesa' : 'spese'}',
+                        ),
+                        trailing: Text(formatCents(totals[c.id] ?? 0), style: Theme.of(context).textTheme.titleSmall),
+                        onTap: () => showCategoryEditor(context, category: c),
+                      ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> showCategoryEditor(BuildContext context, {Category? category}) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (_) => Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: _CategoryEditor(category: category, db: AppServices.of(context).db),
+    ),
+  );
+}
+
+class _CategoryEditor extends StatefulWidget {
+  final Category? category;
+  final AppDatabase db;
+  const _CategoryEditor({this.category, required this.db});
+
+  @override
+  State<_CategoryEditor> createState() => _CategoryEditorState();
+}
+
+class _CategoryEditorState extends State<_CategoryEditor> {
+  late final _name = TextEditingController(text: widget.category?.name ?? '');
+  late final _keywords = TextEditingController(text: widget.category?.keywords.replaceAll(',', ', ') ?? '');
+  late String _icon = widget.category?.icon ?? 'other';
+  late int _color = widget.category?.color ?? categoryColors.first;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _keywords.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _name.text.trim();
+    if (name.isEmpty) return;
+    final keywords = _keywords.text.split(',').map((k) => k.trim().toLowerCase()).where((k) => k.isNotEmpty).join(',');
+    await widget.db.saveCategory(CategoriesCompanion(
+      id: widget.category == null ? const Value.absent() : Value(widget.category!.id),
+      name: Value(name),
+      icon: Value(_icon),
+      color: Value(_color),
+      keywords: Value(keywords),
+    ));
+    if (mounted) Navigator.pop(context);
+  }
+
+  Future<void> _archive() async {
+    await widget.db.archiveCategory(widget.category!.id);
+    if (mounted) Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final scheme = Theme.of(context).colorScheme;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.category == null ? 'Nuova categoria' : 'Modifica categoria', style: text.titleLarge),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _name,
+            autofocus: widget.category == null,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(labelText: 'Nome'),
+          ),
+          const SizedBox(height: 16),
+          Text('Icona', style: text.titleSmall),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final e in categoryIcons.entries)
+                IconButton.filledTonal(
+                  isSelected: _icon == e.key,
+                  onPressed: () => setState(() => _icon = e.key),
+                  icon: Icon(e.value),
+                  style: IconButton.styleFrom(
+                    backgroundColor: _icon == e.key ? Color(_color).withValues(alpha: 0.25) : null,
+                    foregroundColor: _icon == e.key ? Color(_color) : null,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text('Colore', style: text.titleSmall),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (final c in categoryColors)
+                InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () => setState(() => _color = c),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Color(c),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _color == c ? scheme.onSurface : Colors.transparent, width: 3),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _keywords,
+            minLines: 2,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              labelText: 'Parole chiave',
+              helperText: 'Parole che compaiono sugli scontrini, separate da virgola (es. farmacia, parafarmacia). '
+                  'Servono per gli esercenti mai visti: per quelli già usati l\'app ricorda la tua scelta.',
+              helperMaxLines: 4,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              if (widget.category != null)
+                TextButton.icon(
+                  onPressed: _archive,
+                  icon: const Icon(Icons.archive_outlined),
+                  label: const Text('Archivia'),
+                ),
+              const Spacer(),
+              FilledButton(onPressed: _save, child: const Text('Salva')),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

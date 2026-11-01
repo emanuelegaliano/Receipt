@@ -1,0 +1,97 @@
+{
+  "language": "it",
+  "name": "Italian",
+  "total_anchors": [
+    "TOTALE COMPLESSIVO",
+    "TOTALECOMPLESSIVO",
+    "TOTALE EURO",
+    "TOTALE €",
+    "TOTALE DOVUTO",
+    "TOTALE SPESA",
+    "TOTALE",
+    "TOT\\.",
+    "IMPORTO COMPLESSIVO",
+    "IMPORTO TOTALE",
+    "IMPORTO DOVUTO",
+    "IMPORTO NETTO",
+    "IMPORTOEUR",
+    "IMPORTO"
+  ],
+  "exclude_anchors": [
+    "SUBTOTAL",
+    "SUB TOTAL",
+    "SUB-TOTAL",
+    "SUBTOTALE",
+    "PARZIALE",
+    "CONTANTE",
+    "CONTANTI",
+    "RESTO",
+    "RIEPILOGO",
+    "TOT.SCONTI",
+    "TOT SCONTI",
+    "TOTALE SCONTI",
+    "DI CUI IVA",
+    "IMPOSTA",
+    "DOCUMENTO COMMERCIALE"
+  ],
+  "header_exclusions": [
+    "DOCUMENTO COMMERCIALE",
+    "DOCUMENTO DI RIFERIMENTO",
+    "SCONTRINO FISCALE",
+    "RICEVUTA FISCALE",
+    "COPIA CLIENTE",
+    "COPIA ESERCENTE",
+    "EMESSO PER ANNULLAMENTO",
+    "DESCRIZIONE",
+    "PREZZO",
+    "IVA",
+    "OPERATORE",
+    "CODICE FISCALE",
+    "C.F.",
+    "PARTITA IVA",
+    "P.IVA",
+    "P. IVA",
+    "MOD. ONLINE",
+    "AUT.",
+    "STAN",
+    "TML",
+    "TRANSAZIONE",
+    "DATA",
+    "ORA",
+    "NUMERO",
+    "CASS."
+  ],
+  "currency_symbols": [
+    "€",
+    "EUR",
+    "EURO"
+  ],
+  "date_patterns": [
+    "\\b(\\d{1,2}[/-]\\d{1,2}[/-](?:20\\d{2}|19\\d{2}|\\d{2}))(?=[^0-9/\\-]|$)",
+    "\\b(\\d{1,2}[.]\\d{1,2}[.](?:20\\d{2}|19\\d{2}|\\d{2}))(?=[^0-9.]|$)"
+  ],
+  "cash_keywords": [
+    "CONTANTE",
+    "CONTANTI",
+    "PAGAMENTO CONTANTE",
+    "PAGAMENTO CONTANTI",
+    "CASH"
+  ],
+  "change_keywords": [
+    "RESTO",
+    "RESTO DOVUTO",
+    "CHANGE"
+  ],
+  "tax_keywords": [
+    "DI CUI IVA",
+    "IVA",
+    "IMPOSTA",
+    "ESENTE IVA"
+  ],
+  "subtotal_keywords": [
+    "SUBTOTALE",
+    "PARZIALE",
+    "IMPONIBILE",
+    "SUBTOTAL"
+  ]
+}
