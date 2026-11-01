@@ -1,0 +1,6 @@
+# Copia questo file in android/key.properties (escluso da git) e metti le
+# password. Con le chiavi PKCS12 create da keytool le due password coincidono.
+storeFile=/Users/manu/PersonalInformation/Keys/receipt-release.jks
+storePassword=
+keyAlias=receipt
+keyPassword=
