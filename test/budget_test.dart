@@ -50,6 +50,26 @@ void main() {
           11089 - any.expense.amountCents);
     });
 
+    test('eliminare una categoria sposta spese ed esercenti', () async {
+      await loadDemoData(db, DateTime(2026, 10));
+      final cats = {for (final c in await db.allCategories()) c.name: c};
+      final svago = cats['Svago']!, altro = cats['Altro']!;
+      await db.learnMerchant('CINEMA ODEON', svago.id);
+      final n = await db.categoryExpenseCount(svago.id);
+      expect(n, 6);
+      final before = await db.categoryExpenseCount(altro.id);
+
+      await db.deleteCategory(svago.id, moveTo: altro.id);
+      expect((await db.allCategories()).map((c) => c.name), isNot(contains('Svago')));
+      expect(await db.categoryExpenseCount(altro.id), before + n);
+      expect((await db.loadMerchantRules())['CINEMA ODEON'], altro.id);
+
+      // Vuota: si elimina direttamente.
+      final vuota = await db.saveCategory(CategoriesCompanion.insert(name: 'Vuota', icon: 'other', color: 0));
+      await db.deleteCategory(vuota);
+      expect((await db.allCategories()).map((c) => c.name), isNot(contains('Vuota')));
+    });
+
     test('togliere il limite', () async {
       final c = (await db.allCategories()).first;
       await db.saveCategory(CategoriesCompanion(id: Value(c.id), monthlyLimitCents: const Value(5000)));

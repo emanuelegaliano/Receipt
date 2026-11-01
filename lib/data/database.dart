@@ -139,10 +139,27 @@ class AppDatabase extends _$AppDatabase {
     return into(categories).insert(c.copyWith(sortOrder: Value((maxOrder ?? 0) + 1)));
   }
 
-  /// Le categorie usate vengono archiviate, non cancellate, per non perdere
-  /// lo storico delle spese.
-  Future<void> archiveCategory(int id) =>
-      (update(categories)..where((t) => t.id.equals(id))).write(const CategoriesCompanion(archived: Value(true)));
+  Future<int> categoryExpenseCount(int id) async {
+    final n = expenses.id.count();
+    final q = selectOnly(expenses)
+      ..addColumns([n])
+      ..where(expenses.categoryId.equals(id));
+    return await q.map((r) => r.read(n)).getSingle() ?? 0;
+  }
+
+  /// Elimina una categoria. Le sue spese (e gli esercenti imparati) passano
+  /// a [moveTo]; senza [moveTo] la categoria deve essere vuota.
+  Future<void> deleteCategory(int id, {int? moveTo}) => transaction(() async {
+        if (moveTo != null) {
+          await (update(expenses)..where((e) => e.categoryId.equals(id)))
+              .write(ExpensesCompanion(categoryId: Value(moveTo)));
+          await (update(merchantRules)..where((r) => r.categoryId.equals(id)))
+              .write(MerchantRulesCompanion(categoryId: Value(moveTo)));
+        } else {
+          await (delete(merchantRules)..where((r) => r.categoryId.equals(id))).go();
+        }
+        await (delete(categories)..where((c) => c.id.equals(id))).go();
+      });
 
   Future<int> saveAccount(AccountsCompanion a) async {
     if (a.id.present) {

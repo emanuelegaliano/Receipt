@@ -19,6 +19,7 @@ class _HomeShellState extends State<HomeShell> {
   void _openAddSheet() {
     showModalBottomSheet<void>(
       context: context,
+      useSafeArea: true,
       showDragHandle: true,
       builder: (ctx) => SafeArea(
         child: Padding(

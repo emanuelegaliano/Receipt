@@ -87,6 +87,9 @@ Future<void> showCategoryEditor(BuildContext context, {Category? category}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    // Senza, il foglio aperto a tutta altezza finisce sotto la barra di
+    // stato e il trattino per trascinarlo è irraggiungibile.
+    useSafeArea: true,
     showDragHandle: true,
     builder: (_) => Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -142,8 +145,67 @@ class _CategoryEditorState extends State<_CategoryEditor> {
     if (mounted) Navigator.pop(context);
   }
 
-  Future<void> _archive() async {
-    await widget.db.archiveCategory(widget.category!.id);
+  /// Elimina la categoria. Se ha spese, prima chiede in quale categoria
+  /// spostarle: lo storico non si perde.
+  Future<void> _delete() async {
+    final cat = widget.category!;
+    final others = (await widget.db.allCategories()).where((c) => c.id != cat.id).toList();
+    final count = await widget.db.categoryExpenseCount(cat.id);
+    if (!mounted) return;
+    if (count > 0 && others.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('È l\'unica categoria: creane un\'altra prima di eliminarla')),
+      );
+      return;
+    }
+    var moveTo = (others.where((c) => c.name == 'Altro').firstOrNull ?? others.firstOrNull)?.id;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialog) => AlertDialog(
+          title: Text('Eliminare ${cat.name}?'),
+          content: count == 0
+              ? const Text('Non ci sono spese in questa categoria.')
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(count == 1 ? '${cat.name} ha 1 spesa. Spostala in:' : '${cat.name} ha $count spese. Spostale in:'),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<int>(
+                      initialValue: moveTo,
+                      isExpanded: true,
+                      items: [
+                        for (final c in others)
+                          DropdownMenuItem(
+                            value: c.id,
+                            child: Row(children: [
+                              CategoryAvatar(c, size: 28),
+                              const SizedBox(width: 10),
+                              Flexible(child: Text(c.name, overflow: TextOverflow.ellipsis)),
+                            ]),
+                          ),
+                      ],
+                      onChanged: (v) => setDialog(() => moveTo = v),
+                    ),
+                  ],
+                ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(ctx).colorScheme.error,
+                foregroundColor: Theme.of(ctx).colorScheme.onError,
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(count == 0 ? 'Elimina' : 'Sposta ed elimina'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (ok != true) return;
+    await widget.db.deleteCategory(cat.id, moveTo: count == 0 ? null : moveTo);
     if (mounted) Navigator.pop(context);
   }
 
@@ -235,9 +297,10 @@ class _CategoryEditorState extends State<_CategoryEditor> {
             children: [
               if (widget.category != null)
                 TextButton.icon(
-                  onPressed: _archive,
-                  icon: const Icon(Icons.archive_outlined),
-                  label: const Text('Archivia'),
+                  onPressed: _delete,
+                  style: TextButton.styleFrom(foregroundColor: scheme.error),
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text('Elimina'),
                 ),
               const Spacer(),
               FilledButton(onPressed: _save, child: const Text('Salva')),
