@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../app_services.dart';
 import '../data/backup.dart';
 import '../data/database.dart';
+import '../data/demo_data.dart';
 import '../screens/ocr_screen.dart';
 import 'format.dart';
 
@@ -273,6 +274,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: Text('Backup automatico cifrato'),
             subtitle: Text('In arrivo'),
           ),
+          if (demoEnabled)
+            ListTile(
+              leading: const Icon(Icons.science_outlined),
+              title: const Text('Carica dati di prova'),
+              subtitle: const Text('Spese inventate a ottobre e settembre 2026, con alcuni limiti'),
+              onTap: () async {
+                final month = AppServices.of(context).month;
+                await loadDemoData(db, DateTime(2026, 10));
+                month.value = DateTime(2026, 10);
+                if (context.mounted) Navigator.pop(context);
+              },
+            ),
         ],
       ),
     );

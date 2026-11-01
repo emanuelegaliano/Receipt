@@ -24,6 +24,8 @@ class Categories extends Table {
   TextColumn get keywords => text().withDefault(const Constant(''))();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
   BoolColumn get archived => boolean().withDefault(const Constant(false))();
+  /// Quanto si vuole spendere al massimo in un mese; null = nessun limite.
+  IntColumn get monthlyLimitCents => integer().nullable()();
 }
 
 class Expenses extends Table {
@@ -72,13 +74,16 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? driftDatabase(name: 'spese'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
           await _seed();
+        },
+        onUpgrade: (m, from, to) async {
+          if (from < 2) await m.addColumn(categories, categories.monthlyLimitCents);
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
@@ -174,6 +179,18 @@ class AppDatabase extends _$AppDatabase {
       }
       return id;
     });
+  }
+
+  /// Speso in una categoria nel mese di [month], esclusa la spesa [exceptId].
+  Future<int> categorySpent(int categoryId, DateTime month, {int? exceptId}) async {
+    final total = expenses.amountCents.sum();
+    final q = selectOnly(expenses)
+      ..addColumns([total])
+      ..where(expenses.categoryId.equals(categoryId) &
+          expenses.date.isBiggerOrEqualValue(DateTime(month.year, month.month)) &
+          expenses.date.isSmallerThanValue(DateTime(month.year, month.month + 1)) &
+          (exceptId == null ? const Constant(true) : expenses.id.equals(exceptId).not()));
+    return await q.map((r) => r.read(total)).getSingle() ?? 0;
   }
 
   Future<void> deleteExpense(int id) => (delete(expenses)..where((e) => e.id.equals(id))).go();

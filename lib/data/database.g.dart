@@ -433,6 +433,17 @@ class $CategoriesTable extends Categories
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _monthlyLimitCentsMeta = const VerificationMeta(
+    'monthlyLimitCents',
+  );
+  @override
+  late final GeneratedColumn<int> monthlyLimitCents = GeneratedColumn<int>(
+    'monthly_limit_cents',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -442,6 +453,7 @@ class $CategoriesTable extends Categories
     keywords,
     sortOrder,
     archived,
+    monthlyLimitCents,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -500,6 +512,15 @@ class $CategoriesTable extends Categories
         archived.isAcceptableOrUnknown(data['archived']!, _archivedMeta),
       );
     }
+    if (data.containsKey('monthly_limit_cents')) {
+      context.handle(
+        _monthlyLimitCentsMeta,
+        monthlyLimitCents.isAcceptableOrUnknown(
+          data['monthly_limit_cents']!,
+          _monthlyLimitCentsMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -537,6 +558,10 @@ class $CategoriesTable extends Categories
         DriftSqlType.bool,
         data['${effectivePrefix}archived'],
       )!,
+      monthlyLimitCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}monthly_limit_cents'],
+      ),
     );
   }
 
@@ -557,6 +582,9 @@ class Category extends DataClass implements Insertable<Category> {
   final String keywords;
   final int sortOrder;
   final bool archived;
+
+  /// Quanto si vuole spendere al massimo in un mese; null = nessun limite.
+  final int? monthlyLimitCents;
   const Category({
     required this.id,
     required this.name,
@@ -565,6 +593,7 @@ class Category extends DataClass implements Insertable<Category> {
     required this.keywords,
     required this.sortOrder,
     required this.archived,
+    this.monthlyLimitCents,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -576,6 +605,9 @@ class Category extends DataClass implements Insertable<Category> {
     map['keywords'] = Variable<String>(keywords);
     map['sort_order'] = Variable<int>(sortOrder);
     map['archived'] = Variable<bool>(archived);
+    if (!nullToAbsent || monthlyLimitCents != null) {
+      map['monthly_limit_cents'] = Variable<int>(monthlyLimitCents);
+    }
     return map;
   }
 
@@ -588,6 +620,9 @@ class Category extends DataClass implements Insertable<Category> {
       keywords: Value(keywords),
       sortOrder: Value(sortOrder),
       archived: Value(archived),
+      monthlyLimitCents: monthlyLimitCents == null && nullToAbsent
+          ? const Value.absent()
+          : Value(monthlyLimitCents),
     );
   }
 
@@ -604,6 +639,7 @@ class Category extends DataClass implements Insertable<Category> {
       keywords: serializer.fromJson<String>(json['keywords']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
       archived: serializer.fromJson<bool>(json['archived']),
+      monthlyLimitCents: serializer.fromJson<int?>(json['monthlyLimitCents']),
     );
   }
   @override
@@ -617,6 +653,7 @@ class Category extends DataClass implements Insertable<Category> {
       'keywords': serializer.toJson<String>(keywords),
       'sortOrder': serializer.toJson<int>(sortOrder),
       'archived': serializer.toJson<bool>(archived),
+      'monthlyLimitCents': serializer.toJson<int?>(monthlyLimitCents),
     };
   }
 
@@ -628,6 +665,7 @@ class Category extends DataClass implements Insertable<Category> {
     String? keywords,
     int? sortOrder,
     bool? archived,
+    Value<int?> monthlyLimitCents = const Value.absent(),
   }) => Category(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -636,6 +674,9 @@ class Category extends DataClass implements Insertable<Category> {
     keywords: keywords ?? this.keywords,
     sortOrder: sortOrder ?? this.sortOrder,
     archived: archived ?? this.archived,
+    monthlyLimitCents: monthlyLimitCents.present
+        ? monthlyLimitCents.value
+        : this.monthlyLimitCents,
   );
   Category copyWithCompanion(CategoriesCompanion data) {
     return Category(
@@ -646,6 +687,9 @@ class Category extends DataClass implements Insertable<Category> {
       keywords: data.keywords.present ? data.keywords.value : this.keywords,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       archived: data.archived.present ? data.archived.value : this.archived,
+      monthlyLimitCents: data.monthlyLimitCents.present
+          ? data.monthlyLimitCents.value
+          : this.monthlyLimitCents,
     );
   }
 
@@ -658,14 +702,23 @@ class Category extends DataClass implements Insertable<Category> {
           ..write('color: $color, ')
           ..write('keywords: $keywords, ')
           ..write('sortOrder: $sortOrder, ')
-          ..write('archived: $archived')
+          ..write('archived: $archived, ')
+          ..write('monthlyLimitCents: $monthlyLimitCents')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, icon, color, keywords, sortOrder, archived);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    icon,
+    color,
+    keywords,
+    sortOrder,
+    archived,
+    monthlyLimitCents,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -676,7 +729,8 @@ class Category extends DataClass implements Insertable<Category> {
           other.color == this.color &&
           other.keywords == this.keywords &&
           other.sortOrder == this.sortOrder &&
-          other.archived == this.archived);
+          other.archived == this.archived &&
+          other.monthlyLimitCents == this.monthlyLimitCents);
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
@@ -687,6 +741,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<String> keywords;
   final Value<int> sortOrder;
   final Value<bool> archived;
+  final Value<int?> monthlyLimitCents;
   const CategoriesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -695,6 +750,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.keywords = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.archived = const Value.absent(),
+    this.monthlyLimitCents = const Value.absent(),
   });
   CategoriesCompanion.insert({
     this.id = const Value.absent(),
@@ -704,6 +760,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.keywords = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.archived = const Value.absent(),
+    this.monthlyLimitCents = const Value.absent(),
   }) : name = Value(name),
        icon = Value(icon),
        color = Value(color);
@@ -715,6 +772,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Expression<String>? keywords,
     Expression<int>? sortOrder,
     Expression<bool>? archived,
+    Expression<int>? monthlyLimitCents,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -724,6 +782,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       if (keywords != null) 'keywords': keywords,
       if (sortOrder != null) 'sort_order': sortOrder,
       if (archived != null) 'archived': archived,
+      if (monthlyLimitCents != null) 'monthly_limit_cents': monthlyLimitCents,
     });
   }
 
@@ -735,6 +794,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Value<String>? keywords,
     Value<int>? sortOrder,
     Value<bool>? archived,
+    Value<int?>? monthlyLimitCents,
   }) {
     return CategoriesCompanion(
       id: id ?? this.id,
@@ -744,6 +804,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       keywords: keywords ?? this.keywords,
       sortOrder: sortOrder ?? this.sortOrder,
       archived: archived ?? this.archived,
+      monthlyLimitCents: monthlyLimitCents ?? this.monthlyLimitCents,
     );
   }
 
@@ -771,6 +832,9 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     if (archived.present) {
       map['archived'] = Variable<bool>(archived.value);
     }
+    if (monthlyLimitCents.present) {
+      map['monthly_limit_cents'] = Variable<int>(monthlyLimitCents.value);
+    }
     return map;
   }
 
@@ -783,7 +847,8 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
           ..write('color: $color, ')
           ..write('keywords: $keywords, ')
           ..write('sortOrder: $sortOrder, ')
-          ..write('archived: $archived')
+          ..write('archived: $archived, ')
+          ..write('monthlyLimitCents: $monthlyLimitCents')
           ..write(')'))
         .toString();
   }
@@ -2248,6 +2313,7 @@ typedef $$CategoriesTableCreateCompanionBuilder = CategoriesCompanion Function({
   Value<String> keywords,
   Value<int> sortOrder,
   Value<bool> archived,
+  Value<int?> monthlyLimitCents,
 });
 typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
   Value<int> id,
@@ -2257,6 +2323,7 @@ typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
   Value<String> keywords,
   Value<int> sortOrder,
   Value<bool> archived,
+  Value<int?> monthlyLimitCents,
 });
 
 final class $$CategoriesTableReferences
@@ -2342,6 +2409,11 @@ class $$CategoriesTableFilterComposer
 
   ColumnFilters<bool> get archived => $composableBuilder(
     column: $table.archived,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get monthlyLimitCents => $composableBuilder(
+    column: $table.monthlyLimitCents,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2439,6 +2511,11 @@ class $$CategoriesTableOrderingComposer
     column: $table.archived,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get monthlyLimitCents => $composableBuilder(
+    column: $table.monthlyLimitCents,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CategoriesTableAnnotationComposer
@@ -2470,6 +2547,11 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<bool> get archived =>
       $composableBuilder(column: $table.archived, builder: (column) => column);
+
+  GeneratedColumn<int> get monthlyLimitCents => $composableBuilder(
+    column: $table.monthlyLimitCents,
+    builder: (column) => column,
+  );
 
   Expression<T> expensesRefs<T extends Object>(
     Expression<T> Function($$ExpensesTableAnnotationComposer a) f,
@@ -2557,6 +2639,7 @@ class $$CategoriesTableTableManager
                 Value<String> keywords = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 Value<bool> archived = const Value.absent(),
+                Value<int?> monthlyLimitCents = const Value.absent(),
               }) => CategoriesCompanion(
                 id: id,
                 name: name,
@@ -2565,6 +2648,7 @@ class $$CategoriesTableTableManager
                 keywords: keywords,
                 sortOrder: sortOrder,
                 archived: archived,
+                monthlyLimitCents: monthlyLimitCents,
               ),
           createCompanionCallback:
               ({
@@ -2575,6 +2659,7 @@ class $$CategoriesTableTableManager
                 Value<String> keywords = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 Value<bool> archived = const Value.absent(),
+                Value<int?> monthlyLimitCents = const Value.absent(),
               }) => CategoriesCompanion.insert(
                 id: id,
                 name: name,
@@ -2583,6 +2668,7 @@ class $$CategoriesTableTableManager
                 keywords: keywords,
                 sortOrder: sortOrder,
                 archived: archived,
+                monthlyLimitCents: monthlyLimitCents,
               ),
           withReferenceMapper: (p0) => p0
               .map(

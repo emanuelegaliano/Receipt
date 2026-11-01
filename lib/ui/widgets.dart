@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_services.dart';
+import '../data/budget.dart';
 import '../data/database.dart';
 import 'expense_form_screen.dart';
 import 'format.dart';
@@ -102,6 +103,38 @@ class EmptyState extends StatelessWidget {
           const SizedBox(height: 6),
           Text(message, style: TextStyle(color: scheme.onSurfaceVariant), textAlign: TextAlign.center),
         ],
+      ),
+    );
+  }
+}
+
+/// Arancio leggibile sia sul tema chiaro sia su quello scuro.
+Color warningColor(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFBBF24) : const Color(0xFFB45309);
+
+/// Barra di avanzamento verso un limite mensile: colore della categoria,
+/// arancio oltre l'80%, rosso al limite.
+class BudgetBar extends StatelessWidget {
+  final int spent, limit;
+  final Color color;
+  final double height;
+  const BudgetBar({super.key, required this.spent, required this.limit, required this.color, this.height = 6});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final barColor = switch (budgetLevel(spent, limit)) {
+      BudgetLevel.ok => color,
+      BudgetLevel.near => const Color(0xFFF59E0B),
+      BudgetLevel.reached => scheme.error,
+    };
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(height),
+      child: LinearProgressIndicator(
+        value: (spent / limit).clamp(0, 1).toDouble(),
+        minHeight: height,
+        color: barColor,
+        backgroundColor: scheme.surfaceContainerHighest,
       ),
     );
   }

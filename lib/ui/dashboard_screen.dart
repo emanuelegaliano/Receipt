@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../app_services.dart';
+import '../data/budget.dart';
 import '../data/database.dart';
 import 'format.dart';
 import 'settings_screen.dart';
@@ -40,6 +41,7 @@ class DashboardScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 _TotalCard(month: month, current: current, previous: previous),
                 const SizedBox(height: 16),
+                _Budgets(current),
                 if (current.isEmpty && snap.hasData)
                   const EmptyState(
                     icon: Icons.savings_outlined,
@@ -253,6 +255,101 @@ class _CategoryBreakdownState extends State<_CategoryBreakdown> {
         ),
       ),
     );
+  }
+}
+
+/// Categorie con un limite mensile: quanto hai speso e quanto resta.
+class _Budgets extends StatelessWidget {
+  final List<ExpenseView> items;
+  const _Budgets(this.items);
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return StreamBuilder<List<Category>>(
+      stream: AppServices.of(context).db.watchCategories(),
+      builder: (context, snap) {
+        final spent = <int, int>{};
+        for (final e in items) {
+          spent[e.category.id] = (spent[e.category.id] ?? 0) + e.expense.amountCents;
+        }
+        final rows = [
+          for (final c in snap.data ?? const <Category>[])
+            if (c.monthlyLimitCents != null) (c, spent[c.id] ?? 0, c.monthlyLimitCents!),
+        ]..sort((a, b) => (b.$2 / b.$3).compareTo(a.$2 / a.$3));
+        if (rows.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Card.outlined(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Limiti del mese', style: text.titleMedium),
+                  const SizedBox(height: 8),
+                  for (final (cat, cents, limit) in rows)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          CategoryAvatar(cat, size: 34),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(child: Text(cat.name, style: text.bodyLarge)),
+                                    Text.rich(TextSpan(children: [
+                                      TextSpan(text: formatCents(cents), style: text.titleSmall),
+                                      TextSpan(
+                                        text: ' / ${formatCents(limit)}',
+                                        style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                                      ),
+                                    ])),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                BudgetBar(spent: cents, limit: limit, color: Color(cat.color), height: 8),
+                                const SizedBox(height: 4),
+                                _BudgetStatus(cents, limit),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _BudgetStatus extends StatelessWidget {
+  final int spent, limit;
+  const _BudgetStatus(this.spent, this.limit);
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final style = Theme.of(context).textTheme.bodySmall;
+    final pct = (spent * 100 / limit).floor();
+    return switch (budgetLevel(spent, limit)) {
+      BudgetLevel.ok => Text('Restano ${formatCents(limit - spent)}', style: style?.copyWith(color: scheme.onSurfaceVariant)),
+      BudgetLevel.near => Text('$pct% usato · restano ${formatCents(limit - spent)}',
+          style: style?.copyWith(color: warningColor(context), fontWeight: FontWeight.w600)),
+      BudgetLevel.reached => Text(
+          spent == limit ? 'Limite esaurito' : 'Superato di ${formatCents(spent - limit)}',
+          style: style?.copyWith(color: scheme.error, fontWeight: FontWeight.w600),
+        ),
+    };
   }
 }
 

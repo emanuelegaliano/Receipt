@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../app_services.dart';
+import '../data/budget.dart';
 import '../data/database.dart';
 import '../receipt/categorizer.dart';
 import 'format.dart';
@@ -158,10 +159,23 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       if (widget.draft != null && receiptPath == null) receiptPath = await _storeReceipt(widget.draft!.imageBytes);
 
       final merchant = _merchant.text.trim();
+      final cents = parseCents(_amount.text)!;
+      final day = DateTime(_date.year, _date.month, _date.day, 12);
+      final category = _categories.firstWhere((c) => c.id == _categoryId);
+      // Speso nella categoria prima e dopo questa spesa, per l'avviso sul limite.
+      final others = await _db.categorySpent(category.id, day, exceptId: _existing?.id);
+      final old = _existing;
+      final wasHere = old != null && old.categoryId == category.id && monthOf(old.date) == monthOf(day);
+      final alert = budgetAlert(
+        category: category.name,
+        limit: category.monthlyLimitCents,
+        before: others + (wasHere ? old.amountCents : 0),
+        after: others + cents,
+      );
       await _db.saveExpense(ExpensesCompanion(
         id: _existing == null ? const Value.absent() : Value(_existing!.id),
-        amountCents: Value(parseCents(_amount.text)!),
-        date: Value(DateTime(_date.year, _date.month, _date.day, 12)),
+        amountCents: Value(cents),
+        date: Value(day),
         merchant: Value(merchant),
         categoryId: Value(_categoryId!),
         accountId: Value(_accountId!),
@@ -179,10 +193,17 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       final month = monthOf(_date);
       final moved = services.month.value != month;
       services.month.value = month;
+      final saved = _existing != null
+          ? 'Spesa aggiornata'
+          : 'Spesa salvata${moved ? ' in ${formatMonth(month).toLowerCase()}' : ''}';
+      if (alert != null && alert.crossed && alert.level == BudgetLevel.reached) {
+        await showBudgetReachedDialog(context, alert);
+        if (!mounted) return;
+      }
+      final note = alert == null || (alert.crossed && alert.level == BudgetLevel.reached) ? null : budgetNote(alert);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(_existing != null
-            ? 'Spesa aggiornata'
-            : 'Spesa salvata${moved ? ' in ${formatMonth(month).toLowerCase()}' : ''}'),
+        content: Text(note == null ? saved : '$saved. $note'),
+        duration: Duration(seconds: note == null ? 4 : 6),
       ));
       Navigator.pop(context, true);
     } finally {
@@ -461,4 +482,30 @@ class _ReceiptPreviewState extends State<_ReceiptPreview> {
       ),
     );
   }
+}
+
+/// Testo breve per gli avvisi meno gravi (80% o limite già superato).
+String budgetNote(BudgetAlert a) => switch (a.level) {
+      BudgetLevel.near =>
+        '${a.category}: hai usato il ${(a.spent * 100 / a.limit).floor()}% del limite, restano ${formatCents(a.left)}',
+      BudgetLevel.reached => a.over == 0
+          ? '${a.category}: limite mensile esaurito'
+          : '${a.category}: sei ${formatCents(a.over)} oltre il limite',
+      BudgetLevel.ok => '',
+    };
+
+Future<void> showBudgetReachedDialog(BuildContext context, BudgetAlert a) {
+  final scheme = Theme.of(context).colorScheme;
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      icon: Icon(Icons.warning_amber_rounded, color: scheme.error, size: 36),
+      title: Text('Limite di ${a.category} raggiunto'),
+      content: Text(a.over == 0
+          ? 'Questo mese hai speso esattamente il limite di ${formatCents(a.limit)}.'
+          : 'Questo mese hai speso ${formatCents(a.spent)} su un limite di ${formatCents(a.limit)}: '
+              '${formatCents(a.over)} in più.'),
+      actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('Ho capito'))],
+    ),
+  );
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../app_services.dart';
 import '../data/database.dart';
 import 'format.dart';
+import 'widgets.dart';
 
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
@@ -52,10 +53,21 @@ class CategoriesScreen extends StatelessWidget {
                       ListTile(
                         leading: CategoryAvatar(c),
                         title: Text(c.name),
-                        subtitle: Text(
-                          counts[c.id] == null
-                              ? 'Nessuna spesa'
-                              : '${counts[c.id]} ${counts[c.id] == 1 ? 'spesa' : 'spese'}',
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              counts[c.id] == null
+                                  ? 'Nessuna spesa'
+                                  : '${counts[c.id]} ${counts[c.id] == 1 ? 'spesa' : 'spese'}',
+                            ),
+                            if (c.monthlyLimitCents != null) ...[
+                              const SizedBox(height: 6),
+                              BudgetBar(spent: totals[c.id] ?? 0, limit: c.monthlyLimitCents!, color: Color(c.color)),
+                              const SizedBox(height: 2),
+                              Text('Limite ${formatCents(c.monthlyLimitCents!)} al mese'),
+                            ],
+                          ],
                         ),
                         trailing: Text(formatCents(totals[c.id] ?? 0), style: Theme.of(context).textTheme.titleSmall),
                         onTap: () => showCategoryEditor(context, category: c),
@@ -97,17 +109,27 @@ class _CategoryEditorState extends State<_CategoryEditor> {
   late final _keywords = TextEditingController(text: widget.category?.keywords.replaceAll(',', ', ') ?? '');
   late String _icon = widget.category?.icon ?? 'other';
   late int _color = widget.category?.color ?? categoryColors.first;
+  late final _limit = TextEditingController(
+    text: widget.category?.monthlyLimitCents == null ? '' : centsToInput(widget.category!.monthlyLimitCents!),
+  );
+  String? _limitError;
 
   @override
   void dispose() {
     _name.dispose();
     _keywords.dispose();
+    _limit.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     final name = _name.text.trim();
     if (name.isEmpty) return;
+    final limit = _limit.text.trim().isEmpty ? null : parseCents(_limit.text);
+    if (_limit.text.trim().isNotEmpty && (limit == null || limit <= 0)) {
+      setState(() => _limitError = 'Scrivi un importo, es. 100');
+      return;
+    }
     final keywords = _keywords.text.split(',').map((k) => k.trim().toLowerCase()).where((k) => k.isNotEmpty).join(',');
     await widget.db.saveCategory(CategoriesCompanion(
       id: widget.category == null ? const Value.absent() : Value(widget.category!.id),
@@ -115,6 +137,7 @@ class _CategoryEditorState extends State<_CategoryEditor> {
       icon: Value(_icon),
       color: Value(_color),
       keywords: Value(keywords),
+      monthlyLimitCents: Value(limit),
     ));
     if (mounted) Navigator.pop(context);
   }
@@ -140,6 +163,18 @@ class _CategoryEditorState extends State<_CategoryEditor> {
             autofocus: widget.category == null,
             textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(labelText: 'Nome'),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _limit,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: 'Limite mensile (facoltativo)',
+              suffixText: '€',
+              errorText: _limitError,
+              helperText: 'Ti avviso all\'80% e quando lo raggiungi. Lascia vuoto per nessun limite.',
+              helperMaxLines: 2,
+            ),
           ),
           const SizedBox(height: 16),
           Text('Icona', style: text.titleSmall),
