@@ -7,7 +7,7 @@ import 'expense_form_screen.dart';
 import 'format.dart';
 import 'l10n.dart';
 
-/// ‹ Novembre 2026 › — cambia il mese condiviso da riepilogo e movimenti.
+/// ‹ Novembre 2026 ›: cambia il mese condiviso da riepilogo e movimenti.
 class MonthSwitcher extends StatelessWidget {
   const MonthSwitcher({super.key});
 

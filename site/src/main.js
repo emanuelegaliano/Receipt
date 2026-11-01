@@ -127,7 +127,7 @@ function startDownloadCounter() {
     } catch {
       // Rate limit or offline: keep the last number and try again later.
       ping?.classList.add('hidden');
-      if (last === null && note) note.textContent = 'Counter temporarily unavailable — see the releases on GitHub.';
+      if (last === null && note) note.textContent = 'Counter temporarily unavailable, see the releases on GitHub.';
     }
   };
   refresh();
