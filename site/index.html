@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="./icon-192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Receipt — On-Device Receipt Scanner & Expense Tracker for Android</title>
+    <meta name="description" content="Track card and cash spending on Android. Receipts are read on your phone with RapidOCR: no account, no cloud, no internet. From the original idea of PyReceipt." />
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#FAFBFA] text-slate-900 min-h-screen flex flex-col font-sans">
+
+    <!-- Top Subtle Ambient Glow -->
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-forest-100/60 via-gold-50/40 to-transparent blur-3xl pointer-events-none -z-10"></div>
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 w-full backdrop-blur-md bg-white/90 border-b border-slate-200/80 transition-all">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-3 shrink-0 group">
+          <img src="./icon-192.png" alt="Receipt app icon" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl shadow-md shadow-forest-600/20 group-hover:scale-105 transition-transform duration-200" />
+          <div class="flex items-center gap-2">
+            <span class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900">Receipt</span>
+            <span class="hidden sm:inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-forest-50 text-forest-700 border border-forest-200/70">
+              Android
+            </span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden lg:flex items-center gap-6 xl:gap-8 text-sm font-medium text-slate-600 shrink-0">
+          <a href="#features" class="hover:text-forest-600 transition-colors whitespace-nowrap">Features</a>
+          <a href="#how-it-works" class="hover:text-forest-600 transition-colors whitespace-nowrap">How It Works</a>
+          <a href="#download" class="hover:text-forest-600 transition-colors whitespace-nowrap">Download</a>
+          <a href="#origin" class="hover:text-forest-600 transition-colors whitespace-nowrap">PyReceipt</a>
+        </nav>
+
+        <!-- Header CTA Buttons -->
+        <div class="hidden sm:flex items-center gap-2.5 shrink-0">
+          <a href="https://github.com/emanuelegaliano/Receipt" target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:text-slate-950 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 transition-all whitespace-nowrap">
+            <i data-lucide="github" class="w-3.5 h-3.5"></i>
+            <span>GitHub</span>
+          </a>
+          <a href="#download"
+             class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-forest-600 hover:bg-forest-700 shadow-sm shadow-forest-600/30 hover:shadow-md hover:shadow-forest-600/40 transition-all whitespace-nowrap">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Download APK</span>
+            <span data-version class="text-[10px] font-mono bg-forest-500/90 text-white px-1.5 rounded font-bold">v0.1.0</span>
+          </a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none shrink-0" aria-label="Toggle Menu">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <!-- Mobile Dropdown Menu -->
+      <div id="mobile-menu" class="hidden lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
+        <a href="#features" class="block py-2 text-base font-medium text-slate-700 hover:text-forest-600">Features</a>
+        <a href="#how-it-works" class="block py-2 text-base font-medium text-slate-700 hover:text-forest-600">How It Works</a>
+        <a href="#download" class="block py-2 text-base font-medium text-slate-700 hover:text-forest-600">Download</a>
+        <a href="#origin" class="block py-2 text-base font-medium text-slate-700 hover:text-forest-600">PyReceipt</a>
+        <div class="pt-4 flex flex-col sm:hidden gap-2">
+          <a href="https://github.com/emanuelegaliano/Receipt" target="_blank" rel="noopener noreferrer" class="w-full text-center py-2.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-800">GitHub repository</a>
+          <a href="#download" class="w-full text-center py-2.5 rounded-lg text-xs font-semibold bg-forest-600 text-white">Download APK</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+
+      <!-- ======================================================== -->
+      <!-- Hero Section -->
+      <!-- ======================================================== -->
+      <section class="relative pt-10 pb-20 md:pt-16 md:pb-28 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          <div class="flex flex-col items-center text-center max-w-4xl mx-auto">
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-forest-50 border border-forest-200/80 text-forest-700 text-xs sm:text-sm font-semibold mb-6 shadow-sm">
+              <span class="flex h-2 w-2 rounded-full bg-gold-400 animate-pulse"></span>
+              <span>On-device receipt scanner & expense tracker for Android</span>
+            </div>
+
+            <!-- Headline -->
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.15] mb-6">
+              Snap a Receipt. <br class="hidden sm:inline" />
+              <span class="bg-gradient-to-r from-forest-700 via-forest-500 to-gold-500 bg-clip-text text-transparent">
+                Know Where Your Money Goes.
+              </span>
+            </h1>
+
+            <!-- Sub-headline -->
+            <p class="text-lg sm:text-xl text-slate-600 max-w-2xl font-normal leading-relaxed mb-6">
+              Receipt reads totals, dates and shops with RapidOCR running entirely on your phone, sorts every expense into categories and shows how card and cash spending add up month by month. No account, no cloud, no internet.
+            </p>
+
+            <!-- Origin line -->
+            <p class="text-sm text-slate-500 mb-10">
+              From the original idea of PyReceipt:
+              <a href="https://emanuelegaliano.github.io/PyReceiptWebsitePage/" target="_blank" rel="noopener noreferrer" class="font-semibold text-forest-700 hover:text-forest-800 underline decoration-forest-300 underline-offset-4">emanuelegaliano.github.io/PyReceiptWebsitePage</a>
+            </p>
+
+            <!-- Primary CTA -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-5">
+              <a href="https://github.com/emanuelegaliano/Receipt/releases/latest/download/receipt.apk"
+                 class="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-xl font-semibold text-white bg-forest-600 hover:bg-forest-700 shadow-lg shadow-forest-600/25 hover:shadow-xl hover:shadow-forest-600/35 hover:-translate-y-0.5 transition-all">
+                <i data-lucide="download" class="w-5 h-5"></i>
+                <span>Download APK</span>
+                <span data-version class="text-xs font-mono bg-forest-500/90 px-1.5 rounded">v0.1.0</span>
+              </a>
+              <a href="#how-it-works"
+                 class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-slate-800 bg-white hover:bg-slate-50 border border-slate-200 shadow-sm transition-all">
+                <span>See it in action</span>
+                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+              </a>
+            </div>
+            <p class="inline-flex items-center gap-1.5 text-xs text-slate-500 mb-16">
+              <i data-lucide="languages" class="w-3.5 h-3.5 text-gold-600"></i>
+              The app interface is currently in Italian 🇮🇹 — it reads both Italian and English receipts.
+            </p>
+          </div>
+
+          <!-- Hero Illustration: paper receipt → extracted fields → app -->
+          <div class="relative max-w-5xl mx-auto">
+            <div class="absolute -inset-1 bg-gradient-to-r from-forest-500/20 via-gold-400/20 to-forest-300/20 rounded-3xl blur-2xl opacity-60"></div>
+
+            <div class="relative bg-white rounded-2xl md:rounded-3xl border border-slate-200/90 shadow-2xl p-4 sm:p-8 lg:p-10 overflow-hidden bg-dot-pattern">
+
+              <!-- Window chrome -->
+              <div class="flex items-center justify-between pb-6 border-b border-slate-100 mb-8">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]/50"></span>
+                  <span class="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123]/50"></span>
+                  <span class="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]/50"></span>
+                  <span class="ml-2 text-xs font-mono text-slate-500 font-semibold truncate">Receipt // on-device OCR pipeline</span>
+                </div>
+                <div class="hidden sm:flex items-center gap-3 text-xs font-medium text-slate-500">
+                  <span class="inline-flex items-center gap-1 text-forest-700 bg-forest-50 px-2 py-0.5 rounded-md border border-forest-200/60 font-semibold">
+                    <i data-lucide="wifi-off" class="w-3.5 h-3.5"></i> Works offline
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-gold-700 bg-gold-50 px-2 py-0.5 rounded-md border border-gold-200/80 font-semibold">
+                    <i data-lucide="lock" class="w-3.5 h-3.5"></i> Data stays on the phone
+                  </span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+
+                <!-- Left: paper receipt with scanning beam -->
+                <div class="lg:col-span-4 relative">
+                  <div class="relative bg-white border border-slate-300 rounded-xl shadow-lg p-5 font-mono text-xs text-slate-700 rotate-[-1.5deg] hover:rotate-0 transition-transform duration-300 overflow-hidden">
+                    <div class="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-forest-500 to-transparent shadow-[0_0_12px_#2e9a6a] animate-scan pointer-events-none z-20"></div>
+
+                    <div class="text-center pb-3 border-b border-dashed border-slate-300">
+                      <div class="font-bold tracking-wider text-slate-900 text-sm">TRATTORIA DA PINO</div>
+                      <div class="text-[11px] text-slate-500">Via dei Crociferi 8 • Catania</div>
+                      <div class="text-[10px] text-slate-400 mt-1">DOCUMENTO COMMERCIALE</div>
+                    </div>
+
+                    <div class="py-3 space-y-2 text-[11px] border-b border-dashed border-slate-300">
+                      <div class="flex justify-between"><span>PESCE SPADA</span><span class="font-semibold text-slate-900">22,01</span></div>
+                      <div class="flex justify-between"><span>COPERTO</span><span class="font-semibold text-slate-900">8,42</span></div>
+                      <div class="flex justify-between"><span>PASTA ALLA NORMA</span><span class="font-semibold text-slate-900">16,66</span></div>
+                      <div class="flex justify-between"><span>DOLCE</span><span class="font-semibold text-slate-900">10,37</span></div>
+                    </div>
+
+                    <div class="pt-3 space-y-1 text-[11px]">
+                      <div class="flex justify-between font-bold text-slate-900 text-sm">
+                        <span>TOTALE</span>
+                        <span class="text-forest-700">57,46</span>
+                      </div>
+                      <div class="flex justify-between text-slate-500"><span>Pagamento contante</span><span>60,00</span></div>
+                      <div class="flex justify-between text-slate-500"><span>Resto</span><span>2,54</span></div>
+                      <div class="text-center text-[10px] text-slate-400 pt-2">21/08/2024 19:37</div>
+                    </div>
+
+                    <div class="absolute top-2 right-2 px-2 py-0.5 bg-forest-600/90 text-white rounded text-[10px] font-semibold tracking-wider flex items-center gap-1 shadow-sm">
+                      <i data-lucide="scan" class="w-3 h-3"></i> RAPIDOCR
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Center: extracted fields -->
+                <div class="lg:col-span-4 flex flex-col items-center justify-center py-2 lg:py-0">
+                  <div class="flex flex-col items-center gap-3 w-full">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-forest-700 to-gold-400 flex items-center justify-center text-white shadow-lg shadow-forest-600/30 animate-pulse">
+                      <i data-lucide="cpu" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-slate-700 uppercase tracking-wider text-center">Read on the phone, saved in SQLite</span>
+                    <div class="space-y-2 w-full max-w-xs text-xs">
+                      <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-forest-50 border border-forest-200/80 text-forest-800 font-medium">
+                        <span class="flex items-center gap-1.5"><i data-lucide="store" class="w-3.5 h-3.5 text-forest-600"></i> Shop</span>
+                        <span class="font-semibold">Trattoria Da Pino</span>
+                      </div>
+                      <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 font-medium">
+                        <span class="flex items-center gap-1.5"><i data-lucide="euro" class="w-3.5 h-3.5 text-slate-600"></i> Total</span>
+                        <span class="font-mono font-bold">€57.46</span>
+                      </div>
+                      <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-gold-50 border border-gold-200/80 text-gold-800 font-medium">
+                        <span class="flex items-center gap-1.5"><i data-lucide="tag" class="w-3.5 h-3.5 text-gold-600"></i> Category</span>
+                        <span class="font-semibold">Restaurants</span>
+                      </div>
+                      <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-800 font-medium">
+                        <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-500"></i> Date · Paid</span>
+                        <span class="font-mono font-semibold">2024-08-21 · cash</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right: the app -->
+                <div class="lg:col-span-4 flex justify-center">
+                  <div class="phone animate-float max-w-[250px]">
+                    <img src="./screenshots/scan.jpg" alt="Receipt app: the expense form filled in from a scanned receipt" />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- Features Section (Bento Grid) -->
+      <!-- ======================================================== -->
+      <section id="features" class="py-20 bg-slate-50/60 border-y border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="text-xs font-bold uppercase tracking-wider text-forest-700 bg-forest-50 border border-forest-200/60 px-3 py-1 rounded-full">
+              What it does
+            </span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3 mb-4">
+              Everything Stays in Your Pocket
+            </h2>
+            <p class="text-base sm:text-lg text-slate-600">
+              A complete expense tracker for card and cash: receipt OCR, categories that learn, monthly limits and backups. All on the device.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- Card 1: On-device OCR -->
+            <div class="lg:col-span-2 bg-white rounded-3xl border border-slate-200/90 p-8 shadow-card hover:shadow-soft-md transition-all group">
+              <div class="flex items-start justify-between mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-forest-50 border border-forest-100 flex items-center justify-center text-forest-600 group-hover:scale-110 transition-transform">
+                  <i data-lucide="scan-text" class="w-6 h-6"></i>
+                </div>
+                <div class="flex flex-wrap justify-end items-center gap-2">
+                  <span class="text-xs font-mono font-semibold px-2.5 py-1 rounded-full bg-forest-50 text-forest-700 border border-forest-200/70">RapidOCR · PP-OCRv4</span>
+                  <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-gold-50 text-gold-800 border border-gold-200/80">ONNX Runtime</span>
+                </div>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 mb-2">On-Device Receipt OCR</h3>
+              <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+                The RapidOCR pipeline (detection, orientation, recognition) is ported to Dart and runs with ONNX Runtime on the phone. The PyReceipt parser then finds the total, the date and the shop, and reads from the receipt whether you paid by card or in cash. A scan takes about 3 seconds on a recent phone.
+              </p>
+              <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 font-mono text-xs overflow-x-auto">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="text-slate-400 border-b border-slate-200">
+                      <th class="pb-2 font-medium">FIELD</th>
+                      <th class="pb-2 font-medium">VALUE</th>
+                      <th class="pb-2 font-medium">HOW</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-200/60 text-slate-700">
+                    <tr><td class="py-2 font-semibold text-slate-900">Shop</td><td class="py-2 font-sans">Trattoria Da Pino</td><td class="py-2 text-forest-700 font-semibold">Header line</td></tr>
+                    <tr><td class="py-2 font-semibold text-slate-900">Total</td><td class="py-2 font-bold text-forest-700">€57.46</td><td class="py-2 text-forest-700 font-semibold">“TOTALE” row, not the change</td></tr>
+                    <tr><td class="py-2 font-semibold text-slate-900">Date</td><td class="py-2">2024-08-21</td><td class="py-2 text-forest-700 font-semibold">Normalized</td></tr>
+                    <tr><td class="py-2 font-semibold text-slate-900">Category</td><td class="py-2 font-bold text-gold-700">Restaurants</td><td class="py-2 text-forest-700 font-semibold">Keyword “trattoria”</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Card 2: Private by design -->
+            <div class="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-card hover:shadow-soft-md transition-all group flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-6">
+                  <div class="w-12 h-12 rounded-2xl bg-gold-50 border border-gold-100 flex items-center justify-center text-gold-600 group-hover:scale-110 transition-transform">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                  </div>
+                  <span class="text-xs font-mono font-semibold px-2.5 py-1 rounded-full bg-gold-50 text-gold-800 border border-gold-200/80">No internet permission</span>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">Private by Design</h3>
+                <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+                  Expenses, photos and OCR never leave the phone. The app opens with your password, or your fingerprint if you enable it.
+                </p>
+              </div>
+              <div class="space-y-2 pt-2 text-xs">
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2"><i data-lucide="lock" class="w-4 h-4 text-forest-600"></i> Password set on first launch</div>
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2"><i data-lucide="fingerprint" class="w-4 h-4 text-forest-600"></i> Optional fingerprint unlock</div>
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2"><i data-lucide="database" class="w-4 h-4 text-forest-600"></i> Local SQLite database</div>
+              </div>
+            </div>
+
+            <!-- Card 3: Categories that learn -->
+            <div class="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-card hover:shadow-soft-md transition-all group">
+              <div class="w-12 h-12 rounded-2xl bg-forest-50 border border-forest-100 flex items-center justify-center text-forest-600 group-hover:scale-110 transition-transform mb-6">
+                <i data-lucide="tag" class="w-6 h-6"></i>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 mb-2">Categories That Learn</h3>
+              <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+                Each category has its own icon, colour and keywords. When you correct a category, Receipt remembers it for that shop, even if the OCR misspells the name next time.
+              </p>
+              <div class="space-y-3">
+                <div>
+                  <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#2E7D32]"></span> Groceries</span><span>€196.90</span>
+                  </div>
+                  <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-[#2E7D32] h-2 rounded-full" style="width: 100%"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#E65100]"></span> Restaurants & bars</span><span>€127.96</span>
+                  </div>
+                  <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-[#E65100] h-2 rounded-full" style="width: 65%"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#00838F]"></span> Leisure</span><span>€110.89</span>
+                  </div>
+                  <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-[#00838F] h-2 rounded-full" style="width: 56%"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 4: Monthly limits & summary -->
+            <div class="lg:col-span-2 bg-white rounded-3xl border border-slate-200/90 p-8 shadow-card hover:shadow-soft-md transition-all group relative overflow-hidden">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-gold-50 border border-gold-100 flex items-center justify-center text-gold-600 group-hover:scale-110 transition-transform">
+                  <i data-lucide="gauge" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-slate-900">Monthly Summary & Spending Limits</h3>
+                  <p class="text-xs text-slate-500 mt-0.5">Set a monthly limit per category: Receipt tells you at 80% and when you reach it.</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <div class="text-xs text-slate-500 font-medium mb-1">Spent in October</div>
+                  <div class="text-xl font-bold text-slate-900">€666.63</div>
+                  <div class="text-[11px] text-slate-600 font-semibold flex items-center gap-1 mt-1"><i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i> +109% vs September</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <div class="text-xs text-slate-500 font-medium mb-1">Restaurants & bars</div>
+                  <div class="text-xl font-bold text-slate-900">85% used</div>
+                  <div class="text-[11px] text-gold-700 font-semibold flex items-center gap-1 mt-1"><i data-lucide="bell" class="w-3.5 h-3.5"></i> €22.04 left of €150</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <div class="text-xs text-slate-500 font-medium mb-1">Leisure</div>
+                  <div class="text-xl font-bold text-slate-900">Over limit</div>
+                  <div class="text-[11px] text-red-700 font-semibold flex items-center gap-1 mt-1"><i data-lucide="bell" class="w-3.5 h-3.5"></i> €10.89 over €100</div>
+                </div>
+              </div>
+              <div class="p-3 bg-forest-50/70 border border-forest-200/80 rounded-xl text-xs text-forest-800 flex items-center gap-2">
+                <i data-lucide="sparkles" class="w-4 h-4 text-forest-600 shrink-0"></i>
+                <span>Category bars share one scale and show where you were last month, so you can see at a glance which categories are growing.</span>
+              </div>
+            </div>
+
+            <!-- Card 5: Backup -->
+            <div class="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-card hover:shadow-soft-md transition-all group">
+              <div class="w-12 h-12 rounded-2xl bg-forest-50 border border-forest-100 flex items-center justify-center text-forest-600 group-hover:scale-110 transition-transform mb-6">
+                <i data-lucide="archive" class="w-6 h-6"></i>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 mb-2">Export & Restore</h3>
+              <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+                Export the database and all receipt photos to a single .zip, save it wherever you like (Drive, your computer) and restore it on a new phone.
+              </p>
+              <div class="flex items-center justify-between text-xs font-mono bg-slate-50 border border-slate-200 p-2 rounded-lg text-slate-600">
+                <span class="flex items-center gap-1.5"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> receipt-backup.zip</span>
+                <span class="text-forest-700 font-bold">db + photos</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- How It Works (alternating, phone frames) -->
+      <!-- ======================================================== -->
+      <section id="how-it-works" class="py-24 bg-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          <div class="text-center max-w-3xl mx-auto mb-20">
+            <span class="text-xs font-bold uppercase tracking-wider text-gold-800 bg-gold-50 border border-gold-200/80 px-3 py-1 rounded-full">
+              Live Showcase
+            </span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3 mb-4">
+              How Receipt Works in Action
+            </h2>
+            <p class="text-base sm:text-lg text-slate-600">
+              Screenshots from the Android emulator, with made-up data. The app is in Italian; captions are in English.
+            </p>
+          </div>
+
+          <div class="space-y-28">
+
+            <!-- Item 1: Scan -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              <div class="lg:col-span-7 space-y-5">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest-50 border border-forest-200 text-forest-700 text-xs font-semibold">
+                  <span class="w-5 h-5 rounded-full bg-forest-600 text-white flex items-center justify-center text-[11px] font-bold">1</span>
+                  <span>Scan a receipt</span>
+                </div>
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Take a Photo, Check, Save</h3>
+                <p class="text-slate-600 leading-relaxed text-base">
+                  Photograph a receipt or pick one from the gallery. A few seconds later the form is filled in: amount, shop, date, suggested category and payment method. You check it and save.
+                </p>
+                <ul class="space-y-3 text-sm text-slate-700 font-medium">
+                  <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-md bg-forest-100 text-forest-700 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5"></i></div><span>The category comes with its reason, e.g. <em>suggested by the word “trattoria” on the receipt</em>.</span></li>
+                  <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-md bg-forest-100 text-forest-700 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5"></i></div><span><strong>Card or cash</strong> is detected from the payment lines (“pagamento contante”, “elettronico”).</span></li>
+                  <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-md bg-forest-100 text-forest-700 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5"></i></div><span>Manual entry for expenses without a receipt, with shop autocomplete.</span></li>
+                </ul>
+              </div>
+              <div class="lg:col-span-5 flex justify-center">
+                <div class="phone transition-all duration-500 ease-out hover:scale-105 hover:-rotate-2">
+                  <img src="./screenshots/scan.jpg" alt="Expense form filled in from a scanned receipt" loading="lazy" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 2: Monthly summary -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              <div class="lg:col-span-5 flex justify-center order-2 lg:order-1">
+                <div class="phone transition-all duration-500 ease-out hover:scale-105 hover:rotate-2">
+                  <img src="./screenshots/dashboard.jpg" alt="Monthly summary with the last six months" loading="lazy" />
+                </div>
+              </div>
+              <div class="lg:col-span-7 space-y-5 order-1 lg:order-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-50 border border-gold-200 text-gold-800 text-xs font-semibold">
+                  <span class="w-5 h-5 rounded-full bg-gold-500 text-white flex items-center justify-center text-[11px] font-bold">2</span>
+                  <span>Monthly summary</span>
+                </div>
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Your Month at a Glance</h3>
+                <p class="text-slate-600 leading-relaxed text-base">
+                  The total for the month, the change from the previous one and the split between card and cash. Under it, the last six months as columns: tap one to jump to that month.
+                </p>
+                <ul class="space-y-3 text-sm text-slate-700 font-medium">
+                  <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-md bg-forest-100 text-forest-700 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5"></i></div><span>Accounts are yours to define: card, cash, a prepaid card…</span></li>
+                  <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-md bg-forest-100 text-forest-700 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5"></i></div><span>Movements grouped by day, with search, filters and swipe-to-delete with undo.</span></li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Item 3: Categories -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              <div class="lg:col-span-7 space-y-5">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest-50 border border-forest-200 text-forest-700 text-xs font-semibold">
+                  <span class="w-5 h-5 rounded-full bg-forest-600 text-white flex items-center justify-center text-[11px] font-bold">3</span>
+                  <span>Per category</span>
+                </div>
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Bars, Not Pie Charts</h3>
+                <p class="text-slate-600 leading-relaxed text-base">
+                  Every category gets a bar on the same scale, so lengths can be compared directly. A dot marks where you were last month and a tick marks your limit.
+                </p>
+                <ul class="space-y-3 text-sm text-slate-700 font-medium">
+                  <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-md bg-forest-100 text-forest-700 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5"></i></div><span>“+71.56 € vs September · €22.04 left”: the change and what is left, in one line.</span></li>
+                  <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-md bg-forest-100 text-forest-700 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5"></i></div><span>Bars turn amber from 80% of the limit and red when it is exceeded.</span></li>
+                </ul>
+              </div>
+              <div class="lg:col-span-5 flex justify-center">
+                <div class="phone transition-all duration-500 ease-out hover:scale-105 hover:-rotate-2">
+                  <img src="./screenshots/breakdown.jpg" alt="Per-category bars with last month and limits" loading="lazy" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 4: Limits -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              <div class="lg:col-span-5 flex justify-center order-2 lg:order-1">
+                <div class="phone transition-all duration-500 ease-out hover:scale-105 hover:rotate-2">
+                  <img src="./screenshots/limit-alert.jpg" alt="Alert when a monthly limit is reached" loading="lazy" />
+                </div>
+              </div>
+              <div class="lg:col-span-7 space-y-5 order-1 lg:order-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-50 border border-gold-200 text-gold-800 text-xs font-semibold">
+                  <span class="w-5 h-5 rounded-full bg-gold-500 text-white flex items-center justify-center text-[11px] font-bold">4</span>
+                  <span>Monthly limits</span>
+                </div>
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Know When You Hit a Limit</h3>
+                <p class="text-slate-600 leading-relaxed text-base">
+                  Give a category a monthly limit, say €100 for leisure. When an expense takes you over it, Receipt tells you right away: “This month you spent €120.00 against a limit of €100.00: €20.00 over.”
+                </p>
+                <ul class="space-y-3 text-sm text-slate-700 font-medium">
+                  <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-md bg-forest-100 text-forest-700 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5"></i></div><span>A note at 80%, a reminder for every expense once you are over.</span></li>
+                  <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-md bg-forest-100 text-forest-700 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5"></i></div><span>Limits warn, they never block: every expense is still recorded.</span></li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Item 5: Privacy & themes -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              <div class="lg:col-span-7 space-y-5">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest-50 border border-forest-200 text-forest-700 text-xs font-semibold">
+                  <span class="w-5 h-5 rounded-full bg-forest-600 text-white flex items-center justify-center text-[11px] font-bold">5</span>
+                  <span>Yours only</span>
+                </div>
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Locked, Private, Your Colours</h3>
+                <p class="text-slate-600 leading-relaxed text-base">
+                  Receipt locks itself when you leave it, and opens with your password or fingerprint. Choose light, dark or system theme and one of six accent colours.
+                </p>
+                <ul class="space-y-3 text-sm text-slate-700 font-medium">
+                  <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-md bg-forest-100 text-forest-700 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5"></i></div><span>Only a salted PBKDF2 hash of the password is stored, in the Android Keystore.</span></li>
+                  <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-md bg-forest-100 text-forest-700 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5"></i></div><span>No lock while you are taking a photo or sharing a backup.</span></li>
+                </ul>
+              </div>
+              <div class="lg:col-span-5 flex justify-center gap-4">
+                <div class="phone max-w-[210px] transition-all duration-500 ease-out hover:scale-105 hover:-rotate-2">
+                  <img src="./screenshots/lock.jpg" alt="Lock screen" loading="lazy" />
+                </div>
+                <div class="phone max-w-[210px] mt-10 transition-all duration-500 ease-out hover:scale-105 hover:rotate-2">
+                  <img src="./screenshots/dashboard-dark.jpg" alt="Monthly summary in dark theme" loading="lazy" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- Download -->
+      <!-- ======================================================== -->
+      <section id="download" class="py-20 bg-slate-50/80 border-t border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="text-xs font-bold uppercase tracking-wider text-forest-700 bg-forest-50 border border-forest-200/60 px-3 py-1 rounded-full">
+              Download
+            </span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3 mb-4">
+              Get Receipt for Android
+            </h2>
+            <p class="text-base sm:text-lg text-slate-600">
+              Receipt is not on the Play Store: download the APK from GitHub Releases and install it directly.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+
+            <!-- Download card -->
+            <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-card hover:shadow-soft-lg hover:border-forest-300 transition-all flex flex-col justify-between">
+              <div>
+                <div class="flex items-center gap-3 mb-4">
+                  <img src="./icon-192.png" alt="" class="w-12 h-12 rounded-xl shadow-sm" />
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 class="text-lg font-bold text-slate-900">Receipt</h3>
+                      <span data-version class="text-[11px] font-mono font-bold bg-forest-50 text-forest-700 px-2 py-0.5 rounded border border-forest-200">v0.1.0</span>
+                    </div>
+                    <p class="text-xs text-slate-500">APK for Android · about 120 MB</p>
+                  </div>
+                </div>
+                <div class="space-y-2 mb-6 text-xs text-slate-600">
+                  <div class="flex items-center gap-2"><i data-lucide="smartphone" class="w-4 h-4 text-forest-600"></i><span>Android 7.0 or newer, 64-bit (arm64) phone</span></div>
+                  <div class="flex items-center gap-2"><i data-lucide="languages" class="w-4 h-4 text-forest-600"></i><span>Interface in Italian · reads Italian and English receipts</span></div>
+                  <div class="flex items-center gap-2"><i data-lucide="wifi-off" class="w-4 h-4 text-forest-600"></i><span>No account, works completely offline</span></div>
+                </div>
+              </div>
+              <a href="https://github.com/emanuelegaliano/Receipt/releases/latest/download/receipt.apk"
+                 class="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-white bg-forest-600 hover:bg-forest-700 shadow-sm shadow-forest-600/30 transition-all">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Download the latest APK</span>
+              </a>
+              <a href="https://github.com/emanuelegaliano/Receipt/releases" target="_blank" rel="noopener noreferrer" class="mt-3 text-center text-xs font-semibold text-slate-500 hover:text-forest-700">All releases and changelogs →</a>
+            </div>
+
+            <!-- Install steps -->
+            <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-card flex flex-col justify-between">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 mb-4">How to install</h3>
+                <ol class="space-y-3 text-sm text-slate-700">
+                  <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-gold-100 text-gold-800 flex items-center justify-center text-xs font-bold shrink-0">1</span><span>Download <code class="font-mono text-xs">receipt.apk</code> on your phone.</span></li>
+                  <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-gold-100 text-gold-800 flex items-center justify-center text-xs font-bold shrink-0">2</span><span>Open it and allow installs from that app when Android asks (“unknown sources”).</span></li>
+                  <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-gold-100 text-gold-800 flex items-center justify-center text-xs font-bold shrink-0">3</span><span>On Samsung phones, turn off <em>Auto Blocker</em> first if the install is blocked.</span></li>
+                  <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-gold-100 text-gold-800 flex items-center justify-center text-xs font-bold shrink-0">4</span><span>To update, install the new APK over the old one: your data stays.</span></li>
+                </ol>
+              </div>
+              <div class="mt-6 p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600">
+                <div class="flex items-center gap-1.5 font-semibold text-slate-800 mb-1"><i data-lucide="key-round" class="w-3.5 h-3.5 text-forest-600"></i> Signing certificate (SHA-256)</div>
+                <code class="font-mono break-all">03:F0:2B:FF:43:57:52:E7:72:07:89:B7:10:26:B3:85:1F:B1:DA:46:70:9F:EC:16:DE:F5:A9:A5:EC:B6:0C:66</code>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- Origin: PyReceipt -->
+      <!-- ======================================================== -->
+      <section id="origin" class="py-20 bg-white border-t border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <div class="rounded-3xl border border-slate-200 p-8 bg-gradient-to-br from-white to-forest-50/60 shadow-card">
+              <span class="text-xs font-bold uppercase tracking-wider text-forest-700">Where it comes from</span>
+              <h3 class="text-2xl font-extrabold text-slate-900 tracking-tight mt-2 mb-3">From the original idea of PyReceipt</h3>
+              <p class="text-sm text-slate-600 leading-relaxed mb-6">
+                Receipt brings PyReceipt — a lightweight Python receipt reader with a Telegram assistant — to Android. The OCR pipeline and the receipt parser were ported to Dart, with fixes for tilted photos, shop names and Italian receipts.
+              </p>
+              <a href="https://emanuelegaliano.github.io/PyReceiptWebsitePage/" target="_blank" rel="noopener noreferrer"
+                 class="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-forest-800 bg-forest-50 hover:bg-forest-100 border border-forest-200 transition-all">
+                <span>Visit the PyReceipt website</span>
+                <i data-lucide="external-link" class="w-4 h-4"></i>
+              </a>
+            </div>
+
+            <div class="rounded-3xl border border-slate-200 p-8 bg-white shadow-card flex flex-col justify-between">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-forest-700 to-gold-400 flex items-center justify-center text-white font-bold text-xl shadow-md shrink-0">EG</div>
+                <div>
+                  <h4 class="text-lg font-bold text-slate-900">Created by Emanuele Galiano</h4>
+                  <p class="text-sm text-slate-500">Author of Receipt and of the PyReceipt ecosystem.</p>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-3">
+                <a href="https://github.com/emanuelegaliano/Receipt" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs text-slate-800 bg-slate-100 hover:bg-forest-600 hover:text-white border border-slate-200/80 transition-all">
+                  <i data-lucide="github" class="w-4 h-4"></i><span>Receipt on GitHub</span>
+                </a>
+                <a href="https://emanuelegaliano.github.io/portfolio/" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs text-gold-800 bg-gold-50 hover:bg-gold-100 border border-gold-200 transition-all">
+                  <span>Creator portfolio</span><i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- Technology stack banner -->
+      <!-- ======================================================== -->
+      <section id="explore" class="py-16 bg-white border-t border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-8">Built with open-source technologies</p>
+          <div class="flex flex-wrap items-center justify-center gap-8 sm:gap-14 opacity-80 hover:opacity-100 transition-all duration-300">
+            <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm"><i data-lucide="layers" class="w-5 h-5 text-forest-600"></i><span>Flutter</span></div>
+            <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm"><i data-lucide="scan" class="w-5 h-5 text-gold-600"></i><span>RapidOCR (PP-OCRv4)</span></div>
+            <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm"><i data-lucide="zap" class="w-5 h-5 text-forest-600"></i><span>ONNX Runtime</span></div>
+            <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm"><i data-lucide="database" class="w-5 h-5 text-gold-600"></i><span>SQLite · drift</span></div>
+            <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm"><i data-lucide="file-text" class="w-5 h-5 text-forest-600"></i><span>PyReceipt parser</span></div>
+            <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm"><i data-lucide="fingerprint" class="w-5 h-5 text-gold-600"></i><span>Android Keystore</span></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ======================================================== -->
+    <!-- Footer -->
+    <!-- ======================================================== -->
+    <footer class="bg-slate-50 border-t border-slate-200 py-12 text-slate-600 text-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+
+          <div class="md:col-span-2 space-y-4">
+            <div class="flex items-center gap-2.5">
+              <img src="./icon-192.png" alt="" class="w-8 h-8 rounded-lg" />
+              <span class="text-lg font-bold text-slate-900">Receipt</span>
+            </div>
+            <p class="text-xs text-slate-500 max-w-sm leading-relaxed">
+              On-device receipt scanner and expense tracker for Android. From the original idea of
+              <a href="https://emanuelegaliano.github.io/PyReceiptWebsitePage/" target="_blank" rel="noopener noreferrer" class="font-semibold text-forest-700 hover:text-forest-800">PyReceipt</a>.
+            </p>
+            <div class="flex items-center gap-4 pt-1">
+              <a href="https://github.com/emanuelegaliano/Receipt" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-900 transition-colors" title="GitHub repository">
+                <i data-lucide="github" class="w-5 h-5"></i>
+              </a>
+              <a href="https://emanuelegaliano.github.io/portfolio/" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-slate-500 hover:text-forest-700 transition-colors flex items-center gap-1">
+                <span>Created by Emanuele Galiano</span><i data-lucide="external-link" class="w-3 h-3"></i>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Navigation</h4>
+            <ul class="space-y-2 text-xs">
+              <li><a href="#features" class="hover:text-forest-700 transition-colors">Features</a></li>
+              <li><a href="#how-it-works" class="hover:text-forest-700 transition-colors">How It Works</a></li>
+              <li><a href="#download" class="hover:text-forest-700 transition-colors">Download</a></li>
+              <li><a href="#origin" class="hover:text-forest-700 transition-colors">PyReceipt</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Links</h4>
+            <ul class="space-y-2 text-xs">
+              <li><a href="https://github.com/emanuelegaliano/Receipt" target="_blank" rel="noopener noreferrer" class="hover:text-forest-700 transition-colors inline-flex items-center gap-1"><span>Receipt</span><span data-version class="text-[10px] font-mono font-bold text-forest-700">v0.1.0</span><i data-lucide="external-link" class="w-3 h-3 text-slate-400"></i></a></li>
+              <li><a href="https://github.com/emanuelegaliano/Receipt/releases" target="_blank" rel="noopener noreferrer" class="hover:text-forest-700 transition-colors inline-flex items-center gap-1"><span>Releases</span><i data-lucide="external-link" class="w-3 h-3 text-slate-400"></i></a></li>
+              <li><a href="https://emanuelegaliano.github.io/PyReceiptWebsitePage/" target="_blank" rel="noopener noreferrer" class="hover:text-forest-700 transition-colors inline-flex items-center gap-1"><span>PyReceipt website</span><i data-lucide="external-link" class="w-3 h-3 text-slate-400"></i></a></li>
+              <li><a href="https://emanuelegaliano.github.io/portfolio/" target="_blank" rel="noopener noreferrer" class="hover:text-forest-700 transition-colors inline-flex items-center gap-1"><span>Author portfolio</span><i data-lucide="external-link" class="w-3 h-3 text-slate-400"></i></a></li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div class="pt-8 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <p>© <span data-year>2026</span> Receipt by <a href="https://emanuelegaliano.github.io/portfolio/" target="_blank" rel="noopener noreferrer" class="font-semibold text-slate-700 hover:text-forest-700">Emanuele Galiano</a>.</p>
+          <p class="text-slate-400">Built with Vite & Tailwind CSS</p>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

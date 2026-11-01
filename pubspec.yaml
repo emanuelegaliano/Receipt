@@ -1,5 +1,5 @@
 name: receipt_app
-description: "A new Flutter project."
+description: "On-device receipt scanner and expense tracker for Android."
 publish_to: 'none'
 version: 0.1.0+1
 
