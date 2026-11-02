@@ -517,5 +517,63 @@
   "updateConsentTitle": "Aggiornamenti automatici",
   "updateConsentMessage": "Receipt funziona tutta sul telefono e non raccoglie i tuoi dati. Vuoi che a ogni apertura controlli su internet se c'è una nuova versione? Legge solo il numero di versione dal sito di Receipt. Puoi cambiare idea nelle Impostazioni.",
   "updateConsentNo": "No, grazie",
-  "updateConsentYes": "Sì, controlla"
+  "updateConsentYes": "Sì, controlla",
+  "dailyArt": "Quadro del giorno",
+  "dailyArtHint": "Ogni giorno un dipinto del Metropolitan Museum of Art come sfondo, tra 600 di pubblico dominio. Scarica un'immagine al giorno da Wikimedia Commons (circa 0,7 MB); nessun tuo dato viene inviato.",
+  "dailyArtDownloading": "Scarico il quadro di oggi…",
+  "dailyArtFailed": "Non sono riuscito a scaricare il quadro di oggi: riprovo quando torni nell'app.",
+  "dailyArtToday": "Oggi: {title}, {artist}. Tocca la «i» in alto per saperne di più.",
+  "@dailyArtToday": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "artist": {
+        "type": "String"
+      }
+    }
+  },
+  "paintingOfTheDay": "Il quadro di oggi",
+  "paintingDate": "Data",
+  "paintingMedium": "Tecnica",
+  "paintingDimensions": "Misure",
+  "paintingCredit": "The Metropolitan Museum of Art, New York. {credit}",
+  "@paintingCredit": {
+    "placeholders": {
+      "credit": {
+        "type": "String"
+      }
+    }
+  },
+  "paintingOpenMet": "Pagina del Met",
+  "paintingFromWikipedia": "Da Wikipedia, voce «{title}» (CC BY-SA 4.0)",
+  "@paintingFromWikipedia": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "paintingFromWikidata": "Da Wikidata (CC0)",
+  "paintingSources": "Dati dell'opera: Open Access del Met e Wikidata (CC0). Immagine: Wikimedia Commons ({license}).",
+  "@paintingSources": {
+    "placeholders": {
+      "license": {
+        "type": "String"
+      }
+    }
+  },
+  "paintingOpenWikipedia": "Wikipedia",
+  "paintingOpenCommons": "Immagine su Commons",
+  "dailyArtConsentMessage": "Vuoi come sfondo un dipinto del Metropolitan Museum of Art, diverso ogni giorno? Receipt scarica un'immagine al giorno da Wikimedia Commons (circa 0,7 MB) e non invia nessun tuo dato. Puoi cambiare idea nelle Impostazioni.",
+  "dailyArtConsentInternet": "Hai scelto di non far usare internet a Receipt per gli aggiornamenti. Il quadro del giorno ha bisogno di internet: attivandolo, l'app si collegherà solo per scaricare l'immagine di oggi.",
+  "dailyArtConsentYes": "Sì, attiva",
+  "dailyArtVisibility": "Visibilità del quadro: {percent}%",
+  "@dailyArtVisibility": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  }
 }

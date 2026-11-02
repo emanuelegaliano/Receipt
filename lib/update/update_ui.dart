@@ -17,9 +17,19 @@ Future<void> setUpdateCheckEnabled(AppDatabase db, bool on) => db.setSetting('up
 
 String formatMegabytes(int bytes) => '${(bytes / (1024 * 1024)).round()} MB';
 
-/// All'apertura: la prima volta chiede se usare internet per gli
-/// aggiornamenti; poi, se è permesso e c'è una versione nuova, mostra un
-/// banner. In silenzio se non c'è rete o se l'app è già aggiornata.
+/// La prima volta (anche dopo un aggiornamento da una versione che non lo
+/// chiedeva) domanda se usare internet per gli aggiornamenti.
+Future<void> askUpdateConsentOnStart(BuildContext context) async {
+  final services = AppServices.of(context);
+  if (await services.db.setting('update_check') != null) return;
+  // Dopo la password o lo sblocco, non dietro la schermata di blocco.
+  await untilUnlocked(services.lock);
+  if (!context.mounted) return;
+  await setUpdateCheckEnabled(services.db, await _askConsent(context));
+}
+
+/// All'apertura, se è permesso e c'è una versione nuova, mostra un banner.
+/// In silenzio se non c'è rete o se l'app è già aggiornata.
 Future<void> checkForUpdatesOnStart(BuildContext context) async {
   final services = AppServices.of(context);
   final updater = services.updater;
@@ -27,12 +37,6 @@ Future<void> checkForUpdatesOnStart(BuildContext context) async {
   final AppRelease? release;
   try {
     await updater.cleanup(await updater.currentVersion());
-    if (await services.db.setting('update_check') == null) {
-      // Dopo la password o lo sblocco, non dietro la schermata di blocco.
-      await _unlocked(services.lock);
-      if (!context.mounted) return;
-      await setUpdateCheckEnabled(services.db, await _askConsent(context));
-    }
     if (!await updateCheckEnabled(services.db)) return;
     release = await updater.check();
   } catch (_) {
@@ -56,7 +60,7 @@ Future<void> checkForUpdatesOnStart(BuildContext context) async {
   ));
 }
 
-Future<void> _unlocked(AppLock lock) async {
+Future<void> untilUnlocked(AppLock lock) async {
   if (lock.state == AppLockState.unlocked) return;
   final done = Completer<void>();
   void listener() {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_services.dart';
+import '../art/art_ui.dart';
 import '../data/database.dart';
 import 'format.dart';
 import 'l10n.dart';
@@ -52,7 +53,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     final scheme = Theme.of(context).colorScheme;
     final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: Text(l.navTransactions)),
+      appBar: AppBar(title: Text(l.navTransactions), actions: const [PaintingInfoButton()]),
       body: ValueListenableBuilder<DateTime>(
         valueListenable: services.month,
         builder: (context, month, _) => StreamBuilder<List<ExpenseView>>(

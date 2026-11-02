@@ -1,7 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
-    <!-- Solo per gli aggiornamenti: leggere version.json dal sito e scaricare
-         il nuovo APK (si può disattivare nelle impostazioni). -->
+    <!-- Solo per gli aggiornamenti (leggere version.json dal sito e scaricare
+         il nuovo APK) e per il quadro del giorno (un'immagine al giorno da
+         Wikimedia Commons). Entrambi si chiedono al primo avvio e si possono
+         disattivare nelle impostazioni. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <application

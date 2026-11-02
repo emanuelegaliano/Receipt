@@ -1465,6 +1465,126 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Sì, controlla'**
   String get updateConsentYes;
+
+  /// No description provided for @dailyArt.
+  ///
+  /// In it, this message translates to:
+  /// **'Quadro del giorno'**
+  String get dailyArt;
+
+  /// No description provided for @dailyArtHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Ogni giorno un dipinto del Metropolitan Museum of Art come sfondo, tra 600 di pubblico dominio. Scarica un\'immagine al giorno da Wikimedia Commons (circa 0,7 MB); nessun tuo dato viene inviato.'**
+  String get dailyArtHint;
+
+  /// No description provided for @dailyArtDownloading.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarico il quadro di oggi…'**
+  String get dailyArtDownloading;
+
+  /// No description provided for @dailyArtFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a scaricare il quadro di oggi: riprovo quando torni nell\'app.'**
+  String get dailyArtFailed;
+
+  /// No description provided for @dailyArtToday.
+  ///
+  /// In it, this message translates to:
+  /// **'Oggi: {title}, {artist}. Tocca la «i» in alto per saperne di più.'**
+  String dailyArtToday(String title, String artist);
+
+  /// No description provided for @paintingOfTheDay.
+  ///
+  /// In it, this message translates to:
+  /// **'Il quadro di oggi'**
+  String get paintingOfTheDay;
+
+  /// No description provided for @paintingDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data'**
+  String get paintingDate;
+
+  /// No description provided for @paintingMedium.
+  ///
+  /// In it, this message translates to:
+  /// **'Tecnica'**
+  String get paintingMedium;
+
+  /// No description provided for @paintingDimensions.
+  ///
+  /// In it, this message translates to:
+  /// **'Misure'**
+  String get paintingDimensions;
+
+  /// No description provided for @paintingCredit.
+  ///
+  /// In it, this message translates to:
+  /// **'The Metropolitan Museum of Art, New York. {credit}'**
+  String paintingCredit(String credit);
+
+  /// No description provided for @paintingOpenMet.
+  ///
+  /// In it, this message translates to:
+  /// **'Pagina del Met'**
+  String get paintingOpenMet;
+
+  /// No description provided for @paintingFromWikipedia.
+  ///
+  /// In it, this message translates to:
+  /// **'Da Wikipedia, voce «{title}» (CC BY-SA 4.0)'**
+  String paintingFromWikipedia(String title);
+
+  /// No description provided for @paintingFromWikidata.
+  ///
+  /// In it, this message translates to:
+  /// **'Da Wikidata (CC0)'**
+  String get paintingFromWikidata;
+
+  /// No description provided for @paintingSources.
+  ///
+  /// In it, this message translates to:
+  /// **'Dati dell\'opera: Open Access del Met e Wikidata (CC0). Immagine: Wikimedia Commons ({license}).'**
+  String paintingSources(String license);
+
+  /// No description provided for @paintingOpenWikipedia.
+  ///
+  /// In it, this message translates to:
+  /// **'Wikipedia'**
+  String get paintingOpenWikipedia;
+
+  /// No description provided for @paintingOpenCommons.
+  ///
+  /// In it, this message translates to:
+  /// **'Immagine su Commons'**
+  String get paintingOpenCommons;
+
+  /// No description provided for @dailyArtConsentMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Vuoi come sfondo un dipinto del Metropolitan Museum of Art, diverso ogni giorno? Receipt scarica un\'immagine al giorno da Wikimedia Commons (circa 0,7 MB) e non invia nessun tuo dato. Puoi cambiare idea nelle Impostazioni.'**
+  String get dailyArtConsentMessage;
+
+  /// No description provided for @dailyArtConsentInternet.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai scelto di non far usare internet a Receipt per gli aggiornamenti. Il quadro del giorno ha bisogno di internet: attivandolo, l\'app si collegherà solo per scaricare l\'immagine di oggi.'**
+  String get dailyArtConsentInternet;
+
+  /// No description provided for @dailyArtConsentYes.
+  ///
+  /// In it, this message translates to:
+  /// **'Sì, attiva'**
+  String get dailyArtConsentYes;
+
+  /// No description provided for @dailyArtVisibility.
+  ///
+  /// In it, this message translates to:
+  /// **'Visibilità del quadro: {percent}%'**
+  String dailyArtVisibility(String percent);
 }
 
 class _AppLocalizationsDelegate

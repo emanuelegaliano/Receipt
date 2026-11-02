@@ -2,6 +2,22 @@
 
 What changes in Receipt, one section per published version.
 
+## 0.3.2
+
+### New
+- Painting of the day, if you want it: a public-domain painting from The Metropolitan Museum of Art as the background
+  of Summary, Transactions and Categories, a different one every day out of 600 vertical works. Receipt asks at first
+  launch (and once after updating); you can change it in Settings → Appearance.
+  - One image a day (about 0.7 MB) is downloaded from Wikimedia Commons; none of your data is sent. If the internet is
+    not available, yesterday's painting stays.
+  - The "i" at the top opens the painting: the whole image (tap to zoom), author, date, medium, dimensions, the
+    introduction of its Wikipedia article where there is one, and links to The Met, Wikipedia and Commons.
+  - A slider sets how visible the painting is (5–50%, 20% by default), with a preview.
+  - The password and fingerprint screen stays plain.
+
+### Changed
+- The internet is now used for the update check and for the painting of the day, each only if you allow it.
+
 ## 0.3.1
 
 ### New

@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'app_services.dart';
+import 'art/daily_art.dart';
 import 'data/database.dart';
 import 'l10n/app_localizations.dart';
 import 'receipt/receipt_scanner.dart';
@@ -24,6 +25,8 @@ Future<void> main() async {
   final appearance = ValueNotifier(await AppearanceSettings.load(db));
   final lock = AppLock();
   await lock.init();
+  final art = DailyArt(db);
+  await art.init();
   Future<ReceiptScanner>? scanner;
   Future<ReceiptScanner> loadScanner() => scanner ??= ReceiptScanner.load();
   runApp(AppServices(
@@ -33,6 +36,7 @@ Future<void> main() async {
     lock: lock,
     scanner: loadScanner,
     updater: Updater(),
+    art: art,
     child: const ReceiptApp(),
   ));
   _cleanOrphanReceipts(db);

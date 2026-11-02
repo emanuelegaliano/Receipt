@@ -863,4 +863,78 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateConsentYes => 'Yes, check';
+
+  @override
+  String get dailyArt => 'Painting of the day';
+
+  @override
+  String get dailyArtHint =>
+      'A painting from The Metropolitan Museum of Art as the background, a new one every day out of 600 in the public domain. Downloads one image a day from Wikimedia Commons (about 0.7 MB); none of your data is sent.';
+
+  @override
+  String get dailyArtDownloading => 'Downloading today\'s painting…';
+
+  @override
+  String get dailyArtFailed =>
+      'Couldn\'t download today\'s painting: I\'ll try again when you come back to the app.';
+
+  @override
+  String dailyArtToday(String title, String artist) {
+    return 'Today: $title, $artist. Tap the “i” at the top to learn more.';
+  }
+
+  @override
+  String get paintingOfTheDay => 'Today\'s painting';
+
+  @override
+  String get paintingDate => 'Date';
+
+  @override
+  String get paintingMedium => 'Medium';
+
+  @override
+  String get paintingDimensions => 'Dimensions';
+
+  @override
+  String paintingCredit(String credit) {
+    return 'The Metropolitan Museum of Art, New York. $credit';
+  }
+
+  @override
+  String get paintingOpenMet => 'The Met\'s page';
+
+  @override
+  String paintingFromWikipedia(String title) {
+    return 'From Wikipedia, article “$title” (CC BY-SA 4.0)';
+  }
+
+  @override
+  String get paintingFromWikidata => 'From Wikidata (CC0)';
+
+  @override
+  String paintingSources(String license) {
+    return 'Artwork data: The Met Open Access and Wikidata (CC0). Image: Wikimedia Commons ($license).';
+  }
+
+  @override
+  String get paintingOpenWikipedia => 'Wikipedia';
+
+  @override
+  String get paintingOpenCommons => 'Image on Commons';
+
+  @override
+  String get dailyArtConsentMessage =>
+      'Would you like a painting from The Metropolitan Museum of Art as the background, a different one every day? Receipt downloads one image a day from Wikimedia Commons (about 0.7 MB) and sends none of your data. You can change your mind in Settings.';
+
+  @override
+  String get dailyArtConsentInternet =>
+      'You chose not to let Receipt use the internet for updates. The painting of the day needs the internet: if you turn it on, the app will connect only to download today\'s image.';
+
+  @override
+  String get dailyArtConsentYes => 'Yes, turn it on';
+
+  @override
+  String dailyArtVisibility(String percent) {
+    return 'Painting visibility: $percent%';
+  }
 }

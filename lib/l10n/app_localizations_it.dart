@@ -858,4 +858,78 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get updateConsentYes => 'Sì, controlla';
+
+  @override
+  String get dailyArt => 'Quadro del giorno';
+
+  @override
+  String get dailyArtHint =>
+      'Ogni giorno un dipinto del Metropolitan Museum of Art come sfondo, tra 600 di pubblico dominio. Scarica un\'immagine al giorno da Wikimedia Commons (circa 0,7 MB); nessun tuo dato viene inviato.';
+
+  @override
+  String get dailyArtDownloading => 'Scarico il quadro di oggi…';
+
+  @override
+  String get dailyArtFailed =>
+      'Non sono riuscito a scaricare il quadro di oggi: riprovo quando torni nell\'app.';
+
+  @override
+  String dailyArtToday(String title, String artist) {
+    return 'Oggi: $title, $artist. Tocca la «i» in alto per saperne di più.';
+  }
+
+  @override
+  String get paintingOfTheDay => 'Il quadro di oggi';
+
+  @override
+  String get paintingDate => 'Data';
+
+  @override
+  String get paintingMedium => 'Tecnica';
+
+  @override
+  String get paintingDimensions => 'Misure';
+
+  @override
+  String paintingCredit(String credit) {
+    return 'The Metropolitan Museum of Art, New York. $credit';
+  }
+
+  @override
+  String get paintingOpenMet => 'Pagina del Met';
+
+  @override
+  String paintingFromWikipedia(String title) {
+    return 'Da Wikipedia, voce «$title» (CC BY-SA 4.0)';
+  }
+
+  @override
+  String get paintingFromWikidata => 'Da Wikidata (CC0)';
+
+  @override
+  String paintingSources(String license) {
+    return 'Dati dell\'opera: Open Access del Met e Wikidata (CC0). Immagine: Wikimedia Commons ($license).';
+  }
+
+  @override
+  String get paintingOpenWikipedia => 'Wikipedia';
+
+  @override
+  String get paintingOpenCommons => 'Immagine su Commons';
+
+  @override
+  String get dailyArtConsentMessage =>
+      'Vuoi come sfondo un dipinto del Metropolitan Museum of Art, diverso ogni giorno? Receipt scarica un\'immagine al giorno da Wikimedia Commons (circa 0,7 MB) e non invia nessun tuo dato. Puoi cambiare idea nelle Impostazioni.';
+
+  @override
+  String get dailyArtConsentInternet =>
+      'Hai scelto di non far usare internet a Receipt per gli aggiornamenti. Il quadro del giorno ha bisogno di internet: attivandolo, l\'app si collegherà solo per scaricare l\'immagine di oggi.';
+
+  @override
+  String get dailyArtConsentYes => 'Sì, attiva';
+
+  @override
+  String dailyArtVisibility(String percent) {
+    return 'Visibilità del quadro: $percent%';
+  }
 }

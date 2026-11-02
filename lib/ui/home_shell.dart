@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../art/art_ui.dart';
 import '../update/update_ui.dart';
 import 'categories_screen.dart';
 import 'dashboard_screen.dart';
@@ -21,9 +22,14 @@ class _HomeShellState extends State<HomeShell> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       recoverLostScan(context);
+      // Le scelte della prima apertura, una dopo l'altra: aggiornamenti, poi
+      // il quadro del giorno.
+      await askUpdateConsentOnStart(context);
+      if (!mounted) return;
       checkForUpdatesOnStart(context);
+      askDailyArtOnStart(context);
     });
   }
 
@@ -76,33 +82,44 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    return Scaffold(
-      body: IndexedStack(
-        index: _tab,
-        children: [
-          DashboardScreen(onSeeAll: () => setState(() => _tab = 1)),
-          const ExpensesScreen(),
-          const CategoriesScreen(),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddSheet,
-        icon: const Icon(Icons.add),
-        label: Text(l.add),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: (i) => setState(() => _tab = i),
-        destinations: [
-          NavigationDestination(
-              icon: const Icon(Icons.pie_chart_outline), selectedIcon: const Icon(Icons.pie_chart), label: l.navSummary),
-          NavigationDestination(
+    // Il quadro del giorno sta dietro le tre schermate principali; le altre
+    // (impostazioni, moduli) restano su fondo pieno.
+    return ArtBackground(
+      child: Scaffold(
+        body: IndexedStack(
+          index: _tab,
+          children: [
+            DashboardScreen(onSeeAll: () => setState(() => _tab = 1)),
+            const ExpensesScreen(),
+            const CategoriesScreen(),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _openAddSheet,
+          icon: const Icon(Icons.add),
+          label: Text(l.add),
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _tab,
+          onDestinationSelected: (i) => setState(() => _tab = i),
+          destinations: [
+            NavigationDestination(
+              icon: const Icon(Icons.pie_chart_outline),
+              selectedIcon: const Icon(Icons.pie_chart),
+              label: l.navSummary,
+            ),
+            NavigationDestination(
               icon: const Icon(Icons.receipt_long_outlined),
               selectedIcon: const Icon(Icons.receipt_long),
-              label: l.navTransactions),
-          NavigationDestination(
-              icon: const Icon(Icons.category_outlined), selectedIcon: const Icon(Icons.category), label: l.navCategories),
-        ],
+              label: l.navTransactions,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.category_outlined),
+              selectedIcon: const Icon(Icons.category),
+              label: l.navCategories,
+            ),
+          ],
+        ),
       ),
     );
   }

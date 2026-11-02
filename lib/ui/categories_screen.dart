@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
 import '../app_services.dart';
+import '../art/art_ui.dart';
 import '../data/database.dart';
 import 'format.dart';
 import 'l10n.dart';
@@ -18,6 +19,7 @@ class CategoriesScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(l.navCategories),
         actions: [
+          const PaintingInfoButton(),
           IconButton(
             tooltip: l.newCategory,
             icon: const Icon(Icons.add),

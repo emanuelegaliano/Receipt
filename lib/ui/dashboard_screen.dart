@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../app_services.dart';
+import '../art/art_ui.dart';
 import '../data/budget.dart';
 import '../data/database.dart';
 import 'format.dart';
@@ -24,6 +25,7 @@ class DashboardScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(l.summaryTitle),
         actions: [
+          const PaintingInfoButton(),
           IconButton(
             tooltip: l.settings,
             icon: const Icon(Icons.settings_outlined),

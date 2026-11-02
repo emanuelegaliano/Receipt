@@ -8,6 +8,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../app_services.dart';
+import '../art/art_ui.dart';
+import '../art/daily_art.dart';
 import '../data/backup.dart';
 import '../data/database.dart';
 import '../data/demo_data.dart';
@@ -82,6 +84,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await restore(services.db, b, receiptsDir: p.join(docs, 'receipts'));
       // Il tema fa parte delle impostazioni ripristinate.
       services.appearance.value = await AppearanceSettings.load(services.db);
+      await services.art.reload();
       messenger.showSnackBar(SnackBar(content: Text(l.restoreDone(b.expenses))));
     } on BackupException catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(backupErrorText(e.error, l))));
@@ -271,6 +274,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           ListTile(title: Text(l.sectionAppearance, style: text.titleSmall?.copyWith(color: scheme.primary))),
           const _AppearancePicker(),
+          const _DailyArtTile(),
           const Divider(),
           ListTile(title: Text(l.sectionSecurity, style: text.titleSmall?.copyWith(color: scheme.primary))),
           ListTile(
@@ -410,6 +414,81 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Il quadro del giorno come sfondo: spento finché l'utente non lo accende,
+/// perché scarica un'immagine al giorno da internet.
+class _DailyArtTile extends StatelessWidget {
+  const _DailyArtTile();
+
+  @override
+  Widget build(BuildContext context) {
+    final art = AppServices.of(context).art;
+    final l = context.l10n;
+    final lang = Localizations.localeOf(context).languageCode;
+    return ListenableBuilder(
+      listenable: art,
+      builder: (context, _) {
+        final painting = art.painting;
+        final status = !art.enabled
+            ? l.dailyArtHint
+            : art.downloading
+                ? l.dailyArtDownloading
+                : art.failed && painting == null
+                    ? l.dailyArtFailed
+                    : painting != null
+                        ? l.dailyArtToday(painting.titleIn(lang), painting.artist)
+                        : l.dailyArtHint;
+        final image = art.image;
+        final percent = (art.visibility * 100).round();
+        return Column(
+          children: [
+            SwitchListTile(
+              secondary: const Icon(Icons.palette_outlined),
+              title: Text(l.dailyArt),
+              subtitle: Text(status),
+              isThreeLine: true,
+              value: art.enabled,
+              onChanged: art.setEnabled,
+            ),
+            if (art.enabled)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Row(
+                  children: [
+                    if (image != null) ...[
+                      PaintingPreview(file: image, visibility: art.visibility),
+                      const SizedBox(width: 8),
+                    ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(l.dailyArtVisibility('$percent')),
+                          ),
+                          // Mentre si trascina cambia solo lo schermo; si salva al rilascio.
+                          Slider(
+                            value: percent.toDouble(),
+                            min: DailyArt.minVisibility * 100,
+                            max: DailyArt.maxVisibility * 100,
+                            divisions: 9,
+                            label: '$percent%',
+                            onChanged: (v) => art.setVisibility(v / 100, save: false),
+                            onChangeEnd: (v) => art.setVisibility(v / 100),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

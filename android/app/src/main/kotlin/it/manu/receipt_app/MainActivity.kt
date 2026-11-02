@@ -62,5 +62,20 @@ class MainActivity : FlutterFragmentActivity() {
                 else -> result.notImplemented()
             }
         }
+        // Link esterni (la pagina del quadro del giorno su metmuseum.org): li
+        // apre il browser. Solo https.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "receipt/links").setMethodCallHandler { call, result ->
+            val url = call.argument<String>("url")
+            when {
+                call.method != "open" -> result.notImplemented()
+                url == null || !url.startsWith("https://") -> result.error("INVALID_ARG", "url non valido", null)
+                else -> try {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                    result.success(null)
+                } catch (e: android.content.ActivityNotFoundException) {
+                    result.error("NO_BROWSER", e.message, null)
+                }
+            }
+        }
     }
 }

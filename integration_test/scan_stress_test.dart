@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:receipt_app/app_services.dart';
+import 'package:receipt_app/art/daily_art.dart';
 import 'package:receipt_app/data/database.dart';
 import 'package:receipt_app/l10n/app_localizations.dart';
 import 'package:receipt_app/receipt/receipt_scanner.dart';
@@ -55,6 +56,7 @@ void main() {
       lock: lock,
       scanner: () => scanner ??= ReceiptScanner.load(),
       updater: Updater(),
+      art: DailyArt(db), // spento: nessuna impostazione daily_art
       child: MaterialApp(
         navigatorKey: navigator,
         locale: const Locale('it'),
