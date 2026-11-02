@@ -6,7 +6,6 @@
 
 ## To do (already discussed)
 - Encrypted automatic backup to Google Drive (password, app-private folder).
-- Optional in-app update check against the latest GitHub Release.
 - Reading card payment notifications (after the first version).
 
 ## Open issues

@@ -25,6 +25,24 @@ Future<void> startScan(BuildContext context, {required bool fromCamera}) async {
   await Navigator.push(context, MaterialPageRoute(builder: (_) => ScanProcessingScreen(bytes)));
 }
 
+/// Se Android ha chiuso Receipt mentre la fotocamera era aperta (succede
+/// quando manca memoria), la foto non è persa: image_picker la tiene da parte
+/// e la restituisce al riavvio. Va chiamata all'apertura dell'app.
+Future<void> recoverLostScan(BuildContext context) async {
+  final LostDataResponse lost;
+  try {
+    lost = await ImagePicker().retrieveLostData();
+  } catch (_) {
+    return;
+  }
+  final file = lost.file;
+  if (lost.isEmpty || file == null || !context.mounted) return;
+  final bytes = await file.readAsBytes();
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.scanRecovered)));
+  await Navigator.push(context, MaterialPageRoute(builder: (_) => ScanProcessingScreen(bytes)));
+}
+
 class ScanProcessingScreen extends StatefulWidget {
   final Uint8List bytes;
   const ScanProcessingScreen(this.bytes, {super.key});
@@ -114,7 +132,7 @@ class _ScanProcessingScreenState extends State<ScanProcessingScreen> {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.memory(widget.bytes, fit: BoxFit.contain),
+                child: Image.memory(widget.bytes, fit: BoxFit.contain, cacheHeight: 1200),
               ),
             ),
             const SizedBox(height: 24),

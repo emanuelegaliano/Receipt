@@ -12,6 +12,7 @@ import '../data/backup.dart';
 import '../data/database.dart';
 import '../data/demo_data.dart';
 import '../screens/ocr_screen.dart';
+import '../update/update_ui.dart';
 import 'format.dart';
 import 'l10n.dart';
 
@@ -27,6 +28,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _biometricAvailable = false;
   bool _exporting = false;
   bool _importing = false;
+  bool? _checkUpdates;
+  String? _version;
+  bool _checking = false;
 
   @override
   void initState() {
@@ -174,9 +178,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    AppServices.of(context).db.setting('receipt_lang').then((v) {
+    final services = AppServices.of(context);
+    services.db.setting('receipt_lang').then((v) {
       if (mounted && v != null) setState(() => _lang = v);
     });
+    updateCheckEnabled(services.db).then((v) {
+      if (mounted) setState(() => _checkUpdates = v);
+    });
+    services.updater.currentVersion().then((v) {
+      if (mounted) setState(() => _version = v);
+    }, onError: (_) {});
+  }
+
+  Future<void> _checkNow() async {
+    setState(() => _checking = true);
+    try {
+      await checkForUpdatesNow(context);
+    } finally {
+      if (mounted) setState(() => _checking = false);
+    }
   }
 
   Future<void> _editAccount(Account? account) async {
@@ -352,6 +372,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: const Icon(Icons.backup_outlined),
             title: Text(l.autoBackup),
             subtitle: Text(l.comingSoon),
+          ),
+          const Divider(),
+          ListTile(title: Text(l.sectionUpdates, style: text.titleSmall?.copyWith(color: scheme.primary))),
+          SwitchListTile(
+            secondary: const Icon(Icons.system_update_outlined),
+            title: Text(l.updateCheckOnStart),
+            subtitle: Text(l.updateCheckOnStartHint),
+            value: _checkUpdates ?? true,
+            onChanged: _checkUpdates == null
+                ? null
+                : (v) {
+                    setState(() => _checkUpdates = v);
+                    setUpdateCheckEnabled(db, v);
+                  },
+          ),
+          ListTile(
+            leading: _checking
+                ? const SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.refresh),
+            title: Text(l.updateCheckNow),
+            subtitle: _version == null ? null : Text(l.updateInstalledVersion(_version!)),
+            enabled: !_checking,
+            onTap: _checkNow,
           ),
           if (demoEnabled)
             ListTile(

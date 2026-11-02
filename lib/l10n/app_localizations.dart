@@ -1291,6 +1291,132 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Riquadri'**
   String get ocrBoxes;
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In it, this message translates to:
+  /// **'È disponibile Receipt {version} ({size})'**
+  String updateAvailable(String version, String size);
+
+  /// No description provided for @updateLater.
+  ///
+  /// In it, this message translates to:
+  /// **'Non ora'**
+  String get updateLater;
+
+  /// No description provided for @updateNow.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiorna'**
+  String get updateNow;
+
+  /// No description provided for @updateTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiornamento a {version}'**
+  String updateTitle(String version);
+
+  /// No description provided for @updateDownloading.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarico l\'aggiornamento…'**
+  String get updateDownloading;
+
+  /// No description provided for @updateProgress.
+  ///
+  /// In it, this message translates to:
+  /// **'{done} di {total}'**
+  String updateProgress(String done, String total);
+
+  /// No description provided for @updatePermission.
+  ///
+  /// In it, this message translates to:
+  /// **'Per installare l\'aggiornamento Android chiede di consentire a Receipt di installare app. Serve solo la prima volta.'**
+  String get updatePermission;
+
+  /// No description provided for @updateAllow.
+  ///
+  /// In it, this message translates to:
+  /// **'Consenti'**
+  String get updateAllow;
+
+  /// No description provided for @updateInstalling.
+  ///
+  /// In it, this message translates to:
+  /// **'Si apre l\'installer di Android: tocca «Aggiorna» per finire. Spese e foto restano dove sono.'**
+  String get updateInstalling;
+
+  /// No description provided for @updateErrorNetwork.
+  ///
+  /// In it, this message translates to:
+  /// **'Download non riuscito. Controlla la connessione e riprova.'**
+  String get updateErrorNetwork;
+
+  /// No description provided for @updateErrorCorrupted.
+  ///
+  /// In it, this message translates to:
+  /// **'Il file scaricato non corrisponde a quello pubblicato ed è stato scartato. Riprova.'**
+  String get updateErrorCorrupted;
+
+  /// No description provided for @retry.
+  ///
+  /// In it, this message translates to:
+  /// **'Riprova'**
+  String get retry;
+
+  /// No description provided for @close.
+  ///
+  /// In it, this message translates to:
+  /// **'Chiudi'**
+  String get close;
+
+  /// No description provided for @sectionUpdates.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiornamenti'**
+  String get sectionUpdates;
+
+  /// No description provided for @updateCheckOnStart.
+  ///
+  /// In it, this message translates to:
+  /// **'Controlla all\'avvio'**
+  String get updateCheckOnStart;
+
+  /// No description provided for @updateCheckOnStartHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Legge la versione disponibile dal sito di Receipt. Non viene inviato nessun tuo dato.'**
+  String get updateCheckOnStartHint;
+
+  /// No description provided for @updateCheckNow.
+  ///
+  /// In it, this message translates to:
+  /// **'Controlla ora'**
+  String get updateCheckNow;
+
+  /// No description provided for @updateInstalledVersion.
+  ///
+  /// In it, this message translates to:
+  /// **'Versione installata: {version}'**
+  String updateInstalledVersion(String version);
+
+  /// No description provided for @updateUpToDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai già l\'ultima versione'**
+  String get updateUpToDate;
+
+  /// No description provided for @updateCheckFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non riesco a controllare gli aggiornamenti: sei connesso?'**
+  String get updateCheckFailed;
+
+  /// No description provided for @scanRecovered.
+  ///
+  /// In it, this message translates to:
+  /// **'Android aveva chiuso Receipt mentre scattavi: ecco la foto, la leggo ora.'**
+  String get scanRecovered;
 }
 
 class _AppLocalizationsDelegate

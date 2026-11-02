@@ -755,4 +755,82 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get ocrBoxes => 'Riquadri';
+
+  @override
+  String updateAvailable(String version, String size) {
+    return 'È disponibile Receipt $version ($size)';
+  }
+
+  @override
+  String get updateLater => 'Non ora';
+
+  @override
+  String get updateNow => 'Aggiorna';
+
+  @override
+  String updateTitle(String version) {
+    return 'Aggiornamento a $version';
+  }
+
+  @override
+  String get updateDownloading => 'Scarico l\'aggiornamento…';
+
+  @override
+  String updateProgress(String done, String total) {
+    return '$done di $total';
+  }
+
+  @override
+  String get updatePermission =>
+      'Per installare l\'aggiornamento Android chiede di consentire a Receipt di installare app. Serve solo la prima volta.';
+
+  @override
+  String get updateAllow => 'Consenti';
+
+  @override
+  String get updateInstalling =>
+      'Si apre l\'installer di Android: tocca «Aggiorna» per finire. Spese e foto restano dove sono.';
+
+  @override
+  String get updateErrorNetwork =>
+      'Download non riuscito. Controlla la connessione e riprova.';
+
+  @override
+  String get updateErrorCorrupted =>
+      'Il file scaricato non corrisponde a quello pubblicato ed è stato scartato. Riprova.';
+
+  @override
+  String get retry => 'Riprova';
+
+  @override
+  String get close => 'Chiudi';
+
+  @override
+  String get sectionUpdates => 'Aggiornamenti';
+
+  @override
+  String get updateCheckOnStart => 'Controlla all\'avvio';
+
+  @override
+  String get updateCheckOnStartHint =>
+      'Legge la versione disponibile dal sito di Receipt. Non viene inviato nessun tuo dato.';
+
+  @override
+  String get updateCheckNow => 'Controlla ora';
+
+  @override
+  String updateInstalledVersion(String version) {
+    return 'Versione installata: $version';
+  }
+
+  @override
+  String get updateUpToDate => 'Hai già l\'ultima versione';
+
+  @override
+  String get updateCheckFailed =>
+      'Non riesco a controllare gli aggiornamenti: sei connesso?';
+
+  @override
+  String get scanRecovered =>
+      'Android aveva chiuso Receipt mentre scattavi: ecco la foto, la leggo ora.';
 }

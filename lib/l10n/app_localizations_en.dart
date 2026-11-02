@@ -761,4 +761,81 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ocrBoxes => 'Boxes';
+
+  @override
+  String updateAvailable(String version, String size) {
+    return 'Receipt $version is available ($size)';
+  }
+
+  @override
+  String get updateLater => 'Not now';
+
+  @override
+  String get updateNow => 'Update';
+
+  @override
+  String updateTitle(String version) {
+    return 'Update to $version';
+  }
+
+  @override
+  String get updateDownloading => 'Downloading the update…';
+
+  @override
+  String updateProgress(String done, String total) {
+    return '$done of $total';
+  }
+
+  @override
+  String get updatePermission =>
+      'To install the update, Android asks you to allow Receipt to install apps. You only need to do this once.';
+
+  @override
+  String get updateAllow => 'Allow';
+
+  @override
+  String get updateInstalling =>
+      'The Android installer opens: tap “Update” to finish. Your expenses and photos stay where they are.';
+
+  @override
+  String get updateErrorNetwork =>
+      'Download failed. Check your connection and try again.';
+
+  @override
+  String get updateErrorCorrupted =>
+      'The downloaded file does not match the published one and was discarded. Try again.';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get sectionUpdates => 'Updates';
+
+  @override
+  String get updateCheckOnStart => 'Check at startup';
+
+  @override
+  String get updateCheckOnStartHint =>
+      'Reads the available version from the Receipt website. None of your data is sent.';
+
+  @override
+  String get updateCheckNow => 'Check now';
+
+  @override
+  String updateInstalledVersion(String version) {
+    return 'Installed version: $version';
+  }
+
+  @override
+  String get updateUpToDate => 'You already have the latest version';
+
+  @override
+  String get updateCheckFailed => 'Can\'t check for updates: are you online?';
+
+  @override
+  String get scanRecovered =>
+      'Android closed Receipt while you were taking the photo: here it is, reading it now.';
 }

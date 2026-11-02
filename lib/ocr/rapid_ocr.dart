@@ -32,9 +32,13 @@ class RapidOcr {
 
   static Future<RapidOcr> load() async {
     final ort = OnnxRuntime();
-    final det = await ort.createSessionFromAsset('assets/models/det.onnx');
-    final cls = await ort.createSessionFromAsset('assets/models/cls.onnx');
-    final rec = await ort.createSessionFromAsset('assets/models/rec.onnx');
+    // Senza arena: con l'arena ONNX Runtime tiene per sé il picco di ogni
+    // scansione (foto e righe hanno sempre dimensioni diverse) e il processo
+    // restava a ~1,5 GB dopo pochi scontrini.
+    final options = OrtSessionOptions(useArena: false);
+    final det = await ort.createSessionFromAsset('assets/models/det.onnx', options: options);
+    final cls = await ort.createSessionFromAsset('assets/models/cls.onnx', options: options);
+    final rec = await ort.createSessionFromAsset('assets/models/rec.onnx', options: options);
     final keys = await rootBundle.loadString('assets/models/keys.txt');
     return RapidOcr._(det, cls, rec, ['blank', ...keys.split('\n'), ' ']);
   }

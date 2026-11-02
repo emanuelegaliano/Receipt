@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../update/update_ui.dart';
 import 'categories_screen.dart';
 import 'dashboard_screen.dart';
 import 'expense_form_screen.dart';
@@ -16,6 +17,15 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _tab = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      recoverLostScan(context);
+      checkForUpdatesOnStart(context);
+    });
+  }
 
   void _openAddSheet() {
     final l = context.l10n;

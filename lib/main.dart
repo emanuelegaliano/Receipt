@@ -12,9 +12,11 @@ import 'receipt/receipt_scanner.dart';
 import 'security/app_lock.dart';
 import 'security/lock_screens.dart';
 import 'ui/home_shell.dart';
+import 'update/updater.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  PaintingBinding.instance.imageCache.maximumSizeBytes = imageCacheBytes;
   await initializeDateFormatting('it');
   await initializeDateFormatting('en');
 
@@ -30,6 +32,7 @@ Future<void> main() async {
     appearance: appearance,
     lock: lock,
     scanner: loadScanner,
+    updater: Updater(),
     child: const ReceiptApp(),
   ));
   _cleanOrphanReceipts(db);

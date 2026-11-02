@@ -454,5 +454,60 @@
       }
     }
   },
-  "ocrBoxes": "Riquadri"
+  "ocrBoxes": "Riquadri",
+  "updateAvailable": "È disponibile Receipt {version} ({size})",
+  "@updateAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "updateLater": "Non ora",
+  "updateNow": "Aggiorna",
+  "updateTitle": "Aggiornamento a {version}",
+  "@updateTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateDownloading": "Scarico l'aggiornamento…",
+  "updateProgress": "{done} di {total}",
+  "@updateProgress": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "updatePermission": "Per installare l'aggiornamento Android chiede di consentire a Receipt di installare app. Serve solo la prima volta.",
+  "updateAllow": "Consenti",
+  "updateInstalling": "Si apre l'installer di Android: tocca «Aggiorna» per finire. Spese e foto restano dove sono.",
+  "updateErrorNetwork": "Download non riuscito. Controlla la connessione e riprova.",
+  "updateErrorCorrupted": "Il file scaricato non corrisponde a quello pubblicato ed è stato scartato. Riprova.",
+  "retry": "Riprova",
+  "close": "Chiudi",
+  "sectionUpdates": "Aggiornamenti",
+  "updateCheckOnStart": "Controlla all'avvio",
+  "updateCheckOnStartHint": "Legge la versione disponibile dal sito di Receipt. Non viene inviato nessun tuo dato.",
+  "updateCheckNow": "Controlla ora",
+  "updateInstalledVersion": "Versione installata: {version}",
+  "@updateInstalledVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateUpToDate": "Hai già l'ultima versione",
+  "updateCheckFailed": "Non riesco a controllare gli aggiornamenti: sei connesso?",
+  "scanRecovered": "Android aveva chiuso Receipt mentre scattavi: ecco la foto, la leggo ora."
 }

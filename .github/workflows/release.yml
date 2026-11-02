@@ -115,6 +115,35 @@ jobs:
           cache: npm
           cache-dependency-path: site/package-lock.json
 
+      # version.json is what the app (lib/update/) reads to offer updates. It
+      # describes the release actually published, not pubspec.yaml: a failed
+      # APK build must never announce a version that cannot be downloaded.
+      - name: version.json from the latest release
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh api "repos/$GITHUB_REPOSITORY/releases/latest" > "$RUNNER_TEMP/release.json" 2>/dev/null; then
+            echo "No release yet: no version.json."
+            exit 0
+          fi
+          jq '{version: (.tag_name | ltrimstr("v")), published: .published_at,
+               apk: (first(.assets[] | select(.name == "receipt.apk"))
+                     | {url: .browser_download_url, size: .size, sha256: ((.digest // "") | ltrimstr("sha256:"))})}' \
+            "$RUNNER_TEMP/release.json" > "$RUNNER_TEMP/version.json"
+          if [ "$(jq -r '.apk.sha256 // ""' "$RUNNER_TEMP/version.json")" = "" ] && [ "$(jq -r '.apk.url // ""' "$RUNNER_TEMP/version.json")" != "" ]; then
+            # Older releases have no digest from GitHub: hash the APK ourselves.
+            sha=$(curl -fsSL "$(jq -r .apk.url "$RUNNER_TEMP/version.json")" | sha256sum | cut -d' ' -f1)
+            jq --arg sha "$sha" '.apk.sha256 = $sha' "$RUNNER_TEMP/version.json" > "$RUNNER_TEMP/v.json"
+            mv "$RUNNER_TEMP/v.json" "$RUNNER_TEMP/version.json"
+          fi
+          if jq -e '(.apk.sha256 | test("^[0-9a-f]{64}$")) and (.apk.url | startswith("https://"))' "$RUNNER_TEMP/version.json" >/dev/null; then
+            cp "$RUNNER_TEMP/version.json" site/public/version.json
+            cat site/public/version.json
+          else
+            echo "::warning::The latest release has no usable receipt.apk: no version.json."
+          fi
+
       - run: npm ci
       - run: npm run build
 

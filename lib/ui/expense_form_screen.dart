@@ -454,7 +454,16 @@ class _ReceiptPreviewState extends State<_ReceiptPreview> {
                   ),
                 ),
               ),
-              child: SizedBox(height: 180, child: Image(image: image, fit: BoxFit.cover, alignment: Alignment.topCenter)),
+              // Decodificata alla larghezza dello schermo, non a 2400 px (~17 MB l'una).
+              child: SizedBox(
+                height: 180,
+                child: Image(
+                  image: ResizeImage(image,
+                      width: (MediaQuery.sizeOf(context).width * MediaQuery.devicePixelRatioOf(context)).round()),
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                ),
+              ),
             ),
           for (final w in widget.warnings)
             Container(
