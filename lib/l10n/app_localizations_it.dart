@@ -833,4 +833,29 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get scanRecovered =>
       'Android aveva chiuso Receipt mentre scattavi: ecco la foto, la leggo ora.';
+
+  @override
+  String get chooseMonth => 'Vai al mese';
+
+  @override
+  String get thisMonth => 'Questo mese';
+
+  @override
+  String get previousYear => 'Anno precedente';
+
+  @override
+  String get nextYear => 'Anno successivo';
+
+  @override
+  String get updateConsentTitle => 'Aggiornamenti automatici';
+
+  @override
+  String get updateConsentMessage =>
+      'Receipt funziona tutta sul telefono e non raccoglie i tuoi dati. Vuoi che a ogni apertura controlli su internet se c\'è una nuova versione? Legge solo il numero di versione dal sito di Receipt. Puoi cambiare idea nelle Impostazioni.';
+
+  @override
+  String get updateConsentNo => 'No, grazie';
+
+  @override
+  String get updateConsentYes => 'Sì, controlla';
 }

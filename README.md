@@ -17,8 +17,8 @@
 Receipt tracks what you spend by card and in cash, entirely on your phone. Photograph a receipt and **RapidOCR**
 (the same PP-OCRv4 models used by [PyReceipt](https://github.com/emanuelegaliano/PyReceipt)), ported to Dart and
 running on ONNX Runtime, reads it; the PyReceipt parser (`Spatial2DBoxParser`) extracts the shop, the date and the
-total. No account, no cloud: expenses, photos and OCR never leave the phone. The internet permission is used only
-to check for and download updates, and the check can be turned off.
+total. Everything runs locally: no account, no cloud, and no data is collected. The only use of the internet is the
+optional update check, which the app asks about at first launch (it can be changed in the settings).
 
 From the original idea of PyReceipt: <https://emanuelegaliano.github.io/PyReceiptWebsitePage/>
 
@@ -39,13 +39,14 @@ From the original idea of PyReceipt: <https://emanuelegaliano.github.io/PyReceip
 - **Categories that learn**: name, icon, colour and keywords are editable. When you save an expense the shop is
   linked to its category, so next time it is suggested automatically, even if the OCR misspells the name.
 - **Monthly limits**: set a limit per category; you get a note at 80% and an alert when you reach it.
+- **Month picker**: tap the month name to jump to any month and year.
 - **Movements** grouped by day, with search, filters and swipe-to-delete with undo.
 - **Manual entry** for expenses without a receipt.
 - **Lock**: password on first launch, optional fingerprint, automatic lock after 30 s in the background.
 - **Backup**: export the database and all receipt photos to a .zip, restore it on another phone.
-- **Updates**: at startup the app reads `version.json` from the website; if there is a newer release it offers to
-  download the APK, checks its SHA-256 and opens the Android installer (one tap to confirm). Can be turned off in the
-  settings.
+- **Updates** (opt-in, asked at first launch): at startup the app reads `version.json` from the website; if there is
+  a newer release it offers to download the APK, checks its SHA-256 and opens the Android installer (one tap to
+  confirm).
 - **Language and themes**: English or Italian; system, light or dark theme with six accent colours.
 
 ## Install
@@ -144,7 +145,8 @@ Release builds read the keystore path and passwords from `android/key.properties
    published release (version, APK URL, size, SHA-256). The app reads it to offer updates, so it never announces a
    version whose APK failed to build.
 
-To publish a new version, bump `version:` in `pubspec.yaml` (e.g. `0.2.0+2`) and push.
+To publish a new version, bump `version:` in `pubspec.yaml` (e.g. `0.3.2+4`), add a section to
+[CHANGELOG.md](CHANGELOG.md) and push.
 
 The APK job needs two repository secrets:
 

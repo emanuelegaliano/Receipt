@@ -1417,6 +1417,54 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Android aveva chiuso Receipt mentre scattavi: ecco la foto, la leggo ora.'**
   String get scanRecovered;
+
+  /// No description provided for @chooseMonth.
+  ///
+  /// In it, this message translates to:
+  /// **'Vai al mese'**
+  String get chooseMonth;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In it, this message translates to:
+  /// **'Questo mese'**
+  String get thisMonth;
+
+  /// No description provided for @previousYear.
+  ///
+  /// In it, this message translates to:
+  /// **'Anno precedente'**
+  String get previousYear;
+
+  /// No description provided for @nextYear.
+  ///
+  /// In it, this message translates to:
+  /// **'Anno successivo'**
+  String get nextYear;
+
+  /// No description provided for @updateConsentTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiornamenti automatici'**
+  String get updateConsentTitle;
+
+  /// No description provided for @updateConsentMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Receipt funziona tutta sul telefono e non raccoglie i tuoi dati. Vuoi che a ogni apertura controlli su internet se c\'è una nuova versione? Legge solo il numero di versione dal sito di Receipt. Puoi cambiare idea nelle Impostazioni.'**
+  String get updateConsentMessage;
+
+  /// No description provided for @updateConsentNo.
+  ///
+  /// In it, this message translates to:
+  /// **'No, grazie'**
+  String get updateConsentNo;
+
+  /// No description provided for @updateConsentYes.
+  ///
+  /// In it, this message translates to:
+  /// **'Sì, controlla'**
+  String get updateConsentYes;
 }
 
 class _AppLocalizationsDelegate

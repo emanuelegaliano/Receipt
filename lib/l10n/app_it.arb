@@ -509,5 +509,13 @@
   },
   "updateUpToDate": "Hai già l'ultima versione",
   "updateCheckFailed": "Non riesco a controllare gli aggiornamenti: sei connesso?",
-  "scanRecovered": "Android aveva chiuso Receipt mentre scattavi: ecco la foto, la leggo ora."
+  "scanRecovered": "Android aveva chiuso Receipt mentre scattavi: ecco la foto, la leggo ora.",
+  "chooseMonth": "Vai al mese",
+  "thisMonth": "Questo mese",
+  "previousYear": "Anno precedente",
+  "nextYear": "Anno successivo",
+  "updateConsentTitle": "Aggiornamenti automatici",
+  "updateConsentMessage": "Receipt funziona tutta sul telefono e non raccoglie i tuoi dati. Vuoi che a ogni apertura controlli su internet se c'è una nuova versione? Legge solo il numero di versione dal sito di Receipt. Puoi cambiare idea nelle Impostazioni.",
+  "updateConsentNo": "No, grazie",
+  "updateConsentYes": "Sì, controlla"
 }

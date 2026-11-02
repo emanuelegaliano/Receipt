@@ -379,7 +379,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             secondary: const Icon(Icons.system_update_outlined),
             title: Text(l.updateCheckOnStart),
             subtitle: Text(l.updateCheckOnStartHint),
-            value: _checkUpdates ?? true,
+            value: _checkUpdates ?? false,
             onChanged: _checkUpdates == null
                 ? null
                 : (v) {

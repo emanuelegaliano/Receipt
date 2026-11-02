@@ -1,21 +1,25 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 
 import '../app_services.dart';
 import '../data/database.dart';
+import '../security/app_lock.dart';
 import '../ui/l10n.dart';
 import 'release.dart';
 import 'updater.dart';
 
-/// Impostazione "controlla all'avvio": attiva se non è stata spenta.
-Future<bool> updateCheckEnabled(AppDatabase db) async => await db.setting('update_check') != 'off';
+/// Impostazione "controlla all'avvio": spenta finché l'utente non dice di sì
+/// (glielo si chiede alla prima apertura, vedi [_askConsent]).
+Future<bool> updateCheckEnabled(AppDatabase db) async => await db.setting('update_check') == 'on';
 Future<void> setUpdateCheckEnabled(AppDatabase db, bool on) => db.setSetting('update_check', on ? 'on' : 'off');
 
 String formatMegabytes(int bytes) => '${(bytes / (1024 * 1024)).round()} MB';
 
-/// All'apertura: se c'è una versione nuova mostra un banner. In silenzio se
-/// il controllo è spento, se non c'è rete o se l'app è già aggiornata.
+/// All'apertura: la prima volta chiede se usare internet per gli
+/// aggiornamenti; poi, se è permesso e c'è una versione nuova, mostra un
+/// banner. In silenzio se non c'è rete o se l'app è già aggiornata.
 Future<void> checkForUpdatesOnStart(BuildContext context) async {
   final services = AppServices.of(context);
   final updater = services.updater;
@@ -23,6 +27,12 @@ Future<void> checkForUpdatesOnStart(BuildContext context) async {
   final AppRelease? release;
   try {
     await updater.cleanup(await updater.currentVersion());
+    if (await services.db.setting('update_check') == null) {
+      // Dopo la password o lo sblocco, non dietro la schermata di blocco.
+      await _unlocked(services.lock);
+      if (!context.mounted) return;
+      await setUpdateCheckEnabled(services.db, await _askConsent(context));
+    }
     if (!await updateCheckEnabled(services.db)) return;
     release = await updater.check();
   } catch (_) {
@@ -44,6 +54,36 @@ Future<void> checkForUpdatesOnStart(BuildContext context) async {
       ),
     ],
   ));
+}
+
+Future<void> _unlocked(AppLock lock) async {
+  if (lock.state == AppLockState.unlocked) return;
+  final done = Completer<void>();
+  void listener() {
+    if (lock.state == AppLockState.unlocked && !done.isCompleted) done.complete();
+  }
+
+  lock.addListener(listener);
+  await done.future;
+  lock.removeListener(listener);
+}
+
+Future<bool> _askConsent(BuildContext context) async {
+  final l = context.l10n;
+  final yes = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => AlertDialog(
+      icon: const Icon(Icons.system_update_outlined),
+      title: Text(l.updateConsentTitle),
+      content: Text(l.updateConsentMessage),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.updateConsentNo)),
+        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l.updateConsentYes)),
+      ],
+    ),
+  );
+  return yes ?? false;
 }
 
 /// "Controlla ora" dalle impostazioni: dice sempre com'è andata.
@@ -94,6 +134,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _download());
   }
+
 
   Future<void> _download() async {
     setState(() {
@@ -188,3 +229,4 @@ class _UpdateDialogState extends State<_UpdateDialog> {
     );
   }
 }
+

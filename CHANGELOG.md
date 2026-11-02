@@ -1,0 +1,26 @@
+# Changelog
+
+What changes in Receipt, one section per published version.
+
+## 0.3.1
+
+### New
+- Automatic updates, if you want them: at first launch Receipt asks whether it may check online for new versions.
+  When one is out, a banner tells you; the app downloads it, checks its SHA-256 and opens the Android installer.
+  You can change your mind in Settings → Updates.
+- Jump to any month: tap the month name in Transactions or Summary to pick month and year.
+- 36 more icons for categories.
+
+### Fixed
+- The app could close by itself after scanning many receipts in a row: it now uses about a third of the memory
+  (ONNX Runtime without the CPU arena, smaller previews, image cache capped at 32 MB).
+- If Android closes Receipt while the camera is open, the photo is no longer lost: it is read when the app restarts.
+
+### Changed
+- The app now has the INTERNET and REQUEST_INSTALL_PACKAGES permissions, used only for the optional update check
+  and to install updates. No data is collected.
+
+## 0.1.0
+
+First release: receipts read on the phone, card and cash expenses, categories that learn, monthly limits, lock with
+password and fingerprint, backup to a .zip, English and Italian.

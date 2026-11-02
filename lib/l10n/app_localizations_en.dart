@@ -838,4 +838,29 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get scanRecovered =>
       'Android closed Receipt while you were taking the photo: here it is, reading it now.';
+
+  @override
+  String get chooseMonth => 'Go to month';
+
+  @override
+  String get thisMonth => 'This month';
+
+  @override
+  String get previousYear => 'Previous year';
+
+  @override
+  String get nextYear => 'Next year';
+
+  @override
+  String get updateConsentTitle => 'Automatic updates';
+
+  @override
+  String get updateConsentMessage =>
+      'Receipt runs entirely on your phone and does not collect your data. Should it check online for a new version every time it opens? It only reads the version number from the Receipt website. You can change your mind in Settings.';
+
+  @override
+  String get updateConsentNo => 'No, thanks';
+
+  @override
+  String get updateConsentYes => 'Yes, check';
 }

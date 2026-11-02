@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../app_services.dart';
 import '../data/budget.dart';
@@ -8,6 +9,7 @@ import 'format.dart';
 import 'l10n.dart';
 
 /// ‹ Novembre 2026 ›: cambia il mese condiviso da riepilogo e movimenti.
+/// Toccando il nome del mese si sceglie mese e anno da una griglia.
 class MonthSwitcher extends StatelessWidget {
   const MonthSwitcher({super.key});
 
@@ -27,8 +29,23 @@ class MonthSwitcher extends StatelessWidget {
               onPressed: () => month.value = DateTime(m.year, m.month - 1),
             ),
             SizedBox(
-              width: 170,
-              child: Text(formatMonth(context, m), textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium),
+              width: 190,
+              child: TextButton(
+                onPressed: () async {
+                  final picked = await showMonthPicker(context, initial: m);
+                  if (picked != null) month.value = picked;
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(formatMonth(context, m),
+                          overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleMedium),
+                    ),
+                    const Icon(Icons.arrow_drop_down),
+                  ],
+                ),
+              ),
             ),
             IconButton(
               tooltip: context.l10n.nextMonth,
@@ -38,6 +55,91 @@ class MonthSwitcher extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// Griglia dei 12 mesi con l'anno da cambiare in alto: per saltare a un
+/// mese lontano senza premere ‹ decine di volte. I mesi futuri sono spenti,
+/// come la freccia › nel MonthSwitcher.
+Future<DateTime?> showMonthPicker(BuildContext context, {required DateTime initial}) =>
+    showDialog<DateTime>(context: context, builder: (_) => _MonthPickerDialog(initial));
+
+class _MonthPickerDialog extends StatefulWidget {
+  final DateTime initial;
+  const _MonthPickerDialog(this.initial);
+
+  @override
+  State<_MonthPickerDialog> createState() => _MonthPickerDialogState();
+}
+
+class _MonthPickerDialogState extends State<_MonthPickerDialog> {
+  static const firstYear = 2000; // come il calendario del modulo spesa
+  late int _year = widget.initial.year;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+    final now = monthOf(DateTime.now());
+    final names = DateFormat.MMM(context.localeTag);
+    return AlertDialog(
+      title: Text(l.chooseMonth),
+      contentPadding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      content: SizedBox(
+        width: 320,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  tooltip: l.previousYear,
+                  icon: const Icon(Icons.chevron_left),
+                  onPressed: _year > firstYear ? () => setState(() => _year--) : null,
+                ),
+                Text('$_year', style: Theme.of(context).textTheme.titleLarge),
+                IconButton(
+                  tooltip: l.nextYear,
+                  icon: const Icon(Icons.chevron_right),
+                  onPressed: _year < now.year ? () => setState(() => _year++) : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            GridView.count(
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              childAspectRatio: 2.2,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                for (var i = 1; i <= 12; i++)
+                  () {
+                    final m = DateTime(_year, i);
+                    final label = names.format(m);
+                    final text = Text(label[0].toUpperCase() + label.substring(1));
+                    final enabled = !m.isAfter(now);
+                    if (m == widget.initial) {
+                      return FilledButton(onPressed: () => Navigator.pop(context, m), child: text);
+                    }
+                    return OutlinedButton(
+                      onPressed: enabled ? () => Navigator.pop(context, m) : null,
+                      style: m == now ? OutlinedButton.styleFrom(side: BorderSide(color: scheme.primary)) : null,
+                      child: text,
+                    );
+                  }(),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, now), child: Text(l.thisMonth)),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
+      ],
     );
   }
 }

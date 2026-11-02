@@ -219,5 +219,13 @@
   "updateInstalledVersion": "Installed version: {version}",
   "updateUpToDate": "You already have the latest version",
   "updateCheckFailed": "Can't check for updates: are you online?",
-  "scanRecovered": "Android closed Receipt while you were taking the photo: here it is, reading it now."
+  "scanRecovered": "Android closed Receipt while you were taking the photo: here it is, reading it now.",
+  "chooseMonth": "Go to month",
+  "thisMonth": "This month",
+  "previousYear": "Previous year",
+  "nextYear": "Next year",
+  "updateConsentTitle": "Automatic updates",
+  "updateConsentMessage": "Receipt runs entirely on your phone and does not collect your data. Should it check online for a new version every time it opens? It only reads the version number from the Receipt website. You can change your mind in Settings.",
+  "updateConsentNo": "No, thanks",
+  "updateConsentYes": "Yes, check"
 }
