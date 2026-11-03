@@ -97,14 +97,17 @@ class DailyArt extends ChangeNotifier {
     if (save) await db.setSetting('daily_art_visibility', '${(_visibility * 100).round()}');
   }
 
-  /// Dopo il ripristino di un backup: impostazioni come nel backup.
+  /// Dopo il ripristino di un backup: impostazioni come nel backup. Un
+  /// backup di prima della 0.3.2 non ha la scelta: il quadro resta spento
+  /// senza salvare "off", così al prossimo avvio la domanda torna.
   Future<void> reload() async {
     await _loadVisibility();
-    await setEnabled(await db.setting('daily_art') == 'on');
+    final saved = await db.setting('daily_art');
+    await setEnabled(saved == 'on', save: saved != null);
   }
 
-  Future<void> setEnabled(bool on) async {
-    await db.setSetting('daily_art', on ? 'on' : 'off');
+  Future<void> setEnabled(bool on, {bool save = true}) async {
+    if (save) await db.setSetting('daily_art', on ? 'on' : 'off');
     _enabled = on;
     _failed = false;
     if (!on) {

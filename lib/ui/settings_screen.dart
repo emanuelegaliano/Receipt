@@ -87,7 +87,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await services.art.reload();
       messenger.showSnackBar(SnackBar(content: Text(l.restoreDone(b.expenses))));
     } on BackupException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(backupErrorText(e.error, l))));
+      messenger.showSnackBar(SnackBar(
+        content: Text(backupErrorText(e, l, file: picked.name)),
+        duration: const Duration(seconds: 12),
+        showCloseIcon: true,
+      ));
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(l.restoreFailed('$e'))));
     } finally {

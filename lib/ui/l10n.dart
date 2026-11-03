@@ -34,8 +34,13 @@ String accountLabel(Account a, AppLocalizations l) => switch (a.name) {
       _ => a.name,
     };
 
-String backupErrorText(BackupError e, AppLocalizations l) => switch (e) {
-      BackupError.notZip => l.backupNotZip,
+/// Il messaggio per un backup rifiutato. Con il nome del file e, se mancano
+/// dei file, quali e cosa c'è nello zip: si capisce subito se è stato scelto
+/// il file sbagliato o se lo zip è stato rifatto.
+String backupErrorText(BackupException e, AppLocalizations l, {required String file}) => switch (e.error) {
+      BackupError.notZip => l.backupNotZipNamed(file),
+      BackupError.notReceiptBackup when e.missing.isNotEmpty =>
+        l.backupNotReceiptDetail(file, e.missing.join(', '), e.found.isEmpty ? '—' : e.found.join(', ')),
       BackupError.notReceiptBackup => l.backupNotReceipt,
       BackupError.damaged => l.backupDamaged,
       BackupError.newerVersion => l.backupNewer,

@@ -85,4 +85,52 @@ void main() {
     expect(tmp.listSync().whereType<Directory>().where((d) => p.basename(d.path).startsWith('import')), isEmpty);
     await db.close();
   });
+
+  /// Lo stesso backup rimpacchettato: [rename] cambia il nome di ogni file,
+  /// [extra] aggiunge file con quel nome.
+  Future<File> repack(File backup, String name, String Function(String) rename, {List<String> extra = const []}) async {
+    final out = p.join(tmp.path, name);
+    final archive = ZipDecoder().decodeBytes(backup.readAsBytesSync());
+    final enc = ZipFileEncoder()..create(out);
+    for (final e in archive) {
+      if (e.isFile) enc.addArchiveFile(ArchiveFile.bytes(rename(e.name), e.readBytes()!));
+    }
+    for (final x in extra) {
+      enc.addArchiveFile(ArchiveFile.bytes(x, [1, 2, 3]));
+    }
+    await enc.close();
+    return File(out);
+  }
+
+  test('accetta il backup dentro una cartella (zip estratto e ricompresso), anche dal Mac o da Windows', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    await loadDemoData(db, DateTime(2026, 10));
+    final zip = await exportBackupTo(db, tmp.path);
+    for (final f in [
+      await repack(zip, 'cartella.zip', (n) => 'DOC-20261101-WA0193/$n'),
+      await repack(zip, 'mac.zip', (n) => n,
+          extra: ['__MACOSX/._manifest.json', '__MACOSX/receipts/._a.jpg', '.DS_Store']),
+      await repack(zip, 'windows.zip', (n) => 'backup\\${n.replaceAll('/', '\\')}'),
+    ]) {
+      final preview = await openBackup(f, tmpDir: tmp.path, currentSchema: db.schemaVersion);
+      expect(preview.expenses, 30, reason: p.basename(f.path));
+      await preview.dispose();
+    }
+    await db.close();
+  });
+
+  test('se non è un backup dice cosa manca e cosa c\'è', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    final zip = await exportBackupTo(db, tmp.path);
+    final noDb = await repack(zip, 'senza_db.zip', (n) => n == 'receipt.sqlite' ? 'altro/receipt.sqlite' : 'backup/$n');
+    try {
+      await openBackup(noDb, tmpDir: tmp.path, currentSchema: db.schemaVersion);
+      fail('accettato');
+    } on BackupException catch (e) {
+      expect(e.error, BackupError.notReceiptBackup);
+      expect(e.missing, ['backup/receipt.sqlite']);
+      expect(e.found, ['altro/', 'backup/']);
+    }
+    await db.close();
+  });
 }

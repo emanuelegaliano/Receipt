@@ -1585,6 +1585,18 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Visibilità del quadro: {percent}%'**
   String dailyArtVisibility(String percent);
+
+  /// No description provided for @backupNotZipNamed.
+  ///
+  /// In it, this message translates to:
+  /// **'«{file}» non è uno zip valido.'**
+  String backupNotZipNamed(String file);
+
+  /// No description provided for @backupNotReceiptDetail.
+  ///
+  /// In it, this message translates to:
+  /// **'«{file}» non è un backup di Receipt: non trovo {missing}. Nello zip c\'è: {found}.'**
+  String backupNotReceiptDetail(String file, String missing, String found);
 }
 
 class _AppLocalizationsDelegate

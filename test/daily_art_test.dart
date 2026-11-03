@@ -196,6 +196,22 @@ void main() {
       expect(again.visibility, 0.5);
     });
 
+    test('un backup senza la scelta (prima della 0.3.2) la fa richiedere', () async {
+      final a = art();
+      await a.init();
+      await a.setEnabled(true);
+      // Il ripristino sostituisce le impostazioni con quelle del backup.
+      await db.delete(db.settings).go();
+      await a.reload();
+      expect(a.enabled, isFalse);
+      expect(files(), isEmpty);
+      expect(await db.setting('daily_art'), isNull);
+
+      await db.setSetting('daily_art', 'on');
+      await a.reload();
+      expect(a.enabled, isTrue);
+    });
+
     test('spegnendolo toglie le immagini', () async {
       final a = art();
       await a.init();

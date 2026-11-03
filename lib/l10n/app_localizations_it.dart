@@ -932,4 +932,14 @@ class AppLocalizationsIt extends AppLocalizations {
   String dailyArtVisibility(String percent) {
     return 'Visibilità del quadro: $percent%';
   }
+
+  @override
+  String backupNotZipNamed(String file) {
+    return '«$file» non è uno zip valido.';
+  }
+
+  @override
+  String backupNotReceiptDetail(String file, String missing, String found) {
+    return '«$file» non è un backup di Receipt: non trovo $missing. Nello zip c\'è: $found.';
+  }
 }

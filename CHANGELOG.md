@@ -2,6 +2,16 @@
 
 What changes in Receipt, one section per published version.
 
+## 0.3.3
+
+### Fixed
+- A backup that had been unzipped and zipped again (for example after WhatsApp or Telegram, or on a computer) was
+  refused with "This zip is not a Receipt backup" because its files were inside a folder. Receipt now looks inside
+  the folder, and ignores the extra files added by macOS (`__MACOSX`, `.DS_Store`) and Windows-style paths.
+- When a zip is refused, the message now names the file, what is missing and what the zip contains.
+- Restoring a backup made before 0.3.2 no longer turns the painting of the day off for good: Receipt asks again at
+  the next launch.
+
 ## 0.3.2
 
 ### New

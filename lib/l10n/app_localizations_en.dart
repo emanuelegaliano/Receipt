@@ -937,4 +937,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String dailyArtVisibility(String percent) {
     return 'Painting visibility: $percent%';
   }
+
+  @override
+  String backupNotZipNamed(String file) {
+    return '“$file” is not a valid zip file.';
+  }
+
+  @override
+  String backupNotReceiptDetail(String file, String missing, String found) {
+    return '“$file” is not a Receipt backup: $missing not found. The zip contains: $found.';
+  }
 }

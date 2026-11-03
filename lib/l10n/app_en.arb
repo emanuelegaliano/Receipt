@@ -285,5 +285,27 @@
         "type": "String"
       }
     }
+  },
+  "backupNotZipNamed": "“{file}” is not a valid zip file.",
+  "@backupNotZipNamed": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "backupNotReceiptDetail": "“{file}” is not a Receipt backup: {missing} not found. The zip contains: {found}.",
+  "@backupNotReceiptDetail": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      },
+      "missing": {
+        "type": "String"
+      },
+      "found": {
+        "type": "String"
+      }
+    }
   }
 }

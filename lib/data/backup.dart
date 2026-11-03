@@ -61,9 +61,33 @@ enum BackupError { notZip, notReceiptBackup, damaged, newerVersion }
 
 class BackupException implements Exception {
   final BackupError error;
-  const BackupException(this.error);
+
+  /// Per [BackupError.notReceiptBackup]: i file del backup che mancano e cosa
+  /// c'è invece nello zip (primo livello), da mostrare all'utente.
+  final List<String> missing;
+  final List<String> found;
+  const BackupException(this.error, {this.missing = const [], this.found = const []});
   @override
-  String toString() => 'BackupException: ${error.name}';
+  String toString() => 'BackupException: ${error.name}${missing.isEmpty ? '' : ' (manca $missing, c\'è $found)'}';
+}
+
+/// File dei sistemi operativi che finiscono negli zip rifatti a mano
+/// (__MACOSX/, ._nome e .DS_Store del Mac): non contano.
+bool _isJunk(String name) =>
+    name.startsWith('__MACOSX/') || p.posix.basename(name).startsWith('._') || p.posix.basename(name) == '.DS_Store';
+
+/// La cartella dello zip che contiene il backup: "" se manifest.json è in
+/// cima, come lo crea [exportBackup], altrimenti quella più vicina alla cima.
+/// Capita quando lo zip viene estratto e la cartella ricompressa (es. dopo
+/// WhatsApp o Telegram). null se manifest.json non c'è.
+String? _backupRoot(Iterable<String> names) {
+  String? best;
+  for (final n in names) {
+    if (p.posix.basename(n) != 'manifest.json') continue;
+    final prefix = n.substring(0, n.length - 'manifest.json'.length);
+    if (best == null || '/'.allMatches(prefix).length < '/'.allMatches(best).length) best = prefix;
+  }
+  return best;
 }
 
 /// Un backup estratto e controllato, pronto per [restore].
@@ -93,15 +117,30 @@ Future<BackupPreview> openBackup(File zip, {required String tmpDir, required int
     }
     // Un file qualsiasi non fa fallire il decoder: risulta solo vuoto.
     if (archive.isEmpty) throw const BackupException(BackupError.notZip);
+    // Alcuni zip fatti su Windows separano le cartelle con "\".
+    String name(ArchiveFile e) => e.name.replaceAll(r'\', '/');
+    final names = [for (final e in archive) if (e.isFile && !_isJunk(name(e))) name(e)];
+    final root = _backupRoot(names) ?? '';
+    final missing = [
+      for (final n in ['manifest.json', 'receipt.sqlite'])
+        if (!names.contains('$root$n')) '$root$n',
+    ];
+    if (missing.isNotEmpty) {
+      await input.close();
+      final found = {for (final n in names) n.contains('/') ? '${n.split('/').first}/' : n}.toList()..sort();
+      throw BackupException(BackupError.notReceiptBackup, missing: missing, found: found.take(8).toList());
+    }
     for (final entry in archive) {
-      if (!entry.isFile) continue;
+      final full = name(entry);
+      if (!entry.isFile || _isJunk(full) || !full.startsWith(root)) continue;
       // Solo i nomi attesi, e mai percorsi che escono dalla cartella.
+      final rel = full.substring(root.length);
       final String target;
-      if (entry.name == 'manifest.json' || entry.name == 'receipt.sqlite') {
-        target = p.join(dir.path, entry.name);
-      } else if (entry.name.startsWith('receipts/') && p.basename(entry.name) == entry.name.substring(9)) {
+      if (rel == 'manifest.json' || rel == 'receipt.sqlite') {
+        target = p.join(dir.path, rel);
+      } else if (rel.startsWith('receipts/') && p.posix.basename(rel) == rel.substring(9)) {
         await Directory(p.join(dir.path, 'receipts')).create();
-        target = p.join(dir.path, 'receipts', p.basename(entry.name));
+        target = p.join(dir.path, 'receipts', p.posix.basename(rel));
       } else {
         continue;
       }
