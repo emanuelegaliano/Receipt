@@ -2,6 +2,13 @@
 
 What changes in Receipt, one section per published version.
 
+## 0.3.4
+
+### Fixed
+- Turning the painting of the day off and on again no longer downloads it again: the image stays on the phone while
+  the painting is off, and the same day it comes back straight away. On another day the old painting is shown until
+  the new one has arrived, then the old image is removed.
+
 ## 0.3.3
 
 ### Fixed

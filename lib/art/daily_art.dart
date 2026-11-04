@@ -110,11 +110,13 @@ class DailyArt extends ChangeNotifier {
     if (save) await db.setSetting('daily_art', on ? 'on' : 'off');
     _enabled = on;
     _failed = false;
-    if (!on) {
-      // Spento: niente immagini lasciate sul telefono.
+    // Spento si nasconde soltanto: l'immagine resta in support/art, così
+    // riaccendendolo lo stesso giorno non si riscarica. Il quadro di un altro
+    // giorno lo toglie il prossimo download.
+    if (on) {
+      await _showCached();
+    } else {
       _shown = null;
-      final dir = await _dir();
-      if (await dir.exists()) await dir.delete(recursive: true);
     }
     notifyListeners();
     if (on) await refresh();

@@ -1,7 +1,7 @@
 name: receipt_app
 description: "On-device receipt scanner and expense tracker for Android."
 publish_to: 'none'
-version: 0.3.3+5
+version: 0.3.4+6
 
 environment:
   sdk: ^3.13.7

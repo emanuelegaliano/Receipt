@@ -204,7 +204,7 @@ void main() {
       await db.delete(db.settings).go();
       await a.reload();
       expect(a.enabled, isFalse);
-      expect(files(), isEmpty);
+      expect(a.painting, isNull);
       expect(await db.setting('daily_art'), isNull);
 
       await db.setSetting('daily_art', 'on');
@@ -212,15 +212,47 @@ void main() {
       expect(a.enabled, isTrue);
     });
 
-    test('spegnendolo toglie le immagini', () async {
+    test('spento e riacceso non riscarica il quadro di oggi', () async {
       final a = art();
       await a.init();
       await a.setEnabled(true);
+      final today = a.painting!.id;
       expect(files(), hasLength(1));
       await a.setEnabled(false);
       expect(a.painting, isNull);
-      expect(files(), isEmpty);
       expect(await db.setting('daily_art'), 'off');
+
+      await a.setEnabled(true);
+      expect(a.painting?.id, today);
+      expect(hits, 1);
+
+      // Anche riaprendo l'app dopo averlo spento.
+      await a.setEnabled(false);
+      final again = art();
+      await again.init();
+      await again.setEnabled(true);
+      expect(again.painting?.id, today);
+      expect(hits, 1);
+    });
+
+    test('riacceso un altro giorno mostra subito quello vecchio e scarica il nuovo', () async {
+      final a = art();
+      await a.init();
+      await a.setEnabled(true);
+      final old = a.painting!.id;
+      await a.setEnabled(false);
+
+      now = now.add(const Duration(days: 1));
+      fail = true;
+      await a.setEnabled(true);
+      expect(a.failed, isTrue);
+      expect(a.painting?.id, old);
+
+      fail = false;
+      await a.refresh();
+      expect(a.painting?.id, isNot(old));
+      expect(files(), ['${a.painting!.id}.jpg']);
+      expect(hits, 3);
     });
   });
 }
