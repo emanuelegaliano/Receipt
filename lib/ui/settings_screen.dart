@@ -14,6 +14,7 @@ import '../data/backup.dart';
 import '../data/database.dart';
 import '../data/demo_data.dart';
 import '../screens/ocr_screen.dart';
+import '../security/lock_screens.dart';
 import '../update/update_ui.dart';
 import 'format.dart';
 import 'l10n.dart';
@@ -80,10 +81,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       );
       if (ok != true) return;
-      final docs = (await getApplicationDocumentsDirectory()).path;
-      await restore(services.db, b, receiptsDir: p.join(docs, 'receipts'));
+      final receipts = (await services.photos.directory()).path;
+      await restore(services.db, b, receiptsDir: receipts, key: await services.lock.dataKey);
       // Il tema fa parte delle impostazioni ripristinate.
       services.appearance.value = await AppearanceSettings.load(services.db);
+      await services.appearance.value.cache();
       await services.art.reload();
       messenger.showSnackBar(SnackBar(content: Text(l.restoreDone(b.expenses))));
     } on BackupException catch (e) {
@@ -97,6 +99,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } finally {
       await backup?.dispose();
       if (copy != null && await copy.exists()) await copy.delete();
+      // file_picker tiene un'altra copia (in chiaro) in cache/file_picker.
+      try {
+        await FilePicker.clearTemporaryFiles();
+      } catch (_) {
+        // Resta nella cache, che Android svuota quando serve spazio.
+      }
       if (mounted) setState(() => _importing = false);
     }
   }
@@ -104,9 +112,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _export() async {
     final services = AppServices.of(context);
     final l = context.l10n;
+    // Lo zip è in chiaro: serve la password, l'impronta non basta (chi ha il
+    // telefono in mano e un dito "prestato" non deve poter portarsi via tutto).
+    final ok = await askPassword(context, services.lock,
+        title: l.exportPasswordTitle, message: l.exportPasswordMessage, confirm: l.exportAction);
+    if (!ok || !mounted) return;
     setState(() => _exporting = true);
     try {
-      final file = await exportBackup(services.db);
+      final file = await exportBackup(services.db, await services.lock.dataKey);
       // Il foglio di condivisione porta fuori dall'app: niente blocco al ritorno.
       await services.lock.whileAway(() => SharePlus.instance.share(ShareParams(
             files: [XFile(file.path, mimeType: 'application/zip')],

@@ -1,18 +1,21 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'app_services.dart';
 import 'art/daily_art.dart';
+import 'data/backup.dart';
 import 'data/database.dart';
+import 'data/photos.dart';
 import 'l10n/app_localizations.dart';
 import 'receipt/receipt_scanner.dart';
 import 'security/app_lock.dart';
 import 'security/lock_screens.dart';
 import 'ui/home_shell.dart';
+import 'ui/scan_flow.dart';
 import 'update/updater.dart';
 
 Future<void> main() async {
@@ -21,12 +24,15 @@ Future<void> main() async {
   await initializeDateFormatting('it');
   await initializeDateFormatting('en');
 
-  final db = AppDatabase();
-  final appearance = ValueNotifier(await AppearanceSettings.load(db));
   final lock = AppLock();
   await lock.init();
+  // Database e foto sono cifrati: si aprono quando c'è la chiave, cioè dopo
+  // lo sblocco. Le schermate dietro quella di blocco aspettano.
+  final db = AppDatabase(openEncryptedDatabase(lock.dataKey, keyIsNew: () => lock.keyIsNew));
+  final photos = ReceiptPhotos(lock.dataKey);
+  // Il tema della schermata di blocco viene da una copia fuori dal database.
+  final appearance = ValueNotifier(await AppearanceSettings.loadCached());
   final art = DailyArt(db);
-  await art.init();
   Future<ReceiptScanner>? scanner;
   Future<ReceiptScanner> loadScanner() => scanner ??= ReceiptScanner.load();
   runApp(AppServices(
@@ -34,23 +40,52 @@ Future<void> main() async {
     month: ValueNotifier(monthOf(DateTime.now())),
     appearance: appearance,
     lock: lock,
+    photos: photos,
     scanner: loadScanner,
     updater: Updater(),
     art: art,
     child: const ReceiptApp(),
   ));
-  _cleanOrphanReceipts(db);
+  _afterUnlock(db, photos, appearance, art);
   // Carica e scalda i modelli OCR in sottofondo, dopo che la prima schermata
   // è comparsa: quando si scatta il primo scontrino sono già pronti.
   Future<void>.delayed(const Duration(seconds: 2), () => loadScanner().ignore());
 }
 
+/// Appena c'è la chiave dei dati (la prima await sul database aspetta lo
+/// sblocco): impostazioni vere, quadro del giorno, foto.
+Future<void> _afterUnlock(
+    AppDatabase db, ReceiptPhotos photos, ValueNotifier<AppearanceSettings> appearance, DailyArt art) async {
+  final saved = await AppearanceSettings.load(db);
+  appearance.value = saved;
+  await saved.cache();
+  await art.init();
+  await _cleanOrphanReceipts(db, photos);
+  try {
+    final cache = await getTemporaryDirectory();
+    await deleteOldExports(cache);
+    // Copie in chiaro lasciate da image_picker (anche dalla 0.3.4). Quelle
+    // recenti no: potrebbe essere la foto che recoverLostScan sta leggendo.
+    await deletePickerCopies(cache, olderThan: const Duration(minutes: 10));
+    // E quella del backup importato, se l'import si è interrotto.
+    await FilePicker.clearTemporaryFiles();
+  } catch (_) {
+    // Al prossimo avvio.
+  }
+  try {
+    // Dopo l'aggiornamento dalla 0.3.4: le foto ancora in chiaro.
+    await photos.encryptLeftovers();
+  } catch (_) {
+    // Riprova al prossimo avvio; intanto le foto in chiaro si leggono lo stesso.
+  }
+}
+
 /// Cancella le foto di scontrini non più legate a una spesa (es. eliminate
 /// con lo swipe). Solo quelle vecchie di un giorno, per non toccare foto
 /// appena salvate o un "Annulla" in corso.
-Future<void> _cleanOrphanReceipts(AppDatabase db) async {
+Future<void> _cleanOrphanReceipts(AppDatabase db, ReceiptPhotos photos) async {
   try {
-    final dir = Directory(p.join((await getApplicationDocumentsDirectory()).path, 'receipts'));
+    final dir = await photos.directory();
     if (!await dir.exists()) return;
     final used = await db.receiptPaths();
     final limit = DateTime.now().subtract(const Duration(days: 1));

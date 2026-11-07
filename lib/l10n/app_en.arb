@@ -147,9 +147,9 @@
   "archive": "Archive",
   "sectionData": "Data",
   "dataStaysOnPhone": "Everything stays on your phone",
-  "dataStaysOnPhoneHint": "Expenses, photos and receipt reading never leave the device.",
+  "dataStaysOnPhoneHint": "Expenses, photos and receipt reading never leave the device. Expenses and photos are encrypted with your password.",
   "exportData": "Export data",
-  "exportDataHint": "Database and photos in a .zip file to save wherever you like, e.g. on Drive. The file is not encrypted.",
+  "exportDataHint": "Database and photos in a .zip file to save wherever you like, e.g. on Drive. The file is not encrypted: your password is needed to create it.",
   "exportShareTitle": "Export Receipt data",
   "exportFailed": "Export failed: {error}",
   "importBackup": "Import from backup",
@@ -179,7 +179,7 @@
   "useBiometric": "Use fingerprint",
   "notNow": "Not now",
   "setupTitle": "Protect your expenses",
-  "setupMessage": "Choose a password to open Receipt. There's no way to recover it: remember it or save it in your password manager.",
+  "setupMessage": "Choose a password to open Receipt: your expenses and photos are encrypted with it. There's no way to recover it: remember it or save it in your password manager.",
   "password": "Password",
   "repeatPassword": "Repeat the password",
   "continueLabel": "Continue",
@@ -307,5 +307,14 @@
         "type": "String"
       }
     }
-  }
+  },
+  "lockedUpgradeMessage": "This time Receipt needs your password, not your fingerprint: from this version it uses it to encrypt your expenses and photos on the phone.",
+  "biometricChangedMessage": "The fingerprints on this phone have changed: enter your password, then you can turn the fingerprint back on.",
+  "biometricConfirmTitle": "Keep using your fingerprint?",
+  "biometricConfirmMessage": "Your expenses and photos are encrypted with your password. To open them with your fingerprint too, confirm it once.",
+  "exportPasswordTitle": "Confirm with your password",
+  "exportPasswordMessage": "The exported file is not encrypted: anyone who opens it sees your expenses and photos. Your password is needed to create it.",
+  "exportAction": "Export",
+  "updateWhatsNew": "What's new",
+  "updateDownloadSize": "{size} download"
 }

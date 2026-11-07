@@ -1,7 +1,7 @@
 name: receipt_app
 description: "On-device receipt scanner and expense tracker for Android."
 publish_to: 'none'
-version: 0.3.4+6
+version: 0.3.5+7
 
 environment:
   sdk: ^3.13.7
@@ -9,6 +9,8 @@ environment:
 dependencies:
   archive: ^4.6.0
   crypto: ^3.0.8
+  cryptography: ^2.9.0
+  cryptography_flutter: ^2.3.4
   drift: ^2.35.3
   drift_flutter: ^0.3.1
   file_picker: ^13.3.1
@@ -22,11 +24,10 @@ dependencies:
   image: ^4.12.0
   image_picker: ^1.2.4
   intl: ^0.20.3
-  local_auth: ^3.0.2
-  local_auth_android: ^2.3.0
   path: ^1.9.1
   path_provider: ^2.1.6
   share_plus: ^13.3.1
+  sqlite3: ^3.5.2
 
 dev_dependencies:
   flutter_test:
@@ -45,3 +46,10 @@ flutter:
     - assets/models/
     - assets/parser/
     - assets/art/
+
+# Il database è cifrato (vedi lib/security/vault.dart): al posto di SQLite
+# normale si usa SQLite3MultipleCiphers, che accetta PRAGMA key.
+hooks:
+  user_defines:
+    sqlite3:
+      source: sqlite3mc

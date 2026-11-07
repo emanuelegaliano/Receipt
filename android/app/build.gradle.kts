@@ -79,4 +79,6 @@ dependencies {
     // FileProvider e ActivityResult per l'installazione degli aggiornamenti (MainActivity).
     implementation("androidx.core:core:1.18.0")
     implementation("androidx.activity:activity:1.13.0")
+    // Richiesta dell'impronta legata alla chiave del Keystore (MainActivity).
+    implementation("androidx.biometric:biometric:1.1.0")
 }

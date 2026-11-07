@@ -114,7 +114,7 @@ Future<void> showUpdateDialog(BuildContext context, AppRelease release) => showD
       builder: (_) => _UpdateDialog(release),
     );
 
-enum _Step { downloading, permission, installing, error }
+enum _Step { ready, downloading, permission, installing, error }
 
 class _UpdateDialog extends StatefulWidget {
   final AppRelease release;
@@ -125,7 +125,7 @@ class _UpdateDialog extends StatefulWidget {
 }
 
 class _UpdateDialogState extends State<_UpdateDialog> {
-  _Step _step = _Step.downloading;
+  _Step _step = _Step.ready;
   int _received = 0, _total = 0;
   UpdateError? _error;
   File? _apk;
@@ -133,10 +133,18 @@ class _UpdateDialogState extends State<_UpdateDialog> {
 
   late final AppServices _services = AppServices.of(context);
 
+  /// Le novità nella lingua dell'app (vuote se il sito non le ha).
+  List<String> get _notes => widget.release.notesFor(Localizations.localeOf(context).languageCode);
+
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _download());
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Senza novità da mostrare non c'è niente da leggere: si scarica subito,
+    // come prima.
+    if (_step == _Step.ready && _notes.isEmpty) {
+      _step = _Step.downloading;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _download());
+    }
   }
 
 
@@ -197,8 +205,41 @@ class _UpdateDialogState extends State<_UpdateDialog> {
     final l = context.l10n;
     final scheme = Theme.of(context).colorScheme;
     final Widget content;
-    final actions = <Widget>[TextButton(onPressed: _close, child: Text(_step == _Step.downloading ? l.cancel : l.close))];
+    final actions = <Widget>[
+      TextButton(
+        onPressed: _close,
+        child: Text(switch (_step) {
+          _Step.ready => l.updateLater,
+          _Step.downloading => l.cancel,
+          _ => l.close,
+        }),
+      ),
+    ];
     switch (_step) {
+      case _Step.ready:
+        content = Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.updateWhatsNew, style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 8),
+            for (final line in _notes)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('•  '),
+                    Expanded(child: Text(line)),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 8),
+            Text(l.updateDownloadSize(formatMegabytes(widget.release.apkSize)),
+                style: TextStyle(color: scheme.onSurfaceVariant)),
+          ],
+        );
+        actions.add(FilledButton(onPressed: _download, child: Text(l.updateNow)));
       case _Step.downloading:
         content = Column(
           mainAxisSize: MainAxisSize.min,
@@ -228,7 +269,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
     return AlertDialog(
       icon: const Icon(Icons.system_update_outlined),
       title: Text(l.updateTitle(widget.release.version)),
-      content: content,
+      content: _step == _Step.ready ? SingleChildScrollView(child: content) : content,
       actions: actions,
     );
   }

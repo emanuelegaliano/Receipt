@@ -2,15 +2,32 @@
 /// (generato dal workflow di release a partire dalla GitHub Release vera).
 ///
 /// ```json
-/// {"version": "0.2.0", "apk": {"url": "https://...", "size": 122746467, "sha256": "fb3f..."}}
+/// {"version": "0.2.0", "apk": {"url": "https://...", "size": 122746467, "sha256": "fb3f..."},
+///  "notes": {"it": ["Novità in breve"], "en": ["What's new, briefly"]}}
 /// ```
+///
+/// "notes" (facoltativo) viene da `whatsnew/<versione>.json` nel repository:
+/// poche righe per l'utente, non il changelog.
 class AppRelease {
   final String version;
   final Uri apkUrl;
   final int apkSize;
   final String sha256; // esadecimale minuscolo
 
-  const AppRelease({required this.version, required this.apkUrl, required this.apkSize, required this.sha256});
+  /// Lingua -> righe delle novità.
+  final Map<String, List<String>> notes;
+
+  const AppRelease({
+    required this.version,
+    required this.apkUrl,
+    required this.apkSize,
+    required this.sha256,
+    this.notes = const {},
+  });
+
+  /// Le novità nella lingua [language], altrimenti in inglese; vuoto se non
+  /// ci sono.
+  List<String> notesFor(String language) => notes[language] ?? notes['en'] ?? const [];
 
   /// Lancia [FormatException] se manca qualcosa: meglio non proporre un
   /// aggiornamento che non si potrebbe verificare.
@@ -26,7 +43,21 @@ class AppRelease {
     if (url == null || url.scheme != 'https' || size is! int || !RegExp(r'^[0-9a-f]{64}$').hasMatch(sha)) {
       throw const FormatException('version.json con APK non valido');
     }
-    return AppRelease(version: version, apkUrl: url, apkSize: size, sha256: sha);
+    return AppRelease(version: version, apkUrl: url, apkSize: size, sha256: sha, notes: _parseNotes(json['notes']));
+  }
+
+  /// Le novità sono un di più: se sono scritte male si ignorano, senza
+  /// rinunciare all'aggiornamento.
+  static Map<String, List<String>> _parseNotes(Object? json) {
+    if (json is! Map) return const {};
+    return {
+      for (final MapEntry(:key, :value) in json.entries)
+        if (key is String && value is List)
+          key: [
+            for (final line in value)
+              if (line is String && line.trim().isNotEmpty) line.trim(),
+          ],
+    }..removeWhere((_, lines) => lines.isEmpty);
   }
 }
 

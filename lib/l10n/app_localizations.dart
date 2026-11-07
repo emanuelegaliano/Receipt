@@ -983,7 +983,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataStaysOnPhoneHint.
   ///
   /// In it, this message translates to:
-  /// **'Spese, foto e lettura degli scontrini non lasciano mai il dispositivo.'**
+  /// **'Spese, foto e lettura degli scontrini non lasciano mai il dispositivo. Spese e foto sono cifrate con la tua password.'**
   String get dataStaysOnPhoneHint;
 
   /// No description provided for @exportData.
@@ -995,7 +995,7 @@ abstract class AppLocalizations {
   /// No description provided for @exportDataHint.
   ///
   /// In it, this message translates to:
-  /// **'Database e foto in un file .zip da salvare dove vuoi, es. su Drive. Il file non è cifrato.'**
+  /// **'Database e foto in un file .zip da salvare dove vuoi, es. su Drive. Il file non è cifrato: serve la password per crearlo.'**
   String get exportDataHint;
 
   /// No description provided for @exportShareTitle.
@@ -1175,7 +1175,7 @@ abstract class AppLocalizations {
   /// No description provided for @setupMessage.
   ///
   /// In it, this message translates to:
-  /// **'Scegli una password per aprire Receipt. Non c\'è modo di recuperarla: tienila a mente o salvala nel tuo gestore di password.'**
+  /// **'Scegli una password per aprire Receipt: spese e foto vengono cifrate con questa. Non c\'è modo di recuperarla: tienila a mente o salvala nel tuo gestore di password.'**
   String get setupMessage;
 
   /// No description provided for @password.
@@ -1597,6 +1597,60 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'«{file}» non è un backup di Receipt: non trovo {missing}. Nello zip c\'è: {found}.'**
   String backupNotReceiptDetail(String file, String missing, String found);
+
+  /// No description provided for @lockedUpgradeMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Questa volta serve la password, non l\'impronta: da questa versione Receipt la usa per cifrare spese e foto sul telefono.'**
+  String get lockedUpgradeMessage;
+
+  /// No description provided for @biometricChangedMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Le impronte del telefono sono cambiate: entra con la password, poi potrai riattivare l\'impronta.'**
+  String get biometricChangedMessage;
+
+  /// No description provided for @biometricConfirmTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Continuare con l\'impronta?'**
+  String get biometricConfirmTitle;
+
+  /// No description provided for @biometricConfirmMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Spese e foto sono cifrate con la tua password. Per aprirle anche con l\'impronta, confermala una volta.'**
+  String get biometricConfirmMessage;
+
+  /// No description provided for @exportPasswordTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Conferma con la password'**
+  String get exportPasswordTitle;
+
+  /// No description provided for @exportPasswordMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Il file esportato non è cifrato: chi lo apre vede spese e foto. Per crearlo serve la password.'**
+  String get exportPasswordMessage;
+
+  /// No description provided for @exportAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Esporta'**
+  String get exportAction;
+
+  /// No description provided for @updateWhatsNew.
+  ///
+  /// In it, this message translates to:
+  /// **'Cosa c\'è di nuovo'**
+  String get updateWhatsNew;
+
+  /// No description provided for @updateDownloadSize.
+  ///
+  /// In it, this message translates to:
+  /// **'Download di {size}'**
+  String updateDownloadSize(String size);
 }
 
 class _AppLocalizationsDelegate

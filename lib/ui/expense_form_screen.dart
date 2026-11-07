@@ -3,8 +3,6 @@ import 'dart:typed_data';
 
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import '../app_services.dart';
 import '../data/budget.dart';
@@ -140,14 +138,6 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     }
   }
 
-  Future<String?> _storeReceipt(Uint8List bytes) async {
-    final dir = Directory(p.join((await getApplicationDocumentsDirectory()).path, 'receipts'));
-    await dir.create(recursive: true);
-    final file = File(p.join(dir.path, 'scontrino_${DateTime.now().millisecondsSinceEpoch}.jpg'));
-    await file.writeAsBytes(bytes, flush: true);
-    return file.path;
-  }
-
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     final l = context.l10n;
@@ -158,7 +148,10 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     setState(() => _saving = true);
     try {
       String? receiptPath = _existing?.receiptPath;
-      if (widget.draft != null && receiptPath == null) receiptPath = await _storeReceipt(widget.draft!.imageBytes);
+      // La foto si salva cifrata (vedi ReceiptPhotos).
+      if (widget.draft != null && receiptPath == null) {
+        receiptPath = await AppServices.of(context).photos.save(widget.draft!.imageBytes);
+      }
 
       final merchant = _merchant.text.trim();
       final cents = parseCents(_amount.text)!;
@@ -428,11 +421,22 @@ class _ReceiptPreview extends StatefulWidget {
 class _ReceiptPreviewState extends State<_ReceiptPreview> {
   bool _showText = false;
 
-  ImageProvider? get _image {
-    if (widget.bytes != null) return MemoryImage(widget.bytes!);
-    if (widget.path != null && File(widget.path!).existsSync()) return FileImage(File(widget.path!));
-    return null;
+  /// La foto salvata, decifrata in memoria (sul telefono è cifrata).
+  MemoryImage? _stored;
+  bool _loading = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final path = widget.path;
+    if (widget.bytes != null || path == null || _loading) return;
+    _loading = true;
+    AppServices.of(context).photos.read(path).then((bytes) {
+      if (mounted && bytes != null) setState(() => _stored = MemoryImage(bytes));
+    });
   }
+
+  ImageProvider? get _image => widget.bytes != null ? MemoryImage(widget.bytes!) : _stored;
 
   @override
   Widget build(BuildContext context) {

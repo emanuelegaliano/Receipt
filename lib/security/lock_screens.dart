@@ -24,6 +24,7 @@ class LockGate extends StatelessWidget {
           AppLockState.loading => const Scaffold(),
           AppLockState.needsSetup => _SetupScreen(lock),
           AppLockState.locked => _LockScreen(lock),
+          AppLockState.confirmBiometric => _ConfirmBiometricScreen(lock),
         };
         return Stack(
           fit: StackFit.expand,
@@ -160,6 +161,8 @@ class _SetupScreenState extends State<_SetupScreen> {
     });
     if (_error != null || _confirmError != null) return;
     setState(() => _busy = true);
+    // Crea la chiave dei dati; si entra dopo, così c'è tempo per l'impronta.
+    await widget.lock.setPassword(p, unlock: false);
     // Se c'è un'impronta registrata la proponiamo prima di entrare.
     if (await widget.lock.biometricAvailable()) {
       if (mounted) {
@@ -170,7 +173,7 @@ class _SetupScreenState extends State<_SetupScreen> {
       }
       return;
     }
-    await widget.lock.setPassword(p);
+    widget.lock.enter();
   }
 
   Future<void> _finish({required bool biometric}) async {
@@ -181,7 +184,7 @@ class _SetupScreenState extends State<_SetupScreen> {
       if (mounted) setState(() => _busy = false);
       return;
     }
-    await widget.lock.setPassword(_password.text);
+    widget.lock.enter();
   }
 
   @override
@@ -242,14 +245,22 @@ class _LockScreenState extends State<_LockScreen> {
   @override
   void initState() {
     super.initState();
+    // La schermata sta in un Overlay che LockGate non ricostruisce: segue da
+    // sola il blocco (es. impronte cambiate mentre è aperta).
+    widget.lock.addListener(_lockChanged);
     // Con l'impronta attiva la chiediamo subito, appena la schermata compare.
     if (widget.lock.biometricEnabled) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _biometric());
     }
   }
 
+  void _lockChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    widget.lock.removeListener(_lockChanged);
     _tick?.cancel();
     _focus.dispose();
     super.dispose();
@@ -285,8 +296,33 @@ class _LockScreenState extends State<_LockScreen> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final wait = widget.lock.waitBeforeRetry;
+    final scheme = Theme.of(context).colorScheme;
+    // Prima apertura dopo l'aggiornamento alla 0.3.5, o impronte cambiate:
+    // spiega perché stavolta serve la password.
+    final note = widget.lock.needsPasswordOnce
+        ? l.lockedUpgradeMessage
+        : widget.lock.biometricChanged
+            ? l.biometricChangedMessage
+            : null;
     return _page(context, [
       _Header(Icons.lock_outline, l.lockedTitle, l.lockedMessage),
+      if (note != null) ...[
+        Card.filled(
+          color: scheme.secondaryContainer,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.shield_outlined, color: scheme.onSecondaryContainer),
+                const SizedBox(width: 12),
+                Expanded(child: Text(note, style: TextStyle(color: scheme.onSecondaryContainer))),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
       _PasswordField(
         controller: _password,
         focusNode: _focus,
@@ -311,5 +347,132 @@ class _LockScreenState extends State<_LockScreen> {
         ),
       ],
     ]);
+  }
+}
+
+/// Password giusta, ma l'impronta era attiva e non apre più la chiave dei
+/// dati (dopo l'aggiornamento alla 0.3.5, o se sono cambiate le impronte del
+/// telefono): si chiede di confermarla una volta.
+class _ConfirmBiometricScreen extends StatefulWidget {
+  final AppLock lock;
+  const _ConfirmBiometricScreen(this.lock);
+
+  @override
+  State<_ConfirmBiometricScreen> createState() => _ConfirmBiometricScreenState();
+}
+
+class _ConfirmBiometricScreenState extends State<_ConfirmBiometricScreen> {
+  bool _busy = false;
+
+  Future<void> _choose(bool use) async {
+    final l = context.l10n;
+    setState(() => _busy = true);
+    await widget.lock.confirmBiometric(use: use, reason: l.biometricPromptConfirm, cancel: l.cancel);
+    if (mounted) setState(() => _busy = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return _page(context, [
+      _Header(Icons.fingerprint, l.biometricConfirmTitle, l.biometricConfirmMessage),
+      FilledButton.icon(
+        onPressed: _busy ? null : () => _choose(true),
+        icon: const Icon(Icons.fingerprint),
+        label: Text(l.useBiometric),
+      ),
+      const SizedBox(height: 8),
+      TextButton(
+        onPressed: _busy ? null : () => _choose(false),
+        child: Text(l.notNow),
+      ),
+    ]);
+  }
+}
+
+/// Chiede la password (non l'impronta) prima di un'azione delicata, come
+/// esportare i dati in chiaro. true se è giusta.
+Future<bool> askPassword(
+  BuildContext context,
+  AppLock lock, {
+  required String title,
+  required String message,
+  required String confirm,
+}) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (_) => _PasswordDialog(lock: lock, title: title, message: message, confirm: confirm),
+  );
+  return ok ?? false;
+}
+
+class _PasswordDialog extends StatefulWidget {
+  final AppLock lock;
+  final String title, message, confirm;
+  const _PasswordDialog({required this.lock, required this.title, required this.message, required this.confirm});
+
+  @override
+  State<_PasswordDialog> createState() => _PasswordDialogState();
+}
+
+class _PasswordDialogState extends State<_PasswordDialog> {
+  final _password = TextEditingController();
+  final _focus = FocusNode();
+  String? _error;
+  bool _busy = false;
+
+  @override
+  void dispose() {
+    _password.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  Future<void> _check() async {
+    if (_password.text.isEmpty || _busy) return;
+    setState(() => _busy = true);
+    final ok = await widget.lock.checkPassword(_password.text);
+    if (!mounted) return;
+    if (ok) return Navigator.pop(context, true);
+    _password.clear();
+    setState(() {
+      _busy = false;
+      _error = context.l10n.wrongPassword;
+    });
+    _focus.requestFocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return AlertDialog(
+      icon: const Icon(Icons.lock_outline),
+      title: Text(widget.title),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(widget.message),
+          const SizedBox(height: 16),
+          _PasswordField(
+            controller: _password,
+            focusNode: _focus,
+            label: l.password,
+            error: _error,
+            autofocus: true,
+            onSubmitted: _check,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: _busy ? null : () => Navigator.pop(context, false), child: Text(l.cancel)),
+        FilledButton(
+          onPressed: _busy ? null : _check,
+          child: _busy
+              ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
+              : Text(widget.confirm),
+        ),
+      ],
+    );
   }
 }

@@ -336,9 +336,9 @@
   "archive": "Archivia",
   "sectionData": "Dati",
   "dataStaysOnPhone": "Tutto resta sul telefono",
-  "dataStaysOnPhoneHint": "Spese, foto e lettura degli scontrini non lasciano mai il dispositivo.",
+  "dataStaysOnPhoneHint": "Spese, foto e lettura degli scontrini non lasciano mai il dispositivo. Spese e foto sono cifrate con la tua password.",
   "exportData": "Esporta i dati",
-  "exportDataHint": "Database e foto in un file .zip da salvare dove vuoi, es. su Drive. Il file non è cifrato.",
+  "exportDataHint": "Database e foto in un file .zip da salvare dove vuoi, es. su Drive. Il file non è cifrato: serve la password per crearlo.",
   "exportShareTitle": "Esporta i dati di Receipt",
   "exportFailed": "Esportazione non riuscita: {error}",
   "@exportFailed": {
@@ -421,7 +421,7 @@
   "useBiometric": "Usa l'impronta",
   "notNow": "Non ora",
   "setupTitle": "Proteggi le tue spese",
-  "setupMessage": "Scegli una password per aprire Receipt. Non c'è modo di recuperarla: tienila a mente o salvala nel tuo gestore di password.",
+  "setupMessage": "Scegli una password per aprire Receipt: spese e foto vengono cifrate con questa. Non c'è modo di recuperarla: tienila a mente o salvala nel tuo gestore di password.",
   "password": "Password",
   "repeatPassword": "Ripeti la password",
   "continueLabel": "Continua",
@@ -594,6 +594,22 @@
         "type": "String"
       },
       "found": {
+        "type": "String"
+      }
+    }
+  },
+  "lockedUpgradeMessage": "Questa volta serve la password, non l'impronta: da questa versione Receipt la usa per cifrare spese e foto sul telefono.",
+  "biometricChangedMessage": "Le impronte del telefono sono cambiate: entra con la password, poi potrai riattivare l'impronta.",
+  "biometricConfirmTitle": "Continuare con l'impronta?",
+  "biometricConfirmMessage": "Spese e foto sono cifrate con la tua password. Per aprirle anche con l'impronta, confermala una volta.",
+  "exportPasswordTitle": "Conferma con la password",
+  "exportPasswordMessage": "Il file esportato non è cifrato: chi lo apre vede spese e foto. Per crearlo serve la password.",
+  "exportAction": "Esporta",
+  "updateWhatsNew": "Cosa c'è di nuovo",
+  "updateDownloadSize": "Download di {size}",
+  "@updateDownloadSize": {
+    "placeholders": {
+      "size": {
         "type": "String"
       }
     }

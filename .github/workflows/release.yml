@@ -89,9 +89,17 @@ jobs:
       - name: Publish release
         if: steps.plan.outputs.release == 'true'
         run: |
-          gh release create "v${{ steps.plan.outputs.version }}" receipt.apk \
-            --title "Receipt v${{ steps.plan.outputs.version }}" \
+          version="${{ steps.plan.outputs.version }}"
+          # The short "what's new" lines (whatsnew/<version>.json, English) go
+          # on top of the generated notes.
+          notes=""
+          if [ -f "whatsnew/$version.json" ]; then
+            notes=$(jq -r '.en // [] | map("- " + .) | join("\n")' "whatsnew/$version.json")
+          fi
+          gh release create "v$version" receipt.apk \
+            --title "Receipt v$version" \
             --target "$GITHUB_SHA" \
+            --notes "$notes" \
             --generate-notes
 
       - name: Remove signing key
@@ -135,6 +143,13 @@ jobs:
             # Older releases have no digest from GitHub: hash the APK ourselves.
             sha=$(curl -fsSL "$(jq -r .apk.url "$RUNNER_TEMP/version.json")" | sha256sum | cut -d' ' -f1)
             jq --arg sha "$sha" '.apk.sha256 = $sha' "$RUNNER_TEMP/version.json" > "$RUNNER_TEMP/v.json"
+            mv "$RUNNER_TEMP/v.json" "$RUNNER_TEMP/version.json"
+          fi
+          # The "what's new" lines of that version, shown by the app before
+          # downloading (whatsnew/<version>.json, optional).
+          notes="whatsnew/$(jq -r .version "$RUNNER_TEMP/version.json").json"
+          if [ -f "$notes" ] && jq -e 'type == "object"' "$notes" >/dev/null; then
+            jq --slurpfile n "$notes" '.notes = $n[0]' "$RUNNER_TEMP/version.json" > "$RUNNER_TEMP/v.json"
             mv "$RUNNER_TEMP/v.json" "$RUNNER_TEMP/version.json"
           fi
           if jq -e '(.apk.sha256 | test("^[0-9a-f]{64}$")) and (.apk.url | startswith("https://"))' "$RUNNER_TEMP/version.json" >/dev/null; then

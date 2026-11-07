@@ -535,14 +535,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataStaysOnPhoneHint =>
-      'Expenses, photos and receipt reading never leave the device.';
+      'Expenses, photos and receipt reading never leave the device. Expenses and photos are encrypted with your password.';
 
   @override
   String get exportData => 'Export data';
 
   @override
   String get exportDataHint =>
-      'Database and photos in a .zip file to save wherever you like, e.g. on Drive. The file is not encrypted.';
+      'Database and photos in a .zip file to save wherever you like, e.g. on Drive. The file is not encrypted: your password is needed to create it.';
 
   @override
   String get exportShareTitle => 'Export Receipt data';
@@ -691,7 +691,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get setupMessage =>
-      'Choose a password to open Receipt. There\'s no way to recover it: remember it or save it in your password manager.';
+      'Choose a password to open Receipt: your expenses and photos are encrypted with it. There\'s no way to recover it: remember it or save it in your password manager.';
 
   @override
   String get password => 'Password';
@@ -946,5 +946,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String backupNotReceiptDetail(String file, String missing, String found) {
     return '“$file” is not a Receipt backup: $missing not found. The zip contains: $found.';
+  }
+
+  @override
+  String get lockedUpgradeMessage =>
+      'This time Receipt needs your password, not your fingerprint: from this version it uses it to encrypt your expenses and photos on the phone.';
+
+  @override
+  String get biometricChangedMessage =>
+      'The fingerprints on this phone have changed: enter your password, then you can turn the fingerprint back on.';
+
+  @override
+  String get biometricConfirmTitle => 'Keep using your fingerprint?';
+
+  @override
+  String get biometricConfirmMessage =>
+      'Your expenses and photos are encrypted with your password. To open them with your fingerprint too, confirm it once.';
+
+  @override
+  String get exportPasswordTitle => 'Confirm with your password';
+
+  @override
+  String get exportPasswordMessage =>
+      'The exported file is not encrypted: anyone who opens it sees your expenses and photos. Your password is needed to create it.';
+
+  @override
+  String get exportAction => 'Export';
+
+  @override
+  String get updateWhatsNew => 'What\'s new';
+
+  @override
+  String updateDownloadSize(String size) {
+    return '$size download';
   }
 }

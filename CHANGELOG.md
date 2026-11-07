@@ -2,6 +2,31 @@
 
 What changes in Receipt, one section per published version.
 
+## 0.3.5
+
+### New
+- Your expenses and receipt photos are now encrypted on the phone. Someone who copies the app's files (for example
+  from a rooted phone) sees only unreadable data; it opens only with your password or your fingerprint.
+  - The database is encrypted with SQLite3MultipleCiphers, each photo with AES-256-GCM, using a random key. That key
+    is kept in the Android Keystore, locked by your password; the password itself is not stored anywhere.
+  - The fingerprint opens the same key through a Keystore key that Android unlocks only after a recognised
+    fingerprint. If you add or remove a fingerprint on the phone, Receipt asks for the password once and offers to
+    turn the fingerprint on again.
+- The update dialog shows a few lines on what's new before downloading (from the next update on: 0.3.4 cannot show
+  them).
+
+### Changed
+- After updating, the first unlock must be with the password, not the fingerprint: it is needed to encrypt the data
+  you already have. If the fingerprint was on, Receipt then asks you to confirm it once.
+- Export data asks for the password (not the fingerprint) before creating the zip. The zip itself is still not
+  encrypted, so it can be opened anywhere and restored on another phone; photos in it are plain JPEGs.
+- Android's automatic backup is off for Receipt: the encrypted data could not be opened on another phone anyway. Use
+  Export data.
+
+### Fixed
+- Plain copies of photos and backups no longer stay in the app's cache: the copies made by the photo picker, the
+  share sheet and the file picker, and earlier exports, are deleted.
+
 ## 0.3.4
 
 ### Fixed

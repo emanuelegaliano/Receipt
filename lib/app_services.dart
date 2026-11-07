@@ -1,19 +1,26 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import 'art/daily_art.dart';
 import 'data/database.dart';
+import 'data/photos.dart';
 import 'receipt/receipt_scanner.dart';
 import 'security/app_lock.dart';
 import 'update/updater.dart';
 
-/// Servizi condivisi dall'app: database, scanner (caricato solo al primo
-/// uso, perché i modelli OCR pesano), mese selezionato, aspetto, blocco,
-/// aggiornamenti e quadro del giorno.
+/// Servizi condivisi dall'app: database, foto, scanner (caricato solo al
+/// primo uso, perché i modelli OCR pesano), mese selezionato, aspetto,
+/// blocco, aggiornamenti e quadro del giorno.
 class AppServices extends InheritedWidget {
   final AppDatabase db;
   final ValueNotifier<DateTime> month;
   final ValueNotifier<AppearanceSettings> appearance;
   final AppLock lock;
+  final ReceiptPhotos photos;
   final Future<ReceiptScanner> Function() scanner;
   final Updater updater;
   final DailyArt art;
@@ -24,6 +31,7 @@ class AppServices extends InheritedWidget {
     required this.month,
     required this.appearance,
     required this.lock,
+    required this.photos,
     required this.scanner,
     required this.updater,
     required this.art,
@@ -86,6 +94,36 @@ class AppearanceSettings {
     await db.setSetting('theme_mode', mode.name);
     await db.setSetting('theme_accent', '$accent');
     await db.setSetting('app_lang', language);
+    await cache();
+  }
+
+  Map<String, Object> toJson() => {'mode': mode.name, 'accent': accent, 'language': language};
+
+  static AppearanceSettings fromJson(Map<String, dynamic> json) => AppearanceSettings(
+        mode: ThemeMode.values.firstWhere((m) => m.name == json['mode'], orElse: () => ThemeMode.system),
+        accent: json['accent'] is int ? json['accent'] as int : 0,
+        language: appLanguages.contains(json['language']) ? json['language'] as String : 'system',
+      );
+
+  /// Copia non cifrata di tema, colore e lingua, per la schermata di blocco
+  /// (il database si apre solo dopo). Non contiene niente di personale.
+  static Future<File> _cacheFile() async =>
+      File(p.join((await getApplicationSupportDirectory()).path, 'appearance.json'));
+
+  Future<void> cache() async {
+    try {
+      await (await _cacheFile()).writeAsString(jsonEncode(toJson()));
+    } on FileSystemException {
+      // Al prossimo avvio la schermata di blocco avrà il tema di sistema.
+    }
+  }
+
+  static Future<AppearanceSettings> loadCached() async {
+    try {
+      return fromJson(jsonDecode(await (await _cacheFile()).readAsString()) as Map<String, dynamic>);
+    } catch (_) {
+      return const AppearanceSettings();
+    }
   }
 
   AppearanceSettings copyWith({ThemeMode? mode, int? accent, String? language}) => AppearanceSettings(

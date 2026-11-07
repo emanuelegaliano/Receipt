@@ -541,14 +541,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get dataStaysOnPhoneHint =>
-      'Spese, foto e lettura degli scontrini non lasciano mai il dispositivo.';
+      'Spese, foto e lettura degli scontrini non lasciano mai il dispositivo. Spese e foto sono cifrate con la tua password.';
 
   @override
   String get exportData => 'Esporta i dati';
 
   @override
   String get exportDataHint =>
-      'Database e foto in un file .zip da salvare dove vuoi, es. su Drive. Il file non è cifrato.';
+      'Database e foto in un file .zip da salvare dove vuoi, es. su Drive. Il file non è cifrato: serve la password per crearlo.';
 
   @override
   String get exportShareTitle => 'Esporta i dati di Receipt';
@@ -685,7 +685,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get setupMessage =>
-      'Scegli una password per aprire Receipt. Non c\'è modo di recuperarla: tienila a mente o salvala nel tuo gestore di password.';
+      'Scegli una password per aprire Receipt: spese e foto vengono cifrate con questa. Non c\'è modo di recuperarla: tienila a mente o salvala nel tuo gestore di password.';
 
   @override
   String get password => 'Password';
@@ -941,5 +941,38 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String backupNotReceiptDetail(String file, String missing, String found) {
     return '«$file» non è un backup di Receipt: non trovo $missing. Nello zip c\'è: $found.';
+  }
+
+  @override
+  String get lockedUpgradeMessage =>
+      'Questa volta serve la password, non l\'impronta: da questa versione Receipt la usa per cifrare spese e foto sul telefono.';
+
+  @override
+  String get biometricChangedMessage =>
+      'Le impronte del telefono sono cambiate: entra con la password, poi potrai riattivare l\'impronta.';
+
+  @override
+  String get biometricConfirmTitle => 'Continuare con l\'impronta?';
+
+  @override
+  String get biometricConfirmMessage =>
+      'Spese e foto sono cifrate con la tua password. Per aprirle anche con l\'impronta, confermala una volta.';
+
+  @override
+  String get exportPasswordTitle => 'Conferma con la password';
+
+  @override
+  String get exportPasswordMessage =>
+      'Il file esportato non è cifrato: chi lo apre vede spese e foto. Per crearlo serve la password.';
+
+  @override
+  String get exportAction => 'Esporta';
+
+  @override
+  String get updateWhatsNew => 'Cosa c\'è di nuovo';
+
+  @override
+  String updateDownloadSize(String size) {
+    return 'Download di $size';
   }
 }

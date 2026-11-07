@@ -34,6 +34,25 @@ void main() {
         expect(() => AppRelease.fromJson(bad), throwsFormatException, reason: '$bad');
       }
     });
+
+    test('novità: nella lingua dell\'app, altrimenti in inglese; scritte male = nessuna', () {
+      final apk = {'url': 'https://example.com/receipt.apk', 'size': 10, 'sha256': 'a' * 64};
+      final r = AppRelease.fromJson({
+        'version': '0.3.5',
+        'apk': apk,
+        'notes': {
+          'it': ['Dati cifrati con la password', '  ', 3],
+          'en': ['Data encrypted with your password'],
+          'fr': [],
+          'de': 'non una lista',
+        },
+      });
+      expect(r.notesFor('it'), ['Dati cifrati con la password']);
+      expect(r.notesFor('en'), ['Data encrypted with your password']);
+      expect(r.notesFor('fr'), ['Data encrypted with your password']);
+      expect(AppRelease.fromJson({'version': '0.3.5', 'apk': apk}).notesFor('it'), isEmpty);
+      expect(AppRelease.fromJson({'version': '0.3.5', 'apk': apk, 'notes': 'x'}).notesFor('it'), isEmpty);
+    });
   });
 
   group('Updater', () {

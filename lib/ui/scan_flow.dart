@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../app_services.dart';
 import '../receipt/categorizer.dart';
@@ -20,9 +23,41 @@ Future<void> startScan(BuildContext context, {required bool fromCamera}) async {
         imageQuality: 92,
       ));
   if (file == null || !context.mounted) return;
-  final bytes = await file.readAsBytes();
+  final bytes = await _readAndDelete(file);
   if (!context.mounted) return;
   await Navigator.push(context, MaterialPageRoute(builder: (_) => ScanProcessingScreen(bytes)));
+}
+
+/// image_picker lascia nella cache copie in chiaro della foto (l'originale
+/// in una cartella con un UUID per nome, quella ridotta come scaled_*): si
+/// legge la foto e si cancellano subito, anche quelle rimaste da prima.
+/// Quella da tenere si salva cifrata (vedi ReceiptPhotos).
+Future<Uint8List> _readAndDelete(XFile file) async {
+  final bytes = await file.readAsBytes();
+  try {
+    await deletePickerCopies(await getTemporaryDirectory());
+  } on FileSystemException {
+    // Riprova alla prossima foto.
+  }
+  return bytes;
+}
+
+final _uuid = RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$');
+
+/// Cancella da [cache] i file lasciati da image_picker (con [olderThan], solo
+/// quelli più vecchi). Non tocca il resto (modelli OCR, aggiornamenti,
+/// esportazioni).
+Future<void> deletePickerCopies(Directory cache, {Duration? olderThan}) async {
+  final limit = olderThan == null ? null : DateTime.now().subtract(olderThan);
+  await for (final e in cache.list()) {
+    final name = p.basename(e.path);
+    if (limit != null && (await e.stat()).modified.isAfter(limit)) continue;
+    if (e is Directory && _uuid.hasMatch(name)) {
+      await e.delete(recursive: true);
+    } else if (e is File && (name.startsWith('scaled_') || name.startsWith('image_picker'))) {
+      await e.delete();
+    }
+  }
 }
 
 /// Se Android ha chiuso Receipt mentre la fotocamera era aperta (succede
@@ -37,7 +72,7 @@ Future<void> recoverLostScan(BuildContext context) async {
   }
   final file = lost.file;
   if (lost.isEmpty || file == null || !context.mounted) return;
-  final bytes = await file.readAsBytes();
+  final bytes = await _readAndDelete(file);
   if (!context.mounted) return;
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.scanRecovered)));
   await Navigator.push(context, MaterialPageRoute(builder: (_) => ScanProcessingScreen(bytes)));

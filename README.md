@@ -43,16 +43,43 @@ From the original idea of PyReceipt: <https://emanuelegaliano.github.io/PyReceip
 - **Month picker**: tap the month name to jump to any month and year.
 - **Movements** grouped by day, with search, filters and swipe-to-delete with undo.
 - **Manual entry** for expenses without a receipt.
-- **Lock**: password on first launch, optional fingerprint, automatic lock after 30 s in the background.
-- **Backup**: export the database and all receipt photos to a .zip, restore it on another phone.
+- **Lock and encryption**: password on first launch, optional fingerprint, automatic lock after 30 s in the
+  background. The database and the receipt photos are encrypted on the phone with a key that only the password (or
+  the fingerprint) opens. See [Encryption](#encryption).
+- **Backup**: export the database and all receipt photos to a .zip (asks for the password; the zip is not
+  encrypted), restore it on another phone.
 - **Updates** (opt-in, asked at first launch): at startup the app reads `version.json` from the website; if there is
-  a newer release it offers to download the APK, checks its SHA-256 and opens the Android installer (one tap to
-  confirm).
+  a newer release it shows what's new, downloads the APK, checks its SHA-256 and opens the Android installer (one tap
+  to confirm).
 - **Painting of the day** (opt-in, asked at first launch): a public-domain painting from The Metropolitan Museum of
   Art behind the main screens, a different one every day out of 600 vertical works, with a slider for how visible it
   is. The "i" at the top shows the whole painting, its data and sources. One image a day (about 0.7 MB) is downloaded
   from Wikimedia Commons; the password screen stays plain. See [Painting of the day](#painting-of-the-day).
 - **Language and themes**: English or Italian; system, light or dark theme with six accent colours.
+
+## Encryption
+
+Since 0.3.5 the data on the phone is encrypted (`lib/security/vault.dart`, `lib/security/app_lock.dart`):
+
+- A random 256-bit **data key** is created when the password is chosen. Two sub-keys are derived from it with
+  HMAC-SHA256: one for the database, one for the photos.
+- **Database**: `spese.sqlite` is opened with SQLite3MultipleCiphers (`PRAGMA key`, its default ChaCha20-Poly1305
+  cipher), selected in `pubspec.yaml` under `hooks: user_defines: sqlite3: source: sqlite3mc`. It opens only after
+  unlocking; queries made before wait.
+- **Photos**: each file in `receipts/` is AES-256-GCM (`RCPTENC1` + nonce + ciphertext + tag), same file name.
+- **Password**: never stored. The data key is stored in the Android Keystore (flutter_secure_storage) encrypted with
+  a key derived from the password (PBKDF2-HMAC-SHA256, 120,000 iterations, random salt): the password is right if
+  it opens it. Changing the password re-encrypts only the data key.
+- **Fingerprint**: a second copy of the data key is encrypted with an AES key in the Android Keystore that can only
+  be used right after a recognised fingerprint (BiometricPrompt with a CryptoObject, `MainActivity.kt`). Adding or
+  removing a fingerprint invalidates it; the app then asks for the password and offers to turn the fingerprint on
+  again.
+- **Upgrade from 0.3.4 or earlier**: the first unlock must use the password; the data key is created and the
+  database (`PRAGMA rekey`) and the photos are encrypted in place. Both steps can be interrupted and resume at the
+  next start.
+- **Export** writes a plain zip (readable without the app) and asks for the password, not the fingerprint. Temporary
+  plain copies (image picker, share sheet, file picker, old exports) are deleted.
+- Android auto backup is off: the encrypted database would arrive on another phone without its key.
 
 ## Painting of the day
 
@@ -98,8 +125,9 @@ Release APKs are signed with this certificate (SHA-256):
 lib/ocr/          RapidOCR 1.4.4 port (pipeline, DBNet post-processing, Clipper, cv2 resize/warp)
 lib/receipt/      PyReceipt parser, dates, shop/category suggestion, payment method
 lib/data/         SQLite database (drift), budgets, backup export/import, demo data
-lib/security/     app lock (password hash, fingerprint)
+lib/security/     app lock (password, fingerprint), data key, database and photo encryption
 lib/update/       update check (version.json), APK download + SHA-256 check, Android installer
+whatsnew/         short "what's new" lines per version, shown in the update dialog
 lib/art/          painting of the day: list, daily download, background, info sheet
 lib/ui/           screens
 lib/l10n/         translations (app_it.arb is the template, app_en.arb), generated with gen-l10n
@@ -175,11 +203,12 @@ Release builds read the keystore path and passwords from `android/key.properties
 1. builds the signed APK and, if the version in `pubspec.yaml` has no release yet, publishes it as
    `receipt.apk` in a new GitHub Release `v<version>`;
 2. builds the website in `site/` and deploys it to GitHub Pages, with a `version.json` describing the latest
-   published release (version, APK URL, size, SHA-256). The app reads it to offer updates, so it never announces a
-   version whose APK failed to build.
+   published release (version, APK URL, size, SHA-256, and the `notes` from `whatsnew/<version>.json`). The app
+   reads it to offer updates, so it never announces a version whose APK failed to build.
 
 To publish a new version, bump `version:` in `pubspec.yaml` (e.g. `0.3.2+4`), add a section to
-[CHANGELOG.md](CHANGELOG.md) and push.
+[CHANGELOG.md](CHANGELOG.md), write `whatsnew/<version>.json` (a few short lines in Italian and English, see
+[whatsnew/README.md](whatsnew/README.md)) and push.
 
 The APK job needs two repository secrets:
 

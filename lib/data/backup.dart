@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../security/vault.dart';
 import 'database.dart';
 
 /// Versione del formato dello zip (manifest.json → "format").
@@ -18,20 +19,38 @@ const backupFormat = 1;
 ///   receipts/…       le foto degli scontrini
 ///   manifest.json    versione e conteggi, per il ripristino
 ///
-/// Il file non è cifrato: chi lo apre vede spese e foto.
-Future<File> exportBackup(AppDatabase db, {DateTime? now}) async =>
-    exportBackupTo(db, (await getTemporaryDirectory()).path, now: now);
+/// Il file non è cifrato (nel telefono i dati lo sono, vedi vault.dart):
+/// chi lo apre vede spese e foto. Per questo l'app chiede la password prima
+/// di esportare.
+Future<File> exportBackup(AppDatabase db, DataKey key, {DateTime? now}) async =>
+    exportBackupTo(db, (await getTemporaryDirectory()).path, key: key, now: now);
 
-Future<File> exportBackupTo(AppDatabase db, String outDir, {DateTime? now}) async {
+/// [key] è la chiave con cui sono cifrati database e foto; null se non lo
+/// sono (nei test).
+Future<File> exportBackupTo(AppDatabase db, String outDir, {DataKey? key, DateTime? now}) async {
   now ??= DateTime.now();
   final tmp = await Directory(outDir).createTemp('export');
   final sqlite = File(p.join(tmp.path, 'receipt.sqlite'));
+  // La copia è cifrata come l'originale: nello zip va in chiaro.
   await db.customStatement('VACUUM INTO ?', [sqlite.path]);
+  if (key != null && !await isPlainDatabase(sqlite)) await decryptDatabaseCopy(sqlite, key.databasePassphrase);
 
-  final photos = [
-    for (final path in await db.receiptPaths())
-      if (await File(path).exists()) File(path),
-  ];
+  final cipher = key == null ? null : PhotoCipher(key);
+  final photosDir = await Directory(p.join(tmp.path, 'receipts')).create();
+  final photos = <File>[];
+  for (final path in await db.receiptPaths()) {
+    final source = File(path);
+    if (!await source.exists()) continue;
+    final out = File(p.join(photosDir.path, p.basename(path)));
+    if (cipher == null) {
+      await source.copy(out.path);
+    } else {
+      final plain = await cipher.decrypt(await source.readAsBytes());
+      if (plain == null) continue; // cifrata con un'altra chiave: illeggibile
+      await out.writeAsBytes(plain);
+    }
+    photos.add(out);
+  }
   final expenses = await db.select(db.expenses).get();
   final manifest = File(p.join(tmp.path, 'manifest.json'))
     ..writeAsStringSync(const JsonEncoder.withIndent('  ').convert({
@@ -54,6 +73,20 @@ Future<File> exportBackupTo(AppDatabase db, String outDir, {DateTime? now}) asyn
   await zip.close();
   await tmp.delete(recursive: true);
   return File(out);
+}
+
+/// Cancella gli zip esportati le volte precedenti (sono in chiaro), anche la
+/// copia che share_plus fa in cache/share_plus. Non subito dopo la
+/// condivisione: l'app che li riceve può leggerli più tardi (es. un allegato
+/// della mail).
+Future<void> deleteOldExports(Directory cache) async {
+  for (final dir in [cache, Directory(p.join(cache.path, 'share_plus'))]) {
+    if (!await dir.exists()) continue;
+    await for (final f in dir.list()) {
+      final name = p.basename(f.path);
+      if (f is File && name.startsWith('receipt-backup-') && name.endsWith('.zip')) await f.delete();
+    }
+  }
 }
 
 /// Perché un file non si può ripristinare. Il testo per l'utente è nella UI.
@@ -177,9 +210,10 @@ Future<BackupPreview> openBackup(File zip, {required String tmpDir, required int
 }
 
 /// Sostituisce tutti i dati di [db] con quelli del backup e copia le foto in
-/// [receiptsDir]. Un backup di una versione precedente viene prima
-/// aggiornato con le stesse migrazioni dell'avvio.
-Future<void> restore(AppDatabase db, BackupPreview backup, {required String receiptsDir}) async {
+/// [receiptsDir], cifrandole con [key] (null nei test: copiate così come
+/// sono). Un backup di una versione precedente viene prima aggiornato con le
+/// stesse migrazioni dell'avvio.
+Future<void> restore(AppDatabase db, BackupPreview backup, {required String receiptsDir, DataKey? key}) async {
   final source = AppDatabase(NativeDatabase(File(p.join(backup._dir.path, 'receipt.sqlite'))));
   try {
     final accounts = await source.select(source.accounts).get();
@@ -192,10 +226,16 @@ Future<void> restore(AppDatabase db, BackupPreview backup, {required String rece
     await Directory(receiptsDir).create(recursive: true);
     final photosDir = Directory(p.join(backup._dir.path, 'receipts'));
     final restored = <String>{};
+    final cipher = key == null ? null : PhotoCipher(key);
     if (await photosDir.exists()) {
       await for (final f in photosDir.list()) {
         if (f is File) {
-          await f.copy(p.join(receiptsDir, p.basename(f.path)));
+          final target = p.join(receiptsDir, p.basename(f.path));
+          if (cipher == null) {
+            await f.copy(target);
+          } else {
+            await cipher.writeFile(target, await f.readAsBytes());
+          }
           restored.add(p.basename(f.path));
         }
       }

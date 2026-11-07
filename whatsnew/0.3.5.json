@@ -1,0 +1,12 @@
+{
+  "it": [
+    "Spese e foto ora sono cifrate sul telefono con la tua password.",
+    "La prima volta dopo l'aggiornamento entra con la password, non con l'impronta.",
+    "Per esportare i dati serve la password."
+  ],
+  "en": [
+    "Your expenses and photos are now encrypted on the phone with your password.",
+    "The first time after updating, unlock with your password, not your fingerprint.",
+    "Exporting your data now asks for your password."
+  ]
+}

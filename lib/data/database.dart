@@ -1,5 +1,12 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:sqlite3/common.dart' show CommonDatabase;
+
+import '../security/vault.dart';
 
 part 'database.g.dart';
 
@@ -71,7 +78,7 @@ class ExpenseView {
 
 @DriftDatabase(tables: [Accounts, Categories, Expenses, MerchantRules, Settings])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? executor]) : super(executor ?? driftDatabase(name: 'spese'));
+  AppDatabase(super.executor);
 
   @override
   int get schemaVersion => 2;
@@ -262,6 +269,29 @@ class AppDatabase extends _$AppDatabase {
   Future<void> setSetting(String key, String value) =>
       into(settings).insertOnConflictUpdate(SettingsCompanion.insert(key: key, value: value));
 }
+
+/// Il database dell'app (documenti/spese.sqlite), cifrato con la chiave
+/// dei dati. Si apre solo quando [key] è pronta, cioè dopo lo sblocco: le
+/// query fatte prima aspettano.
+///
+/// Un database ancora in chiaro (0.3.4 e prima) viene cifrato qui, la prima
+/// volta. Con [keyIsNew] (chiave appena creata alla prima configurazione) un
+/// database che la chiave non apre viene spostato da parte invece di
+/// bloccare l'app.
+QueryExecutor openEncryptedDatabase(Future<DataKey> key, {required bool Function() keyIsNew}) =>
+    DatabaseConnection.delayed(Future(() async {
+      final passphrase = (await key).databasePassphrase;
+      final file = File(p.join((await getApplicationDocumentsDirectory()).path, 'spese.sqlite'));
+      final tmp = (await getTemporaryDirectory()).path;
+      if (!await encryptDatabaseInPlace(file, passphrase, tempDirectory: tmp) && keyIsNew()) {
+        await moveAsideIfUnreadable(file, passphrase);
+      }
+      return driftDatabase(name: 'spese', native: DriftNativeOptions(setup: _keySetup(passphrase)));
+    }));
+
+/// Fuori da [openEncryptedDatabase] perché la funzione passa all'isolate del
+/// database: deve portarsi dietro solo la passphrase.
+void Function(CommonDatabase) _keySetup(String passphrase) => (db) => db.execute(pragmaKey(passphrase));
 
 class DefaultCategory {
   final String name;
