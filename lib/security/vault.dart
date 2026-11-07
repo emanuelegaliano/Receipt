@@ -136,15 +136,20 @@ class PhotoCipher {
   /// Cifra le foto di [dir] ancora in chiaro. Restituisce quante.
   Future<int> encryptFolder(Directory dir) async {
     if (!await dir.exists()) return 0;
-    var n = 0;
-    await for (final f in dir.list()) {
-      if (f is! File) continue;
-      if (f.path.endsWith('.part')) {
-        // Rimasto da una scrittura interrotta: l'originale c'è ancora.
+    // Prima l'elenco completo: cifrando si creano e rinominano file .part,
+    // che non devono finire nello stesso giro.
+    final files = (await dir.list().toList()).whereType<File>().toList();
+    for (final f in files.where((f) => f.path.endsWith('.part'))) {
+      // Rimasto da una scrittura interrotta: l'originale c'è ancora.
+      try {
         await f.delete();
-        continue;
+      } on FileSystemException {
+        // Già sparito.
       }
-      if (await isEncrypted(f)) continue;
+    }
+    var n = 0;
+    for (final f in files.where((f) => !f.path.endsWith('.part'))) {
+      if (!await f.exists() || await isEncrypted(f)) continue;
       await writeFile(f.path, await f.readAsBytes());
       n++;
     }

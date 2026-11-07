@@ -51,6 +51,15 @@ void main() {
     expect(await photos.read(old.path), bytes(2000, 9));
     expect(File('${old.path}.part').existsSync(), isFalse);
     expect(await photos.encryptLeftovers(), 0, reason: 'già fatto');
+
+    // L'ordine dell'elenco cambia da un sistema all'altro (su Linux veniva
+    // prima la foto, poi il suo .part): deve andare bene in tutti e due i casi.
+    for (final name in ['a.jpg', 'z.jpg']) {
+      final f = File(p.join((await photos.directory()).path, name))..writeAsBytesSync(bytes(100, 4));
+      File('${f.path}.part').writeAsBytesSync([9]);
+    }
+    expect(await photos.encryptLeftovers(), 2);
+    expect((await photos.directory()).listSync().where((e) => e.path.endsWith('.part')), isEmpty);
     expect(await photos.read(p.join(tmp.path, 'non_esiste.jpg')), isNull);
   });
 
