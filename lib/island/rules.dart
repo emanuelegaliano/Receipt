@@ -201,8 +201,16 @@ MonthResult evaluateMonth({
 /// tranne a gennaio (sarebbe dell'isola dell'anno passato).
 int? giftMonth(DateTime now) => now.month == 1 ? null : addMonths(monthKey(now), -1);
 
-/// Il primo mese della prima isola.
-int islandStart(DateTime now) => giftMonth(now) ?? monthKey(now);
+/// Il primo mese della prima isola, aperta in [now]: il mese regalato (o
+/// quello in corso, a gennaio), oppure prima se nell'anno ci sono già spese
+/// registrate. In quel caso parte dal mese della prima spesa ([firstRecord]),
+/// ma mai prima di gennaio: gli anni passati non diventano isole.
+int islandStart(DateTime now, {DateTime? firstRecord}) {
+  final base = giftMonth(now) ?? monthKey(now);
+  if (firstRecord == null) return base;
+  final first = math.max(monthKey(firstRecord), now.year * 100 + 1);
+  return math.min(first, base);
+}
 
 /// I mesi (cioè i posti) dell'isola di [year]: da gennaio, o dal primo mese
 /// dell'isola, a dicembre.

@@ -123,8 +123,11 @@ class IslandService extends ChangeNotifier {
     final now = db.clock();
     final current = monthKey(now);
     var start = int.tryParse(await db.setting(islandStartSetting) ?? '');
+    final firstRecord = await db.firstExpenseDate();
     if (start == null) {
-      start = islandStart(now);
+      // Chi ha già spese quest'anno ritrova anche i mesi passati, valutati con
+      // i limiti di adesso: l'isola non c'era, nessuno aveva motivo di cambiarli.
+      start = islandStart(now, firstRecord: firstRecord);
       final gift = giftMonth(now);
       await db.transaction(() async {
         await db.setSetting(islandStartSetting, '$start');
@@ -138,7 +141,6 @@ class IslandService extends ChangeNotifier {
     final currentLimits = await db.currentLimits();
     final plantings = await db.allPlantings();
     final planted = {for (final p in plantings) p.month};
-    final firstRecord = await db.firstExpenseDate();
     final facts = await db.expenseFactsSince(monthStart(start).subtract(const Duration(days: historyDays + 1)));
 
     MonthResult evaluate(int m) => evaluateMonth(

@@ -61,11 +61,24 @@ month without any record is never recorded well. With no history (the first mont
 When the island first appears (with the update, or on a new install) the previous month gets a plant as a gift, to
 show how it works, with no checks. Except in January: the previous month would belong to last year's island.
 
+### Months already recorded
+
+Someone who already has expenses this year finds those months on the island too: the first island starts from the
+month of the first expense of the year (never before January: past years do not become islands), and each past month
+is judged like any other. The limits that count for them are the ones at the first start-up after the update: the app
+does not know which limits there were back then, and nobody had a reason to change them, since nobody knew about the
+island. The gift stays: if the previous month was already within the limits nothing changes, otherwise it is planted
+anyway.
+
+Restoring a backup made before the island replaces everything, island included: at the next start the island is
+created again as on the first update. No free plants: the ones planted after that backup are lost with it.
+
 ## Islands
 
-- One island per calendar year. Its slots are the months of that year from the first month of the island: the gift
-  month, or the current month when there is no gift. A full year has 12 slots; the first island is usually smaller
-  (opened in November 2026: October as a gift, November, December, so 3 slots).
+- One island per calendar year. Its slots are the months of that year from the first month of the island: the month
+  of the first expense of the year, or else the gift month (the current month when there is no gift). A full year has
+  12 slots; the first island is usually smaller (opened in November 2026 by someone who started in March: March to
+  December, 10 slots; by a new user: October as a gift, November, December, so 3 slots).
 - You choose the plant from the whole catalog, repeats allowed, and the slot it goes in.
 - Empty slots are meadow, sand or stones, never holes: more plants only make the island greener.
 - **Reward at the centre.** When the year is over and more than half of its slots are planted (7 of 12; 2 of 3 in a

@@ -185,6 +185,11 @@ void main() {
     expect(giftMonth(DateTime(2027, 1, 15)), isNull);
     expect(islandStart(DateTime(2027, 1, 15)), 202701);
     expect(giftMonth(DateTime(2027, 2, 1)), 202701);
+    // Con spese già registrate l'isola parte dalla prima dell'anno, mai prima di gennaio.
+    expect(islandStart(DateTime(2026, 11, 8), firstRecord: DateTime(2026, 3, 20)), 202603);
+    expect(islandStart(DateTime(2026, 11, 8), firstRecord: DateTime(2025, 6, 1)), 202601);
+    expect(islandStart(DateTime(2026, 11, 8), firstRecord: DateTime(2026, 11, 2)), 202610);
+    expect(islandStart(DateTime(2027, 1, 15), firstRecord: DateTime(2026, 4, 1)), 202701);
   });
 
   test('posti dell\'isola e premio', () {

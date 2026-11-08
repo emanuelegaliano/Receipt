@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:receipt_app/data/backup.dart';
 import 'package:receipt_app/data/database.dart';
 import 'package:receipt_app/island/island_service.dart';
+import 'package:receipt_app/island/rules.dart';
 import 'package:sqlite3/sqlite3.dart' show sqlite3;
 
 void main() {
@@ -48,6 +49,35 @@ void main() {
     // La seconda volta non cambia niente.
     now = DateTime(2026, 11, 20);
     expect((await IslandService.load(db)).gift, 202610);
+  });
+
+  test('chi ha già spese quest\'anno ritrova i mesi passati, valutati con i limiti del primo avvio', () async {
+    await setLimit(groceries, 30000);
+    // Da marzo a ottobre una spesa al giorno: 5 € (150 € al mese), tranne
+    // giugno a 15 € (450 €, oltre il limite) e agosto registrato solo fino al 10.
+    for (var d = DateTime(2026, 3, 1); d.isBefore(DateTime(2026, 11, 1)); d = DateTime(d.year, d.month, d.day + 1)) {
+      if (d.month == 8 && d.day > 10) continue;
+      await spend(groceries, d.month == 6 ? 1500 : 500, DateTime(d.year, d.month, d.day, 12));
+    }
+    final s = await IslandService.load(db);
+    expect((s.start, s.gift), (202603, 202610));
+    expect(s.years.single.months.first, 202603);
+    expect((s.years.single.slots, s.years.single.needed), (10, 6));
+    expect(s.pending, [202603, 202604, 202605, 202607, 202609, 202610]);
+    expect(s.results[202606]!.withinLimits, isFalse);
+    expect((s.results[202608]!.withinLimits, s.results[202608]!.recording.ok), (true, false));
+    // I limiti dei mesi passati sono quelli del primo avvio, e restano quelli.
+    now = DateTime(2026, 11, 20);
+    await setLimit(groceries, 10000);
+    final snaps = await db.limitSnapshotsByMonth();
+    expect([for (final m in monthsBetween(202603, 202611)) snaps[m]], everyElement({groceries.id: 30000}));
+  });
+
+  test('le spese degli anni passati non fanno isole: si parte da gennaio', () async {
+    await spend(groceries, 500, DateTime(2025, 6, 1));
+    final s = await IslandService.load(db);
+    expect(s.start, 202601);
+    expect(s.years.map((y) => y.year), [2026]);
   });
 
   test('a gennaio niente regalo: isola intera da 12', () async {
