@@ -459,6 +459,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get useColor => 'Use';
 
   @override
+  String get colorBrightness => 'Brightness';
+
+  @override
   String get sectionSecurity => 'Security';
 
   @override

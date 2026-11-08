@@ -13,6 +13,8 @@ import 'package:receipt_app/island/island_ui.dart';
 import 'package:receipt_app/l10n/app_localizations.dart';
 import 'package:receipt_app/security/app_lock.dart';
 import 'package:receipt_app/security/vault.dart';
+import 'package:receipt_app/ui/categories_screen.dart';
+import 'package:receipt_app/ui/color_wheel.dart';
 import 'package:receipt_app/update/updater.dart';
 
 void main() {
@@ -134,6 +136,39 @@ void main() {
     expect(find.text("Per l'isola questo mese non ci sono limiti: quelli impostati dopo il 5 valgono da dicembre."),
         findsOneWidget);
     expect(find.text('Per piantare serve almeno un limite mensile: impostalo in Categorie.'), findsNothing);
+    await finish(tester);
+  });
+
+  testWidgets('anche il colore di una categoria si sceglie dal cerchio', (tester) async {
+    final cat = (await tester.runAsync(db.allCategories))!.first;
+    await pumpApp(
+      tester,
+      Scaffold(
+        body: Builder(
+          builder: (context) =>
+              TextButton(onPressed: () => showCategoryEditor(context, category: cat), child: const Text('modifica')),
+        ),
+      ),
+    );
+    await tester.tap(find.text('modifica'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byTooltip('Altro colore'));
+    await tester.tap(find.byTooltip('Altro colore'));
+    await tester.pumpAndSettle();
+    // Il blu sta a 240°, in alto a sinistra.
+    final wheel = tester.getRect(find.byType(ColorWheel));
+    await tester.tapAt(wheel.center + Offset(-0.5, -0.866) * (wheel.width / 2 - 3));
+    await tester.pump();
+    await tester.tap(find.text('Usa'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Salva'));
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Salva'));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pumpAndSettle();
+    final saved = (await tester.runAsync(db.allCategories))!.firstWhere((c) => c.id == cat.id);
+    expect(HSVColor.fromColor(Color(saved.color)).hue, closeTo(240, 3));
     await finish(tester);
   });
 

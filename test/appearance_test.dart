@@ -46,7 +46,7 @@ void main() {
   });
 
   test('nel cerchio l\'angolo è la tinta e la distanza dal centro la vivacità', () {
-    HSVColor at(double x, double y) => HSVColor.fromColor(ColorWheel.colorAt(Offset(x, y), 200));
+    HSVColor at(double x, double y) => ColorWheel.colorAt(Offset(x, y), 200, 0.85);
     expect(at(200, 100).hue, closeTo(0, 1));
     expect(at(200, 100).saturation, closeTo(1, 0.01));
     expect(at(100, 200).hue, closeTo(90, 1), reason: 'in basso, girando in senso orario');
@@ -54,6 +54,7 @@ void main() {
     expect(at(100, 100).saturation, closeTo(0, 0.01), reason: 'al centro grigio');
     expect(at(150, 100).saturation, closeTo(0.5, 0.02));
     expect(at(400, 100).saturation, closeTo(1, 0.01), reason: 'fuori dal cerchio resta al bordo');
+    expect(ColorWheel.colorAt(const Offset(200, 100), 200, 0.3).value, 0.3, reason: 'la luminosità è quella del cursore');
   });
 
   testWidgets('dalla finestra del cerchio: si tocca un colore e si usa', (tester) async {
@@ -78,6 +79,16 @@ void main() {
     await tester.tap(find.text('Usa'));
     await tester.pumpAndSettle();
     expect(HSVColor.fromColor(picked!).hue, anyOf(closeTo(0, 3), closeTo(360, 3)));
+
+    // Il cursore della luminosità tutto a sinistra: un rosso scuro.
+    await tester.tap(find.text('apri'));
+    await tester.pumpAndSettle();
+    await tester.tapAt(tester.getRect(find.byType(ColorWheel)).centerRight - const Offset(2, 0));
+    await tester.drag(find.byType(Slider), const Offset(-400, 0));
+    await tester.pump();
+    await tester.tap(find.text('Usa'));
+    await tester.pumpAndSettle();
+    expect(HSVColor.fromColor(picked!).value, closeTo(0.1, 0.02));
 
     // Annulla non cambia niente.
     picked = null;

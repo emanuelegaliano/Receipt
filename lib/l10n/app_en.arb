@@ -123,6 +123,7 @@
   "accentCustom": "Other colour",
   "customColorTitle": "Choose a colour",
   "useColor": "Use",
+  "colorBrightness": "Brightness",
   "sectionSecurity": "Security",
   "changePassword": "Change password",
   "currentPassword": "Current password",

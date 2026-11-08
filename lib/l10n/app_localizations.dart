@@ -836,6 +836,12 @@ abstract class AppLocalizations {
   /// **'Usa'**
   String get useColor;
 
+  /// No description provided for @colorBrightness.
+  ///
+  /// In it, this message translates to:
+  /// **'Luminosità'**
+  String get colorBrightness;
+
   /// No description provided for @sectionSecurity.
   ///
   /// In it, this message translates to:

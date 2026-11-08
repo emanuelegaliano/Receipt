@@ -312,6 +312,7 @@
   "accentCustom": "Altro colore",
   "customColorTitle": "Scegli il colore",
   "useColor": "Usa",
+  "colorBrightness": "Luminosità",
   "sectionSecurity": "Sicurezza",
   "changePassword": "Cambia password",
   "currentPassword": "Password attuale",
