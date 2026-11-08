@@ -1121,6 +1121,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'To plant you need at least one monthly limit: set one in Categories.';
 
   @override
+  String islandNoLimitsThisMonth(String month) {
+    return 'No limits count for the island this month: those set after the 5th count from $month.';
+  }
+
+  @override
   String get islandMonthPending => 'To plant';
 
   @override

@@ -516,8 +516,12 @@ class _CurrentMonthCard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final r = state.current;
     if (!r.hasLimits) {
+      // Ci sono limiti, ma messi dopo il 5: per l'isola valgono dal mese dopo.
+      final message = state.hasLimits
+          ? l.islandNoLimitsThisMonth(_monthName(context, addMonths(r.month, 1)))
+          : l.islandNoLimits;
       return Card(
-        child: ListTile(leading: const Icon(Icons.info_outline), title: Text(l.islandNoLimits)),
+        child: ListTile(leading: const Icon(Icons.info_outline), title: Text(message)),
       );
     }
     final over = !r.withinLimits;

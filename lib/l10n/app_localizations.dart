@@ -1862,6 +1862,12 @@ abstract class AppLocalizations {
   /// **'Per piantare serve almeno un limite mensile: impostalo in Categorie.'**
   String get islandNoLimits;
 
+  /// No description provided for @islandNoLimitsThisMonth.
+  ///
+  /// In it, this message translates to:
+  /// **'Per l\'isola questo mese non ci sono limiti: quelli impostati dopo il 5 valgono da {month}.'**
+  String islandNoLimitsThisMonth(String month);
+
   /// No description provided for @islandMonthPending.
   ///
   /// In it, this message translates to:

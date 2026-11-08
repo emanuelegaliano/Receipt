@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -118,6 +119,21 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Isola 2026'));
     await tester.pumpAndSettle();
     expect(find.text('Isola 2026'), findsOneWidget);
+    await finish(tester);
+  });
+
+  testWidgets('limiti messi dopo il 5: il mese dice da quando valgono, non di metterne uno', (tester) async {
+    await tester.runAsync(() async {
+      await island.init();
+      final cat = (await db.allCategories()).first;
+      await db.saveCategory(CategoriesCompanion(id: Value(cat.id), monthlyLimitCents: const Value(20000)));
+      await island.refresh();
+    });
+    await pumpApp(tester, const IslandScreen());
+    await tester.pumpAndSettle();
+    expect(find.text("Per l'isola questo mese non ci sono limiti: quelli impostati dopo il 5 valgono da dicembre."),
+        findsOneWidget);
+    expect(find.text('Per piantare serve almeno un limite mensile: impostalo in Categorie.'), findsNothing);
     await finish(tester);
   });
 

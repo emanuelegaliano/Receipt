@@ -352,6 +352,7 @@
   "islandCurrentGap": "{days} days in a row without expenses: the most for the month is {max}.",
   "islandCurrentOk": "Recording regularly",
   "islandNoLimits": "To plant you need at least one monthly limit: set one in Categories.",
+  "islandNoLimitsThisMonth": "No limits count for the island this month: those set after the 5th count from {month}.",
   "islandMonthPending": "To plant",
   "islandMonthOver": "Over the limits: {spent} of {limit}",
   "islandMonthNoLimits": "No limits",

@@ -745,6 +745,14 @@
   },
   "islandCurrentOk": "Registrazioni regolari",
   "islandNoLimits": "Per piantare serve almeno un limite mensile: impostalo in Categorie.",
+  "islandNoLimitsThisMonth": "Per l'isola questo mese non ci sono limiti: quelli impostati dopo il 5 valgono da {month}.",
+  "@islandNoLimitsThisMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "islandMonthPending": "Da piantare",
   "islandMonthOver": "Oltre i limiti: {spent} su {limit}",
   "@islandMonthOver": {

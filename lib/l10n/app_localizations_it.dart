@@ -1116,6 +1116,11 @@ class AppLocalizationsIt extends AppLocalizations {
       'Per piantare serve almeno un limite mensile: impostalo in Categorie.';
 
   @override
+  String islandNoLimitsThisMonth(String month) {
+    return 'Per l\'isola questo mese non ci sono limiti: quelli impostati dopo il 5 valgono da $month.';
+  }
+
+  @override
   String get islandMonthPending => 'Da piantare';
 
   @override
