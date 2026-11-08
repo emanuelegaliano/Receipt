@@ -514,7 +514,12 @@ class _RewardLine extends StatelessWidget {
           color: scheme.primary,
         ),
         const SizedBox(width: 8),
-        Expanded(child: Text(year.complete ? '$message ${l.islandComplete}' : message, style: text.bodyMedium)),
+        Expanded(
+          child: Text(
+            year.complete ? '$message${message.endsWith('.') ? '' : '.'} ${l.islandComplete}' : message,
+            style: text.bodyMedium,
+          ),
+        ),
       ],
     );
   }

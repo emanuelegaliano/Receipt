@@ -412,7 +412,8 @@ void _moon(Px p, double cx, double cy, double rad, double age) {
       final xt = tx * math.sqrt(math.max(0, 1 - v * v));
       final lit = waxing ? u > xt : u < -xt;
       if (!lit) {
-        p.set(x, y, 0xFF2A3354);
+        // La parte in ombra si vede appena (la luce della Terra).
+        p.set(x, y, mix(p.get(x, y), 0xFF33406A, 0.35));
         continue;
       }
       var c = d > 0.82 ? 0xFFE3DCC2 : 0xFFF6F1DC;
@@ -667,8 +668,10 @@ class PlantThumbnailPainter extends CustomPainter {
     }();
     final (x0, y0, x1, y1) = bounds;
     final fit = math.min(size.width / (x1 - x0), size.height / (y1 - y0));
-    final k = math.max(1, (fit * devicePixelRatio).floor());
-    final scale = k / devicePixelRatio;
+    // Grande: pixel interi, tutti uguali. Piccola (le icone dell'elenco): la
+    // misura giusta, se no arrotondando una quercia verrebbe metà di un fiore.
+    final k = fit * devicePixelRatio;
+    final scale = k >= 3 ? k.floor() / devicePixelRatio : fit;
     canvas.save();
     canvas.translate((size.width - (x1 - x0) * scale) / 2, size.height - (y1 - y0) * scale);
     canvas.scale(scale);
