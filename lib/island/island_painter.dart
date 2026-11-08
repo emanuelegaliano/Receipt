@@ -269,10 +269,11 @@ class IslandPainter extends CustomPainter {
         wave,
       );
     }
-    if (night) {
-      // Il riflesso della luna.
+    final light = moonIllumination(moonAge(now));
+    if (night && light > 0.05) {
+      // Il riflesso della luna, tanto più chiaro quanto più è piena.
       final x = l.size.width * 0.8;
-      final shine = Paint()..color = Color.fromRGBO(255, 248, 220, 0.18 * moonIllumination(moonAge(now)) + 0.04);
+      final shine = Paint()..color = Color.fromRGBO(255, 248, 220, 0.22 * light);
       for (var i = 0; i < 6; i++) {
         final y = l.horizon + 6 + i * 7.0;
         canvas.drawRRect(
