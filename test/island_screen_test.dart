@@ -5,7 +5,7 @@ import 'package:receipt_app/app_services.dart';
 import 'package:receipt_app/art/daily_art.dart';
 import 'package:receipt_app/data/database.dart';
 import 'package:receipt_app/data/photos.dart';
-import 'package:receipt_app/island/island_painter.dart';
+import 'package:receipt_app/island/scene.dart';
 import 'package:receipt_app/island/island_service.dart';
 import 'package:receipt_app/island/island_ui.dart';
 import 'package:receipt_app/l10n/app_localizations.dart';
@@ -28,24 +28,26 @@ void main() {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(AppServices(
-      db: db,
-      month: ValueNotifier(monthOf(now)),
-      appearance: ValueNotifier(const AppearanceSettings(language: 'it')),
-      lock: AppLock(),
-      photos: ReceiptPhotos(Future.value(DataKey.random())),
-      scanner: () => throw UnimplementedError(),
-      updater: Updater(),
-      art: DailyArt(db),
-      island: island,
-      child: MaterialApp(
-        theme: ThemeData(brightness: brightness),
-        locale: const Locale('it'),
-        supportedLocales: AppLocalizations.supportedLocales,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: home,
+    await tester.pumpWidget(
+      AppServices(
+        db: db,
+        month: ValueNotifier(monthOf(now)),
+        appearance: ValueNotifier(const AppearanceSettings(language: 'it')),
+        lock: AppLock(),
+        photos: ReceiptPhotos(Future.value(DataKey.random())),
+        scanner: () => throw UnimplementedError(),
+        updater: Updater(),
+        art: DailyArt(db),
+        island: island,
+        child: MaterialApp(
+          theme: ThemeData(brightness: brightness),
+          locale: const Locale('it'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: home,
+        ),
       ),
-    ));
+    );
   }
 
   Future<void> finish(WidgetTester tester) async {
@@ -70,16 +72,18 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Cosa vuoi piantare?'), findsOneWidget);
     await tester.tap(find.text('Ulivo'));
-    await tester.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 2))
+    await tester
+        .pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 2))
         .catchError((_) => 0); // il battito dei posti liberi non si ferma mai
     expect(find.text('Tocca un posto libero sull\'isola'), findsOneWidget);
 
     // Il posto 2 dell'isola da 3 (davanti a destra).
     final canvas = find.byWidgetPredicate((w) => w is CustomPaint && w.painter is IslandPainter);
     final box = tester.getRect(canvas);
-    final layout = IslandLayout(box.size, 3);
+    final fit = PixelFit.forWidth(box.width, 3);
+    final (sx, sy) = IslandGeometry(fit.width, 3).slot(2);
     await tester.runAsync(() async {
-      await tester.tapAt(box.topLeft + layout.slot(2));
+      await tester.tapAt(box.topLeft + Offset(sx * fit.scale, sy * fit.scale));
       await Future<void>.delayed(const Duration(milliseconds: 200));
     });
     await tester.pump();
@@ -99,7 +103,9 @@ void main() {
   testWidgets('il catalogo mostra tutte le piante con la stagione', (tester) async {
     await pumpApp(
       tester,
-      Builder(builder: (context) => TextButton(onPressed: () => showPlantPicker(context), child: const Text('apri'))),
+      Builder(
+        builder: (context) => TextButton(onPressed: () => showPlantPicker(context), child: const Text('apri')),
+      ),
       brightness: Brightness.dark,
     );
     await tester.tap(find.text('apri'));

@@ -71,6 +71,7 @@ const plantCatalog = <PlantSpecies>[
   PlantSpecies('tulip', PlantShape.flower, bloom: {3, 4}, best: 4),
   PlantSpecies('rose', PlantShape.flower, bloom: {5, 6, 7, 8, 9, 10}, best: 6),
   PlantSpecies('iris', PlantShape.flower, bloom: {4, 5}, best: 5),
+  PlantSpecies('jasmine', PlantShape.flower, bloom: {5, 6, 7, 8, 9}, best: 6),
   // Piante grasse
   PlantSpecies('pricklyPear', PlantShape.succulent, bloom: {5, 6}, fruit: {8, 9, 10}, best: 9),
   PlantSpecies('agave', PlantShape.succulent, best: 6),

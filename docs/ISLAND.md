@@ -71,21 +71,33 @@ show how it works, with no checks. Except in January: the previous month would b
 - **Reward at the centre.** When the year is over and more than half of its slots are planted (7 of 12; 2 of 3 in a
   first island of 3), something special appears at the centre. A surprise, different every year, in order:
   lighthouse, fountain, small temple, statue, obelisk, then again. All 12 planted is the complete island.
-- Besides the slots, every island has lanterns that light up at night, a few rocks and a path.
+- Besides the slots, every island has lanterns that light up at night and a few rocks. The slots form two rings that
+  leave a path free in front, so the reward at the centre is always visible.
 
 ## Look
 
-- **Natural colours** for every plant. Each species is a set of parameters on one of seven base shapes drawn in code
-  (round-crowned tree, fruit tree, conifer, palm, shrub, flower, succulent); no images, the APK does not grow. The
-  month of planting is the seed of small variations, so two olive trees are never identical. Plants appear adult.
+- **Pixel art** with **natural colours**, drawn in code pixel by pixel (lib/island/pixel.dart, sprites.dart): no
+  images, the APK does not grow. Crowns are made of leaf clumps, each with a shaded bottom and a lit top, drawn from
+  the bottom up so they overlap like scales; trunks have roots; fruits are big and spaced out, not piled up at
+  random. Every colour comes with a ramp of five tones whose shadows turn towards blue and lights towards yellow, and
+  every shape gets a dark outline. The scene is drawn once into a small sheet of pixels and scaled up by a whole
+  number of screen pixels, so every pixel is a sharp square. The month of planting is the seed of small variations,
+  so two olive trees are never identical. Plants appear adult.
 - **Day and night follow the theme**: light theme, the island by day; dark theme, by night, with darker sea, dimmer
   plants and the lanterns lit. With the system theme many phones switch to dark at sunset, so the island follows the
   real time on its own.
 - **The moon** follows the real phases, computed on the phone from the 29.53-day synodic month and a known new moon.
   Visible at night.
-- **Seasons** of the northern hemisphere (the southern one would need the position): leaves, flowers and fruits follow
-  the month. The almond blossoms in February, the maple turns red in autumn, deciduous trees are bare in winter. The
-  catalog shows each plant at its best, with when it flowers.
+- **Seasons** of the northern hemisphere (the southern one would need the position), for the plants and the whole
+  island:
+  - plants: leaves, flowers and fruits follow the month; the almond blossoms in February, the maple turns red in
+    autumn, deciduous trees are bare in winter, and in winter everything has snow on top;
+  - spring: fresh grass with small flowers, clear sky;
+  - summer: warmer grass with dry tufts, deep blue sky;
+  - autumn: olive grass with fallen leaves and mushrooms, a warm hazy sky;
+  - winter: snow on the island, rocks and lanterns, a grey sky and falling flakes.
+
+  The catalog shows each plant at its best, without snow, with when it flowers.
 
 ### Catalog
 
@@ -96,7 +108,7 @@ show how it works, with no checks. Except in January: the previous month would b
 | Conifer | fir, cypress |
 | Palm | date palm, dwarf fan palm |
 | Shrub | lavender, rosemary, oleander, hydrangea, bougainvillea |
-| Flower | sunflower, poppy, daisy, tulip, rose, iris |
+| Flower | sunflower, poppy, daisy, tulip, rose, iris, jasmine |
 | Succulent | prickly pear, agave, aloe, cactus |
 
 New species are a new entry in the catalog, and can be announced in "what's new".
@@ -107,6 +119,8 @@ New species are a new entry in the catalog, and can be announced in "what's new"
   dot when there is something to plant. It opens the island of the current year; swiping goes to older islands.
 - Planting: choose the plant, then tap a free slot.
 - Changing a limit after the 5th shows a note: for the island it counts from the next month.
+- Builds with `--dart-define=DEMO=true`: "Load demo data" also plants a demo archipelago (2025 complete with its
+  reward, 2026 up to September) to see full islands.
 
 ## Data
 

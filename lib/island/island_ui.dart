@@ -5,9 +5,9 @@ import '../app_services.dart';
 import '../ui/format.dart';
 import '../ui/l10n.dart';
 import 'catalog.dart';
-import 'island_painter.dart';
 import 'island_service.dart';
 import 'rules.dart';
+import 'scene.dart';
 
 /// L'icona dell'isola nella barra del Riepilogo, con un pallino quando c'è
 /// qualcosa da piantare.
@@ -56,6 +56,7 @@ String plantName(String key, AppLocalizations l) => switch (key) {
   'tulip' => l.plantTulip,
   'rose' => l.plantRose,
   'iris' => l.plantIris,
+  'jasmine' => l.plantJasmine,
   'pricklyPear' => l.plantPricklyPear,
   'agave' => l.plantAgave,
   'aloe' => l.plantAloe,
@@ -290,36 +291,41 @@ class _IslandPage extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: AspectRatio(
-            aspectRatio: IslandLayout.aspectRatio,
-            child: LayoutBuilder(
-              builder: (context, box) {
-                final layout = IslandLayout(box.biggest, year.slots);
-                return GestureDetector(
-                  onTapUp: (d) {
-                    final slot = layout.slotAt(d.localPosition);
-                    if (slot != null) onTapSlot(slot);
-                  },
-                  child: AnimatedBuilder(
-                    animation: pulse,
-                    builder: (context, _) => CustomPaint(
-                      size: box.biggest,
-                      painter: IslandPainter(
-                        slots: year.slots,
-                        plants: {for (final e in year.bySlot.entries) e.key: (e.value.plant, e.value.month)},
-                        centerpiece: year.rewardEarned ? year.centerpiece : null,
-                        now: drawnAt,
-                        night: Theme.of(context).brightness == Brightness.dark,
-                        seed: year.year,
-                        highlight: _placingHere ? year.freeSlots.toSet() : const {},
-                        pulse: _placingHere ? pulse.value : 0,
-                        highlightColor: scheme.primary,
-                      ),
+          child: LayoutBuilder(
+            builder: (context, box) {
+              // Pixel interi sullo schermo: la larghezza del disegno si adatta.
+              final fit = PixelFit.forWidth(box.maxWidth, MediaQuery.devicePixelRatioOf(context));
+              final spec = IslandSceneSpec(
+                width: fit.width,
+                slots: year.slots,
+                plants: {for (final e in year.bySlot.entries) e.key: (e.value.plant, e.value.month)},
+                centerpiece: year.rewardEarned ? year.centerpiece : null,
+                now: drawnAt,
+                night: Theme.of(context).brightness == Brightness.dark,
+                seed: year.year,
+              );
+              final geometry = IslandGeometry(fit.width, year.slots);
+              return GestureDetector(
+                onTapUp: (d) {
+                  final slot = geometry.slotAt(d.localPosition.dx / fit.scale, d.localPosition.dy / fit.scale,
+                      among: _placingHere ? year.freeSlots.toSet() : null);
+                  if (slot != null) onTapSlot(slot);
+                },
+                child: AnimatedBuilder(
+                  animation: pulse,
+                  builder: (context, _) => CustomPaint(
+                    size: Size(box.maxWidth, fit.height),
+                    painter: IslandPainter(
+                      spec: spec,
+                      scale: fit.scale,
+                      highlight: _placingHere ? year.freeSlots.toSet() : const {},
+                      pulse: _placingHere ? pulse.value : 0,
+                      highlightColor: scheme.primary,
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         ),
         const SizedBox(height: 12),
@@ -399,7 +405,13 @@ class _PlacingCard extends StatelessWidget {
         child: Row(
           children: [
             if (species != null)
-              SizedBox(width: 44, height: 44, child: CustomPaint(painter: PlantThumbnailPainter(species))),
+              SizedBox(
+                width: 44,
+                height: 44,
+                child: CustomPaint(
+                  painter: PlantThumbnailPainter(species, devicePixelRatio: MediaQuery.devicePixelRatioOf(context)),
+                ),
+              ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -525,7 +537,10 @@ class _MonthTile extends StatelessWidget {
     if (planting != null) {
       leading = species == null
           ? const Icon(Icons.park_outlined)
-          : CustomPaint(painter: PlantThumbnailPainter(species), size: const Size(40, 40));
+          : CustomPaint(
+              painter: PlantThumbnailPainter(species, devicePixelRatio: MediaQuery.devicePixelRatioOf(context)),
+              size: const Size(40, 40),
+            );
       subtitle = '${plantName(planting.plant, l)}${planting.gift ? ' · ${l.islandGiftLabel}' : ''}';
     } else if (month == state.currentMonth) {
       leading = Icon(Icons.hourglass_empty, color: scheme.onSurfaceVariant);
@@ -638,7 +653,13 @@ class _PlantPicker extends StatelessWidget {
                         child: Column(
                           children: [
                             Expanded(
-                              child: CustomPaint(painter: PlantThumbnailPainter(s), size: Size.infinite),
+                              child: CustomPaint(
+                                painter: PlantThumbnailPainter(
+                                  s,
+                                  devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
+                                ),
+                                size: Size.infinite,
+                              ),
                             ),
                             Text(
                               plantName(s.key, l),

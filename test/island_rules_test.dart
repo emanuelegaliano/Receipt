@@ -232,8 +232,8 @@ void main() {
   });
 
   test('catalogo: chiavi uniche, mesi validi, intervalli di fioritura', () {
-    expect(plantCatalog.length, 31);
-    expect(plantCatalog.map((s) => s.key).toSet().length, 31);
+    expect(plantCatalog.length, 32);
+    expect(plantCatalog.map((s) => s.key).toSet().length, 32);
     for (final s in plantCatalog) {
       expect([...s.bloom, ...s.fruit, s.best].every((m) => m >= 1 && m <= 12), isTrue, reason: s.key);
     }

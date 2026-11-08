@@ -653,7 +653,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get loadDemoHint =>
-      'Spese inventate a ottobre e settembre 2026, con alcuni limiti';
+      'Spese inventate a ottobre e settembre 2026 con qualche limite, e due isole piene';
 
   @override
   String get hidePassword => 'Nascondi';
@@ -1226,6 +1226,9 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get plantIris => 'Iris';
+
+  @override
+  String get plantJasmine => 'Gelsomino';
 
   @override
   String get plantPricklyPear => 'Fico d\'India';

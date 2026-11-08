@@ -659,7 +659,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loadDemoHint =>
-      'Made-up expenses in October and September 2026, with some limits';
+      'Made-up expenses in October and September 2026 with some limits, and two full islands';
 
   @override
   String get hidePassword => 'Hide';
@@ -1231,6 +1231,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get plantIris => 'Iris';
+
+  @override
+  String get plantJasmine => 'Jasmine';
 
   @override
   String get plantPricklyPear => 'Prickly pear';

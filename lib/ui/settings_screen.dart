@@ -425,6 +425,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () async {
                 final month = AppServices.of(context).month;
                 await loadDemoData(db, DateTime(2026, 10));
+                await loadDemoIsland(db);
                 month.value = DateTime(2026, 10);
                 if (context.mounted) Navigator.pop(context);
               },

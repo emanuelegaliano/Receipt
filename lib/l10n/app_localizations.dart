@@ -1115,7 +1115,7 @@ abstract class AppLocalizations {
   /// No description provided for @loadDemoHint.
   ///
   /// In it, this message translates to:
-  /// **'Spese inventate a ottobre e settembre 2026, con alcuni limiti'**
+  /// **'Spese inventate a ottobre e settembre 2026 con qualche limite, e due isole piene'**
   String get loadDemoHint;
 
   /// No description provided for @hidePassword.
@@ -2065,6 +2065,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Iris'**
   String get plantIris;
+
+  /// No description provided for @plantJasmine.
+  ///
+  /// In it, this message translates to:
+  /// **'Gelsomino'**
+  String get plantJasmine;
 
   /// No description provided for @plantPricklyPear.
   ///
