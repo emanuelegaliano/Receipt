@@ -17,6 +17,7 @@ import 'package:receipt_app/ui/expense_form_screen.dart';
 import 'package:receipt_app/ui/home_shell.dart';
 import 'package:receipt_app/ui/scan_flow.dart';
 import 'package:receipt_app/update/updater.dart';
+import 'package:receipt_app/island/island_service.dart';
 
 /// Tanti scontrini di fila, come chi registra la spesa della settimana:
 /// scansione -> modulo -> Salva, ripetuto, stampando la memoria del processo.
@@ -61,6 +62,7 @@ void main() {
       scanner: () => scanner ??= ReceiptScanner.load(),
       updater: Updater(),
       art: DailyArt(db), // spento: nessuna impostazione daily_art
+      island: IslandService(db),
       child: MaterialApp(
         navigatorKey: navigator,
         locale: const Locale('it'),

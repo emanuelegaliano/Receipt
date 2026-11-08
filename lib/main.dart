@@ -10,6 +10,7 @@ import 'art/daily_art.dart';
 import 'data/backup.dart';
 import 'data/database.dart';
 import 'data/photos.dart';
+import 'island/island_service.dart';
 import 'l10n/app_localizations.dart';
 import 'receipt/receipt_scanner.dart';
 import 'security/app_lock.dart';
@@ -33,6 +34,7 @@ Future<void> main() async {
   // Il tema della schermata di blocco viene da una copia fuori dal database.
   final appearance = ValueNotifier(await AppearanceSettings.loadCached());
   final art = DailyArt(db);
+  final island = IslandService(db);
   Future<ReceiptScanner>? scanner;
   Future<ReceiptScanner> loadScanner() => scanner ??= ReceiptScanner.load();
   runApp(AppServices(
@@ -44,9 +46,12 @@ Future<void> main() async {
     scanner: loadScanner,
     updater: Updater(),
     art: art,
+    island: island,
     child: const ReceiptApp(),
   ));
-  _afterUnlock(db, photos, appearance, art);
+  _afterUnlock(db, photos, appearance, art, island);
+  // Tornando all'app (magari in un mese nuovo) l'isola si ricalcola.
+  AppLifecycleListener(onResume: () => island.refresh().ignore());
   // Carica e scalda i modelli OCR in sottofondo, dopo che la prima schermata
   // è comparsa: quando si scatta il primo scontrino sono già pronti.
   Future<void>.delayed(const Duration(seconds: 2), () => loadScanner().ignore());
@@ -54,11 +59,19 @@ Future<void> main() async {
 
 /// Appena c'è la chiave dei dati (la prima await sul database aspetta lo
 /// sblocco): impostazioni vere, quadro del giorno, foto.
-Future<void> _afterUnlock(
-    AppDatabase db, ReceiptPhotos photos, ValueNotifier<AppearanceSettings> appearance, DailyArt art) async {
+Future<void> _afterUnlock(AppDatabase db, ReceiptPhotos photos, ValueNotifier<AppearanceSettings> appearance,
+    DailyArt art, IslandService island) async {
   final saved = await AppearanceSettings.load(db);
   appearance.value = saved;
   await saved.cache();
+  try {
+    // Alla prima volta crea l'isola (col regalo) e copia i limiti: subito,
+    // prima del quadro del giorno che può aspettare la rete, così nessun
+    // limite cambiato nel frattempo passa per "quello del primo avvio".
+    await island.init();
+  } catch (_) {
+    // Riprova quando si apre l'isola.
+  }
   await art.init();
   await _cleanOrphanReceipts(db, photos);
   try {

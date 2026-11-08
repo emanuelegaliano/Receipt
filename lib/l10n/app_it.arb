@@ -309,6 +309,10 @@
   "accentPink": "Rosa",
   "accentOrange": "Arancio",
   "accentGraphite": "Grafite",
+  "accentCustom": "Altro colore",
+  "customColorTitle": "Scegli il colore",
+  "useColor": "Usa",
+  "colorBrightness": "Luminosità",
   "sectionSecurity": "Sicurezza",
   "changePassword": "Cambia password",
   "currentPassword": "Password attuale",
@@ -411,7 +415,7 @@
   "autoBackup": "Backup automatico cifrato",
   "comingSoon": "In arrivo",
   "loadDemo": "Carica dati di prova",
-  "loadDemoHint": "Spese inventate a ottobre e settembre 2026, con alcuni limiti",
+  "loadDemoHint": "Spese inventate a ottobre e settembre 2026 con qualche limite, e due isole piene",
   "hidePassword": "Nascondi",
   "showPassword": "Mostra",
   "passwordTooShort": "Almeno 4 caratteri",
@@ -613,5 +617,232 @@
         "type": "String"
       }
     }
-  }
+  },
+  "islandTooltip": "La tua isola",
+  "islandTitle": "Isola {year}",
+  "@islandTitle": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "islandHowTitle": "Come funziona",
+  "islandHowBody": "Ogni mese in cui resti nei limiti puoi piantare qualcosa sull'isola: scegli tu cosa e dove.\n\nConta il totale delle categorie che hanno un limite: se una sfora ma le altre compensano, il mese vale lo stesso. Serve almeno un limite.\n\nIl mese deve essere registrato con la regolarità di sempre: non registrare non è risparmiare. Conta la data della spesa, non quando la inserisci.\n\nValgono i limiti del giorno 5: se li cambi dopo, per l'isola contano dal mese successivo.\n\nOgni anno è un'isola nuova. Se a fine anno hai piantato più di metà dei posti, al centro spunta una sorpresa.",
+  "islandPreviousYear": "Isola dell'anno prima",
+  "islandNextYear": "Isola dell'anno dopo",
+  "islandPendingCount": "{count, plural, =1{Hai una pianta da mettere} other{Hai {count} piante da mettere}}",
+  "@islandPendingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "islandChoosePlant": "Scegli la pianta di {month}",
+  "@islandChoosePlant": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "islandGiftNote": "La pianta di {month} è un regalo, per vedere come funziona.",
+  "@islandGiftNote": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "islandTapSpot": "Tocca un posto libero sull'isola",
+  "islandPlaced": "{plant} è sull'isola",
+  "@islandPlaced": {
+    "placeholders": {
+      "plant": {
+        "type": "String"
+      }
+    }
+  },
+  "islandPlantFailed": "Non si può piantare: qualcosa è cambiato, riprova.",
+  "islandPickerTitle": "Cosa vuoi piantare?",
+  "islandGroupTree": "Alberi",
+  "islandGroupFruitTree": "Alberi da frutto",
+  "islandGroupConifer": "Conifere",
+  "islandGroupPalm": "Palme",
+  "islandGroupShrub": "Arbusti",
+  "islandGroupFlower": "Fiori",
+  "islandGroupSucculent": "Piante grasse",
+  "islandBlooms": "Fiorisce {range}",
+  "@islandBlooms": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "islandFruits": "Frutti {range}",
+  "@islandFruits": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "islandFruitsAllYear": "Frutti tutto l'anno",
+  "islandEvergreen": "Sempreverde",
+  "islandDeciduous": "Spoglio d'inverno",
+  "islandGiftLabel": "regalo",
+  "islandRewardProgress": "Piante: {planted} su {needed}. Con {needed} a fine anno, al centro spunta una sorpresa.",
+  "@islandRewardProgress": {
+    "placeholders": {
+      "planted": {
+        "type": "int"
+      },
+      "needed": {
+        "type": "int"
+      }
+    }
+  },
+  "islandRewardReady": "Ci sei: a fine anno al centro spunta una sorpresa.",
+  "islandRewardEarned": "Premio dell'anno: {name}",
+  "@islandRewardEarned": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "islandRewardMissed": "Quest'anno niente premio: servivano {needed} piante.",
+  "@islandRewardMissed": {
+    "placeholders": {
+      "needed": {
+        "type": "int"
+      }
+    }
+  },
+  "islandComplete": "Isola completa!",
+  "islandCurrentMonth": "{month} finora: {spent} su {limit}",
+  "@islandCurrentMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "spent": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "islandCurrentOver": "Sei oltre i limiti: questo mese niente pianta.",
+  "islandCurrentGap": "{days} giorni di fila senza spese: per il mese il massimo è {max}.",
+  "@islandCurrentGap": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "islandCurrentOk": "Registrazioni regolari",
+  "islandNoLimits": "Per piantare serve almeno un limite mensile: impostalo in Categorie.",
+  "islandNoLimitsThisMonth": "Per l'isola questo mese non ci sono limiti: quelli impostati dopo il 5 valgono da {month}.",
+  "@islandNoLimitsThisMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "islandMonthPending": "Da piantare",
+  "islandMonthOver": "Oltre i limiti: {spent} su {limit}",
+  "@islandMonthOver": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "islandMonthNoLimits": "Nessun limite",
+  "islandMonthNoRecords": "Nessuna spesa registrata",
+  "islandMonthGap": "{days} giorni di fila senza spese",
+  "@islandMonthGap": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "islandMonthFew": "Poche spese registrate: {records}, ne servivano {minimum}",
+  "@islandMonthFew": {
+    "placeholders": {
+      "records": {
+        "type": "int"
+      },
+      "minimum": {
+        "type": "int"
+      }
+    }
+  },
+  "islandMonthInProgress": "In corso",
+  "islandLimitChangeTitle": "Per l'isola vale da {month}",
+  "@islandLimitChangeTitle": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "islandLimitChangeBody": "I limiti cambiati dopo il 5 contano per l'isola dal mese successivo: per {month} restano quelli di inizio mese. Gli avvisi invece usano subito il nuovo limite.",
+  "@islandLimitChangeBody": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "plantOak": "Quercia",
+  "plantOlive": "Ulivo",
+  "plantMaple": "Acero",
+  "plantBirch": "Betulla",
+  "plantWillow": "Salice piangente",
+  "plantStonePine": "Pino domestico",
+  "plantLemon": "Limone",
+  "plantOrange": "Arancio",
+  "plantApple": "Melo",
+  "plantCherry": "Ciliegio",
+  "plantAlmond": "Mandorlo",
+  "plantFig": "Fico",
+  "plantFir": "Abete",
+  "plantCypress": "Cipresso",
+  "plantDatePalm": "Palma da dattero",
+  "plantFanPalm": "Palma nana",
+  "plantLavender": "Lavanda",
+  "plantRosemary": "Rosmarino",
+  "plantOleander": "Oleandro",
+  "plantHydrangea": "Ortensia",
+  "plantBougainvillea": "Bouganville",
+  "plantSunflower": "Girasole",
+  "plantPoppy": "Papavero",
+  "plantDaisy": "Margherita",
+  "plantTulip": "Tulipano",
+  "plantRose": "Rosa",
+  "plantIris": "Iris",
+  "plantJasmine": "Gelsomino",
+  "plantPricklyPear": "Fico d'India",
+  "plantAgave": "Agave",
+  "plantAloe": "Aloe",
+  "plantCactus": "Cactus",
+  "centerpieceLighthouse": "un faro",
+  "centerpieceFountain": "una fontana",
+  "centerpieceTemple": "un tempietto",
+  "centerpieceStatue": "una statua",
+  "centerpieceObelisk": "un obelisco"
 }

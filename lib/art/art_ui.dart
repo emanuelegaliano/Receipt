@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_services.dart';
-import '../update/update_ui.dart';
+import '../ui/format.dart';
 import '../ui/l10n.dart';
+import '../update/update_ui.dart';
 import 'painting.dart';
 
 /// Il quadro del giorno dietro [child], coperto da un velo del colore di
@@ -216,7 +217,7 @@ class _PaintingSheet extends StatelessWidget {
           Text(l.paintingFromWikipedia(wiki.title), style: muted),
         ] else if (painting.summaryIn(lang) != null) ...[
           const SizedBox(height: 12),
-          Text(_capitalized(painting.summaryIn(lang)!), style: text.bodyLarge),
+          Text(capitalized(painting.summaryIn(lang)!), style: text.bodyLarge),
           Text(l.paintingFromWikidata, style: muted),
         ],
         const SizedBox(height: 16),
@@ -241,8 +242,6 @@ class _PaintingSheet extends StatelessWidget {
     );
   }
 }
-
-String _capitalized(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
 /// Apre [url] nel browser; senza browser mostra l'indirizzo.
 class _LinkButton extends StatelessWidget {

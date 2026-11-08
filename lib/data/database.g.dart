@@ -1992,6 +1992,543 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   }
 }
 
+class $PlantingsTable extends Plantings
+    with TableInfo<$PlantingsTable, Planting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlantingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _monthMeta = const VerificationMeta('month');
+  @override
+  late final GeneratedColumn<int> month = GeneratedColumn<int>(
+    'month',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _plantMeta = const VerificationMeta('plant');
+  @override
+  late final GeneratedColumn<String> plant = GeneratedColumn<String>(
+    'plant',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _slotMeta = const VerificationMeta('slot');
+  @override
+  late final GeneratedColumn<int> slot = GeneratedColumn<int>(
+    'slot',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _giftMeta = const VerificationMeta('gift');
+  @override
+  late final GeneratedColumn<bool> gift = GeneratedColumn<bool>(
+    'gift',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("gift" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _plantedAtMeta = const VerificationMeta(
+    'plantedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> plantedAt = GeneratedColumn<DateTime>(
+    'planted_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [month, plant, slot, gift, plantedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'plantings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Planting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('month')) {
+      context.handle(
+        _monthMeta,
+        month.isAcceptableOrUnknown(data['month']!, _monthMeta),
+      );
+    }
+    if (data.containsKey('plant')) {
+      context.handle(
+        _plantMeta,
+        plant.isAcceptableOrUnknown(data['plant']!, _plantMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_plantMeta);
+    }
+    if (data.containsKey('slot')) {
+      context.handle(
+        _slotMeta,
+        slot.isAcceptableOrUnknown(data['slot']!, _slotMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_slotMeta);
+    }
+    if (data.containsKey('gift')) {
+      context.handle(
+        _giftMeta,
+        gift.isAcceptableOrUnknown(data['gift']!, _giftMeta),
+      );
+    }
+    if (data.containsKey('planted_at')) {
+      context.handle(
+        _plantedAtMeta,
+        plantedAt.isAcceptableOrUnknown(data['planted_at']!, _plantedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {month};
+  @override
+  Planting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Planting(
+      month: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}month'],
+      )!,
+      plant: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}plant'],
+      )!,
+      slot: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}slot'],
+      )!,
+      gift: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}gift'],
+      )!,
+      plantedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}planted_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PlantingsTable createAlias(String alias) {
+    return $PlantingsTable(attachedDatabase, alias);
+  }
+}
+
+class Planting extends DataClass implements Insertable<Planting> {
+  /// Mese come aaaamm, es. 202610: un numero non si sposta col fuso orario.
+  final int month;
+
+  /// Chiave nel catalogo (lib/island/catalog.dart), es. "olive".
+  final String plant;
+  final int slot;
+
+  /// La pianta regalata alla prima apertura dell'isola.
+  final bool gift;
+  final DateTime plantedAt;
+  const Planting({
+    required this.month,
+    required this.plant,
+    required this.slot,
+    required this.gift,
+    required this.plantedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['month'] = Variable<int>(month);
+    map['plant'] = Variable<String>(plant);
+    map['slot'] = Variable<int>(slot);
+    map['gift'] = Variable<bool>(gift);
+    map['planted_at'] = Variable<DateTime>(plantedAt);
+    return map;
+  }
+
+  PlantingsCompanion toCompanion(bool nullToAbsent) {
+    return PlantingsCompanion(
+      month: Value(month),
+      plant: Value(plant),
+      slot: Value(slot),
+      gift: Value(gift),
+      plantedAt: Value(plantedAt),
+    );
+  }
+
+  factory Planting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Planting(
+      month: serializer.fromJson<int>(json['month']),
+      plant: serializer.fromJson<String>(json['plant']),
+      slot: serializer.fromJson<int>(json['slot']),
+      gift: serializer.fromJson<bool>(json['gift']),
+      plantedAt: serializer.fromJson<DateTime>(json['plantedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'month': serializer.toJson<int>(month),
+      'plant': serializer.toJson<String>(plant),
+      'slot': serializer.toJson<int>(slot),
+      'gift': serializer.toJson<bool>(gift),
+      'plantedAt': serializer.toJson<DateTime>(plantedAt),
+    };
+  }
+
+  Planting copyWith({
+    int? month,
+    String? plant,
+    int? slot,
+    bool? gift,
+    DateTime? plantedAt,
+  }) => Planting(
+    month: month ?? this.month,
+    plant: plant ?? this.plant,
+    slot: slot ?? this.slot,
+    gift: gift ?? this.gift,
+    plantedAt: plantedAt ?? this.plantedAt,
+  );
+  Planting copyWithCompanion(PlantingsCompanion data) {
+    return Planting(
+      month: data.month.present ? data.month.value : this.month,
+      plant: data.plant.present ? data.plant.value : this.plant,
+      slot: data.slot.present ? data.slot.value : this.slot,
+      gift: data.gift.present ? data.gift.value : this.gift,
+      plantedAt: data.plantedAt.present ? data.plantedAt.value : this.plantedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Planting(')
+          ..write('month: $month, ')
+          ..write('plant: $plant, ')
+          ..write('slot: $slot, ')
+          ..write('gift: $gift, ')
+          ..write('plantedAt: $plantedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(month, plant, slot, gift, plantedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Planting &&
+          other.month == this.month &&
+          other.plant == this.plant &&
+          other.slot == this.slot &&
+          other.gift == this.gift &&
+          other.plantedAt == this.plantedAt);
+}
+
+class PlantingsCompanion extends UpdateCompanion<Planting> {
+  final Value<int> month;
+  final Value<String> plant;
+  final Value<int> slot;
+  final Value<bool> gift;
+  final Value<DateTime> plantedAt;
+  const PlantingsCompanion({
+    this.month = const Value.absent(),
+    this.plant = const Value.absent(),
+    this.slot = const Value.absent(),
+    this.gift = const Value.absent(),
+    this.plantedAt = const Value.absent(),
+  });
+  PlantingsCompanion.insert({
+    this.month = const Value.absent(),
+    required String plant,
+    required int slot,
+    this.gift = const Value.absent(),
+    this.plantedAt = const Value.absent(),
+  }) : plant = Value(plant),
+       slot = Value(slot);
+  static Insertable<Planting> custom({
+    Expression<int>? month,
+    Expression<String>? plant,
+    Expression<int>? slot,
+    Expression<bool>? gift,
+    Expression<DateTime>? plantedAt,
+  }) {
+    return RawValuesInsertable({
+      if (month != null) 'month': month,
+      if (plant != null) 'plant': plant,
+      if (slot != null) 'slot': slot,
+      if (gift != null) 'gift': gift,
+      if (plantedAt != null) 'planted_at': plantedAt,
+    });
+  }
+
+  PlantingsCompanion copyWith({
+    Value<int>? month,
+    Value<String>? plant,
+    Value<int>? slot,
+    Value<bool>? gift,
+    Value<DateTime>? plantedAt,
+  }) {
+    return PlantingsCompanion(
+      month: month ?? this.month,
+      plant: plant ?? this.plant,
+      slot: slot ?? this.slot,
+      gift: gift ?? this.gift,
+      plantedAt: plantedAt ?? this.plantedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (month.present) {
+      map['month'] = Variable<int>(month.value);
+    }
+    if (plant.present) {
+      map['plant'] = Variable<String>(plant.value);
+    }
+    if (slot.present) {
+      map['slot'] = Variable<int>(slot.value);
+    }
+    if (gift.present) {
+      map['gift'] = Variable<bool>(gift.value);
+    }
+    if (plantedAt.present) {
+      map['planted_at'] = Variable<DateTime>(plantedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlantingsCompanion(')
+          ..write('month: $month, ')
+          ..write('plant: $plant, ')
+          ..write('slot: $slot, ')
+          ..write('gift: $gift, ')
+          ..write('plantedAt: $plantedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LimitSnapshotsTable extends LimitSnapshots
+    with TableInfo<$LimitSnapshotsTable, LimitSnapshot> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LimitSnapshotsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _monthMeta = const VerificationMeta('month');
+  @override
+  late final GeneratedColumn<int> month = GeneratedColumn<int>(
+    'month',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _limitsMeta = const VerificationMeta('limits');
+  @override
+  late final GeneratedColumn<String> limits = GeneratedColumn<String>(
+    'limits',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [month, limits];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'limit_snapshots';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LimitSnapshot> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('month')) {
+      context.handle(
+        _monthMeta,
+        month.isAcceptableOrUnknown(data['month']!, _monthMeta),
+      );
+    }
+    if (data.containsKey('limits')) {
+      context.handle(
+        _limitsMeta,
+        limits.isAcceptableOrUnknown(data['limits']!, _limitsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_limitsMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {month};
+  @override
+  LimitSnapshot map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LimitSnapshot(
+      month: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}month'],
+      )!,
+      limits: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}limits'],
+      )!,
+    );
+  }
+
+  @override
+  $LimitSnapshotsTable createAlias(String alias) {
+    return $LimitSnapshotsTable(attachedDatabase, alias);
+  }
+}
+
+class LimitSnapshot extends DataClass implements Insertable<LimitSnapshot> {
+  /// aaaamm, come in [Plantings].
+  final int month;
+
+  /// JSON {"id categoria": centesimi}; {} se quel mese non c'erano limiti.
+  final String limits;
+  const LimitSnapshot({required this.month, required this.limits});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['month'] = Variable<int>(month);
+    map['limits'] = Variable<String>(limits);
+    return map;
+  }
+
+  LimitSnapshotsCompanion toCompanion(bool nullToAbsent) {
+    return LimitSnapshotsCompanion(month: Value(month), limits: Value(limits));
+  }
+
+  factory LimitSnapshot.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LimitSnapshot(
+      month: serializer.fromJson<int>(json['month']),
+      limits: serializer.fromJson<String>(json['limits']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'month': serializer.toJson<int>(month),
+      'limits': serializer.toJson<String>(limits),
+    };
+  }
+
+  LimitSnapshot copyWith({int? month, String? limits}) =>
+      LimitSnapshot(month: month ?? this.month, limits: limits ?? this.limits);
+  LimitSnapshot copyWithCompanion(LimitSnapshotsCompanion data) {
+    return LimitSnapshot(
+      month: data.month.present ? data.month.value : this.month,
+      limits: data.limits.present ? data.limits.value : this.limits,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LimitSnapshot(')
+          ..write('month: $month, ')
+          ..write('limits: $limits')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(month, limits);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LimitSnapshot &&
+          other.month == this.month &&
+          other.limits == this.limits);
+}
+
+class LimitSnapshotsCompanion extends UpdateCompanion<LimitSnapshot> {
+  final Value<int> month;
+  final Value<String> limits;
+  const LimitSnapshotsCompanion({
+    this.month = const Value.absent(),
+    this.limits = const Value.absent(),
+  });
+  LimitSnapshotsCompanion.insert({
+    this.month = const Value.absent(),
+    required String limits,
+  }) : limits = Value(limits);
+  static Insertable<LimitSnapshot> custom({
+    Expression<int>? month,
+    Expression<String>? limits,
+  }) {
+    return RawValuesInsertable({
+      if (month != null) 'month': month,
+      if (limits != null) 'limits': limits,
+    });
+  }
+
+  LimitSnapshotsCompanion copyWith({Value<int>? month, Value<String>? limits}) {
+    return LimitSnapshotsCompanion(
+      month: month ?? this.month,
+      limits: limits ?? this.limits,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (month.present) {
+      map['month'] = Variable<int>(month.value);
+    }
+    if (limits.present) {
+      map['limits'] = Variable<String>(limits.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LimitSnapshotsCompanion(')
+          ..write('month: $month, ')
+          ..write('limits: $limits')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2000,6 +2537,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ExpensesTable expenses = $ExpensesTable(this);
   late final $MerchantRulesTable merchantRules = $MerchantRulesTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
+  late final $PlantingsTable plantings = $PlantingsTable(this);
+  late final $LimitSnapshotsTable limitSnapshots = $LimitSnapshotsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2010,6 +2549,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     expenses,
     merchantRules,
     settings,
+    plantings,
+    limitSnapshots,
   ];
 }
 
@@ -3677,6 +4218,338 @@ typedef $$SettingsTableProcessedTableManager =
       Setting,
       PrefetchHooks Function()
     >;
+typedef $$PlantingsTableCreateCompanionBuilder = PlantingsCompanion Function({
+  Value<int> month,
+  required String plant,
+  required int slot,
+  Value<bool> gift,
+  Value<DateTime> plantedAt,
+});
+typedef $$PlantingsTableUpdateCompanionBuilder = PlantingsCompanion Function({
+  Value<int> month,
+  Value<String> plant,
+  Value<int> slot,
+  Value<bool> gift,
+  Value<DateTime> plantedAt,
+});
+
+class $$PlantingsTableFilterComposer
+    extends Composer<_$AppDatabase, $PlantingsTable> {
+  $$PlantingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get month => $composableBuilder(
+    column: $table.month,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get plant => $composableBuilder(
+    column: $table.plant,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get slot => $composableBuilder(
+    column: $table.slot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get gift => $composableBuilder(
+    column: $table.gift,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get plantedAt => $composableBuilder(
+    column: $table.plantedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PlantingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PlantingsTable> {
+  $$PlantingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get month => $composableBuilder(
+    column: $table.month,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get plant => $composableBuilder(
+    column: $table.plant,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get slot => $composableBuilder(
+    column: $table.slot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get gift => $composableBuilder(
+    column: $table.gift,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get plantedAt => $composableBuilder(
+    column: $table.plantedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PlantingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PlantingsTable> {
+  $$PlantingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get month =>
+      $composableBuilder(column: $table.month, builder: (column) => column);
+
+  GeneratedColumn<String> get plant =>
+      $composableBuilder(column: $table.plant, builder: (column) => column);
+
+  GeneratedColumn<int> get slot =>
+      $composableBuilder(column: $table.slot, builder: (column) => column);
+
+  GeneratedColumn<bool> get gift =>
+      $composableBuilder(column: $table.gift, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get plantedAt =>
+      $composableBuilder(column: $table.plantedAt, builder: (column) => column);
+}
+
+class $$PlantingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PlantingsTable,
+          Planting,
+          $$PlantingsTableFilterComposer,
+          $$PlantingsTableOrderingComposer,
+          $$PlantingsTableAnnotationComposer,
+          $$PlantingsTableCreateCompanionBuilder,
+          $$PlantingsTableUpdateCompanionBuilder,
+          (Planting, BaseReferences<_$AppDatabase, $PlantingsTable, Planting>),
+          Planting,
+          PrefetchHooks Function()
+        > {
+  $$PlantingsTableTableManager(_$AppDatabase db, $PlantingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlantingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PlantingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PlantingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> month = const Value.absent(),
+                Value<String> plant = const Value.absent(),
+                Value<int> slot = const Value.absent(),
+                Value<bool> gift = const Value.absent(),
+                Value<DateTime> plantedAt = const Value.absent(),
+              }) => PlantingsCompanion(
+                month: month,
+                plant: plant,
+                slot: slot,
+                gift: gift,
+                plantedAt: plantedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> month = const Value.absent(),
+                required String plant,
+                required int slot,
+                Value<bool> gift = const Value.absent(),
+                Value<DateTime> plantedAt = const Value.absent(),
+              }) => PlantingsCompanion.insert(
+                month: month,
+                plant: plant,
+                slot: slot,
+                gift: gift,
+                plantedAt: plantedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PlantingsTable, Planting>(table),
+                  BaseReferences<_$AppDatabase, $PlantingsTable, Planting>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PlantingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PlantingsTable,
+      Planting,
+      $$PlantingsTableFilterComposer,
+      $$PlantingsTableOrderingComposer,
+      $$PlantingsTableAnnotationComposer,
+      $$PlantingsTableCreateCompanionBuilder,
+      $$PlantingsTableUpdateCompanionBuilder,
+      (Planting, BaseReferences<_$AppDatabase, $PlantingsTable, Planting>),
+      Planting,
+      PrefetchHooks Function()
+    >;
+typedef $$LimitSnapshotsTableCreateCompanionBuilder =
+    LimitSnapshotsCompanion Function({
+      Value<int> month,
+      required String limits,
+    });
+typedef $$LimitSnapshotsTableUpdateCompanionBuilder =
+    LimitSnapshotsCompanion Function({Value<int> month, Value<String> limits});
+
+class $$LimitSnapshotsTableFilterComposer
+    extends Composer<_$AppDatabase, $LimitSnapshotsTable> {
+  $$LimitSnapshotsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get month => $composableBuilder(
+    column: $table.month,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get limits => $composableBuilder(
+    column: $table.limits,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LimitSnapshotsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LimitSnapshotsTable> {
+  $$LimitSnapshotsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get month => $composableBuilder(
+    column: $table.month,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get limits => $composableBuilder(
+    column: $table.limits,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LimitSnapshotsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LimitSnapshotsTable> {
+  $$LimitSnapshotsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get month =>
+      $composableBuilder(column: $table.month, builder: (column) => column);
+
+  GeneratedColumn<String> get limits =>
+      $composableBuilder(column: $table.limits, builder: (column) => column);
+}
+
+class $$LimitSnapshotsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LimitSnapshotsTable,
+          LimitSnapshot,
+          $$LimitSnapshotsTableFilterComposer,
+          $$LimitSnapshotsTableOrderingComposer,
+          $$LimitSnapshotsTableAnnotationComposer,
+          $$LimitSnapshotsTableCreateCompanionBuilder,
+          $$LimitSnapshotsTableUpdateCompanionBuilder,
+          (
+            LimitSnapshot,
+            BaseReferences<_$AppDatabase, $LimitSnapshotsTable, LimitSnapshot>,
+          ),
+          LimitSnapshot,
+          PrefetchHooks Function()
+        > {
+  $$LimitSnapshotsTableTableManager(
+    _$AppDatabase db,
+    $LimitSnapshotsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LimitSnapshotsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LimitSnapshotsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LimitSnapshotsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> month = const Value.absent(),
+            Value<String> limits = const Value.absent(),
+          }) => LimitSnapshotsCompanion(month: month, limits: limits),
+          createCompanionCallback: ({
+            Value<int> month = const Value.absent(),
+            required String limits,
+          }) => LimitSnapshotsCompanion.insert(month: month, limits: limits),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LimitSnapshotsTable, LimitSnapshot>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LimitSnapshotsTable,
+                    LimitSnapshot
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LimitSnapshotsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LimitSnapshotsTable,
+      LimitSnapshot,
+      $$LimitSnapshotsTableFilterComposer,
+      $$LimitSnapshotsTableOrderingComposer,
+      $$LimitSnapshotsTableAnnotationComposer,
+      $$LimitSnapshotsTableCreateCompanionBuilder,
+      $$LimitSnapshotsTableUpdateCompanionBuilder,
+      (
+        LimitSnapshot,
+        BaseReferences<_$AppDatabase, $LimitSnapshotsTable, LimitSnapshot>,
+      ),
+      LimitSnapshot,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3691,4 +4564,8 @@ class $AppDatabaseManager {
       $$MerchantRulesTableTableManager(_db, _db.merchantRules);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
+  $$PlantingsTableTableManager get plantings =>
+      $$PlantingsTableTableManager(_db, _db.plantings);
+  $$LimitSnapshotsTableTableManager get limitSnapshots =>
+      $$LimitSnapshotsTableTableManager(_db, _db.limitSnapshots);
 }

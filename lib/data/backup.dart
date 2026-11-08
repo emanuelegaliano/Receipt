@@ -221,6 +221,8 @@ Future<void> restore(AppDatabase db, BackupPreview backup, {required String rece
     final expenses = await source.select(source.expenses).get();
     final rules = await source.select(source.merchantRules).get();
     final settings = await source.select(source.settings).get();
+    final plantings = await source.select(source.plantings).get();
+    final snapshots = await source.select(source.limitSnapshots).get();
 
     // Prima le foto: se qualcosa va storto qui, il database è ancora intatto.
     await Directory(receiptsDir).create(recursive: true);
@@ -253,12 +255,16 @@ Future<void> restore(AppDatabase db, BackupPreview backup, {required String rece
       await db.delete(db.categories).go();
       await db.delete(db.accounts).go();
       await db.delete(db.settings).go();
+      await db.delete(db.plantings).go();
+      await db.delete(db.limitSnapshots).go();
       await db.batch((b) {
         b.insertAll(db.accounts, accounts);
         b.insertAll(db.categories, categories);
         b.insertAll(db.expenses, [for (final e in expenses) e.copyWith(receiptPath: Value(relocate(e.receiptPath)))]);
         b.insertAll(db.merchantRules, rules);
         b.insertAll(db.settings, settings);
+        b.insertAll(db.plantings, plantings);
+        b.insertAll(db.limitSnapshots, snapshots);
       });
     });
   } finally {

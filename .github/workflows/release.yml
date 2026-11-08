@@ -4,6 +4,8 @@ name: Release APK and deploy website
 #   1. if pubspec.yaml has a version without a release yet, build the signed
 #      APK and publish it as receipt.apk in the GitHub Release v<version>;
 #   2. build site/ and deploy it to GitHub Pages.
+# Other branches (e.g. Island) never release: the push trigger is main only,
+# and the jobs check the branch also when started by hand.
 on:
   push:
     branches: [main]
@@ -21,6 +23,7 @@ concurrency:
 jobs:
   apk:
     name: Signed APK release
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -109,7 +112,7 @@ jobs:
   site:
     name: Build website
     needs: apk
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     defaults:
       run:

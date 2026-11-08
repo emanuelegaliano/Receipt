@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../app_services.dart';
 import '../art/art_ui.dart';
 import '../data/database.dart';
+import '../island/island_ui.dart';
+import 'color_wheel.dart';
 import 'format.dart';
 import 'l10n.dart';
 import 'widgets.dart';
@@ -138,6 +140,12 @@ class _CategoryEditorState extends State<_CategoryEditor> {
       setState(() => _limitError = context.l10n.limitInvalid);
       return;
     }
+    // Dopo il 5, un limite cambiato vale per l'isola dal mese dopo: lo dice prima.
+    if (limit != widget.category?.monthlyLimitCents &&
+        !await confirmLimitChangeForIsland(context, AppServices.of(context).db.clock())) {
+      return;
+    }
+    if (!mounted) return;
     final keywords = _keywords.text.split(',').map((k) => k.trim().toLowerCase()).where((k) => k.isNotEmpty).join(',');
     await widget.db.saveCategory(CategoriesCompanion(
       id: widget.category == null ? const Value.absent() : Value(widget.category!.id),
@@ -284,6 +292,35 @@ class _CategoryEditorState extends State<_CategoryEditor> {
                     ),
                   ),
                 ),
+              // Un colore qualsiasi, dal cerchio dei colori.
+              Tooltip(
+                message: l.accentCustom,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () async {
+                    final picked = await showColorWheel(context, Color(_color), themePreview: false);
+                    if (picked != null && mounted) setState(() => _color = picked.toARGB32());
+                  },
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: categoryColors.contains(_color) ? null : Color(_color),
+                      gradient: categoryColors.contains(_color)
+                          ? SweepGradient(colors: [
+                              for (var h = 0; h <= 360; h += 60) HSVColor.fromAHSV(1, h % 360.0, 0.8, 0.9).toColor(),
+                            ])
+                          : null,
+                      border: Border.all(
+                        color: categoryColors.contains(_color) ? Colors.transparent : scheme.onSurface,
+                        width: 3,
+                      ),
+                    ),
+                    child: Icon(Icons.colorize, color: Colors.white, size: 16),
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),

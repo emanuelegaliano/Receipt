@@ -72,3 +72,32 @@ Future<void> loadDemoData(AppDatabase db, DateTime month) async {
   await add(month, current);
   await add(DateTime(month.year, month.month - 1), previous);
 }
+
+/// Un arcipelago di prova: il 2025 pieno (col premio al centro) e il 2026
+/// fino a settembre, nei posti ancora liberi. Le spese di quei mesi non ci
+/// sono: le piante servono solo a vedere le isole.
+Future<void> loadDemoIsland(AppDatabase db) async {
+  await db.setSetting(islandStartSetting, '202501');
+  const y2025 = [
+    'olive', 'apple', 'cherry', 'lavender', 'cypress', 'sunflower', //
+    'lemon', 'fir', 'hydrangea', 'datePalm', 'oak', 'jasmine',
+  ];
+  const y2026 = ['maple', 'almond', 'rose', 'cactus', 'orange', 'stonePine', 'tulip', 'bougainvillea', 'willow'];
+  final existing = await db.allPlantings();
+  final used = {for (final p in existing) (p.month ~/ 100, p.slot)};
+  final months = {for (final p in existing) p.month};
+  await db.batch((b) {
+    for (final (year, plants) in [(2025, y2025), (2026, y2026)]) {
+      var slot = 0;
+      for (var i = 0; i < plants.length; i++) {
+        final month = year * 100 + i + 1;
+        if (months.contains(month)) continue;
+        while (used.contains((year, slot))) {
+          slot++;
+        }
+        used.add((year, slot));
+        b.insert(db.plantings, PlantingsCompanion.insert(month: Value(month), plant: plants[i], slot: slot));
+      }
+    }
+  });
+}
