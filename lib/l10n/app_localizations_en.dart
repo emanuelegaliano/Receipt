@@ -980,4 +980,282 @@ class AppLocalizationsEn extends AppLocalizations {
   String updateDownloadSize(String size) {
     return '$size download';
   }
+
+  @override
+  String get islandTooltip => 'Your island';
+
+  @override
+  String islandTitle(String year) {
+    return 'Island $year';
+  }
+
+  @override
+  String get islandHowTitle => 'How it works';
+
+  @override
+  String get islandHowBody =>
+      'Every month you stay within your limits you can plant something on the island: you choose what and where.\n\nWhat counts is the total of the categories that have a limit: if one goes over but the others make up for it, the month still counts. You need at least one limit.\n\nThe month must be recorded as regularly as usual: not recording is not saving. The date of the expense counts, not when you enter it.\n\nThe limits of the 5th are the ones that count: if you change them later, for the island they apply from the next month.\n\nEvery year is a new island. If by the end of the year you have planted more than half of its spots, a surprise appears in the middle.';
+
+  @override
+  String islandPendingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You have $count plants to place',
+      one: 'You have a plant to place',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String islandChoosePlant(String month) {
+    return 'Choose the plant for $month';
+  }
+
+  @override
+  String islandGiftNote(String month) {
+    return 'The plant for $month is a gift, to show how it works.';
+  }
+
+  @override
+  String get islandTapSpot => 'Tap a free spot on the island';
+
+  @override
+  String islandPlaced(String plant) {
+    return '$plant is on the island';
+  }
+
+  @override
+  String get islandPickerTitle => 'What do you want to plant?';
+
+  @override
+  String get islandGroupTree => 'Trees';
+
+  @override
+  String get islandGroupFruitTree => 'Fruit trees';
+
+  @override
+  String get islandGroupConifer => 'Conifers';
+
+  @override
+  String get islandGroupPalm => 'Palms';
+
+  @override
+  String get islandGroupShrub => 'Shrubs';
+
+  @override
+  String get islandGroupFlower => 'Flowers';
+
+  @override
+  String get islandGroupSucculent => 'Succulents';
+
+  @override
+  String islandBlooms(String range) {
+    return 'Flowers $range';
+  }
+
+  @override
+  String islandFruits(String range) {
+    return 'Fruit $range';
+  }
+
+  @override
+  String get islandFruitsAllYear => 'Fruit all year';
+
+  @override
+  String get islandEvergreen => 'Evergreen';
+
+  @override
+  String get islandDeciduous => 'Bare in winter';
+
+  @override
+  String get islandGiftLabel => 'gift';
+
+  @override
+  String islandRewardProgress(int planted, int needed) {
+    return 'Plants: $planted of $needed. With $needed by the end of the year, a surprise appears in the middle.';
+  }
+
+  @override
+  String get islandRewardReady =>
+      'You made it: at the end of the year a surprise appears in the middle.';
+
+  @override
+  String islandRewardEarned(String name) {
+    return 'This year\'s reward: $name';
+  }
+
+  @override
+  String islandRewardMissed(int needed) {
+    return 'No reward this year: it took $needed plants.';
+  }
+
+  @override
+  String get islandComplete => 'Complete island!';
+
+  @override
+  String islandCurrentMonth(String month, String spent, String limit) {
+    return '$month so far: $spent of $limit';
+  }
+
+  @override
+  String get islandCurrentOver =>
+      'You\'re over the limits: no plant this month.';
+
+  @override
+  String islandCurrentGap(int days, int max) {
+    return '$days days in a row without expenses: the most for the month is $max.';
+  }
+
+  @override
+  String get islandCurrentOk => 'Recording regularly';
+
+  @override
+  String get islandNoLimits =>
+      'To plant you need at least one monthly limit: set one in Categories.';
+
+  @override
+  String get islandMonthPending => 'To plant';
+
+  @override
+  String islandMonthOver(String spent, String limit) {
+    return 'Over the limits: $spent of $limit';
+  }
+
+  @override
+  String get islandMonthNoLimits => 'No limits';
+
+  @override
+  String get islandMonthNoRecords => 'No expenses recorded';
+
+  @override
+  String islandMonthGap(int days) {
+    return '$days days in a row without expenses';
+  }
+
+  @override
+  String islandMonthFew(int records, int minimum) {
+    return 'Few expenses recorded: $records, $minimum needed';
+  }
+
+  @override
+  String get islandMonthInProgress => 'In progress';
+
+  @override
+  String islandLimitChangeTitle(String month) {
+    return 'For the island it counts from $month';
+  }
+
+  @override
+  String islandLimitChangeBody(String month) {
+    return 'Limits changed after the 5th count for the island from the next month: for $month the previous one stays. Warnings use the new limit right away.';
+  }
+
+  @override
+  String get plantOak => 'Oak';
+
+  @override
+  String get plantOlive => 'Olive tree';
+
+  @override
+  String get plantMaple => 'Maple';
+
+  @override
+  String get plantBirch => 'Birch';
+
+  @override
+  String get plantWillow => 'Weeping willow';
+
+  @override
+  String get plantStonePine => 'Stone pine';
+
+  @override
+  String get plantLemon => 'Lemon tree';
+
+  @override
+  String get plantOrange => 'Orange tree';
+
+  @override
+  String get plantApple => 'Apple tree';
+
+  @override
+  String get plantCherry => 'Cherry tree';
+
+  @override
+  String get plantAlmond => 'Almond tree';
+
+  @override
+  String get plantFig => 'Fig tree';
+
+  @override
+  String get plantFir => 'Fir';
+
+  @override
+  String get plantCypress => 'Cypress';
+
+  @override
+  String get plantDatePalm => 'Date palm';
+
+  @override
+  String get plantFanPalm => 'Dwarf fan palm';
+
+  @override
+  String get plantLavender => 'Lavender';
+
+  @override
+  String get plantRosemary => 'Rosemary';
+
+  @override
+  String get plantOleander => 'Oleander';
+
+  @override
+  String get plantHydrangea => 'Hydrangea';
+
+  @override
+  String get plantBougainvillea => 'Bougainvillea';
+
+  @override
+  String get plantSunflower => 'Sunflower';
+
+  @override
+  String get plantPoppy => 'Poppy';
+
+  @override
+  String get plantDaisy => 'Daisy';
+
+  @override
+  String get plantTulip => 'Tulip';
+
+  @override
+  String get plantRose => 'Rose';
+
+  @override
+  String get plantIris => 'Iris';
+
+  @override
+  String get plantPricklyPear => 'Prickly pear';
+
+  @override
+  String get plantAgave => 'Agave';
+
+  @override
+  String get plantAloe => 'Aloe';
+
+  @override
+  String get plantCactus => 'Cactus';
+
+  @override
+  String get centerpieceLighthouse => 'a lighthouse';
+
+  @override
+  String get centerpieceFountain => 'a fountain';
+
+  @override
+  String get centerpieceTemple => 'a small temple';
+
+  @override
+  String get centerpieceStatue => 'a statue';
+
+  @override
+  String get centerpieceObelisk => 'an obelisk';
 }

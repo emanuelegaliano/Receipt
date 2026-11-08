@@ -8,6 +8,7 @@ import '../app_services.dart';
 import '../art/art_ui.dart';
 import '../data/budget.dart';
 import '../data/database.dart';
+import '../island/island_ui.dart';
 import 'format.dart';
 import 'l10n.dart';
 import 'settings_screen.dart';
@@ -25,6 +26,7 @@ class DashboardScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(l.summaryTitle),
         actions: [
+          const IslandButton(),
           const PaintingInfoButton(),
           IconButton(
             tooltip: l.settings,

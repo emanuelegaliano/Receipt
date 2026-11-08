@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../app_services.dart';
 import '../art/art_ui.dart';
 import '../data/database.dart';
+import '../island/island_ui.dart';
 import 'format.dart';
 import 'l10n.dart';
 import 'widgets.dart';
@@ -138,6 +139,12 @@ class _CategoryEditorState extends State<_CategoryEditor> {
       setState(() => _limitError = context.l10n.limitInvalid);
       return;
     }
+    // Dopo il 5, un limite cambiato vale per l'isola dal mese dopo: lo dice prima.
+    if (limit != widget.category?.monthlyLimitCents &&
+        !await confirmLimitChangeForIsland(context, AppServices.of(context).db.clock())) {
+      return;
+    }
+    if (!mounted) return;
     final keywords = _keywords.text.split(',').map((k) => k.trim().toLowerCase()).where((k) => k.isNotEmpty).join(',');
     await widget.db.saveCategory(CategoriesCompanion(
       id: widget.category == null ? const Value.absent() : Value(widget.category!.id),

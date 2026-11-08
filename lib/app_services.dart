@@ -8,13 +8,14 @@ import 'package:path_provider/path_provider.dart';
 import 'art/daily_art.dart';
 import 'data/database.dart';
 import 'data/photos.dart';
+import 'island/island_service.dart';
 import 'receipt/receipt_scanner.dart';
 import 'security/app_lock.dart';
 import 'update/updater.dart';
 
 /// Servizi condivisi dall'app: database, foto, scanner (caricato solo al
 /// primo uso, perché i modelli OCR pesano), mese selezionato, aspetto,
-/// blocco, aggiornamenti e quadro del giorno.
+/// blocco, aggiornamenti, quadro del giorno e isola.
 class AppServices extends InheritedWidget {
   final AppDatabase db;
   final ValueNotifier<DateTime> month;
@@ -24,6 +25,7 @@ class AppServices extends InheritedWidget {
   final Future<ReceiptScanner> Function() scanner;
   final Updater updater;
   final DailyArt art;
+  final IslandService island;
 
   const AppServices({
     super.key,
@@ -35,6 +37,7 @@ class AppServices extends InheritedWidget {
     required this.scanner,
     required this.updater,
     required this.art,
+    required this.island,
     required super.child,
   });
 

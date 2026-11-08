@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
@@ -6,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/common.dart' show CommonDatabase;
 
+import '../island/rules.dart';
 import '../security/vault.dart';
 
 part 'database.g.dart';
@@ -60,6 +62,33 @@ class MerchantRules extends Table {
   Set<Column> get primaryKey => {merchantKey};
 }
 
+/// Una pianta sull'isola (vedi docs/ISLAND.md): al massimo una per mese, nel
+/// posto [slot] dell'isola del suo anno.
+class Plantings extends Table {
+  /// Mese come aaaamm, es. 202610: un numero non si sposta col fuso orario.
+  IntColumn get month => integer()();
+  /// Chiave nel catalogo (lib/island/catalog.dart), es. "olive".
+  TextColumn get plant => text()();
+  IntColumn get slot => integer()();
+  /// La pianta regalata alla prima apertura dell'isola.
+  BoolColumn get gift => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get plantedAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {month};
+}
+
+/// I limiti che contano per l'isola in un mese: quelli alla fine del giorno 5.
+class LimitSnapshots extends Table {
+  /// aaaamm, come in [Plantings].
+  IntColumn get month => integer()();
+  /// JSON {"id categoria": centesimi}; {} se quel mese non c'erano limiti.
+  TextColumn get limits => text()();
+
+  @override
+  Set<Column> get primaryKey => {month};
+}
+
 class Settings extends Table {
   TextColumn get key => text()();
   TextColumn get value => text()();
@@ -76,12 +105,15 @@ class ExpenseView {
   const ExpenseView(this.expense, this.category, this.account);
 }
 
-@DriftDatabase(tables: [Accounts, Categories, Expenses, MerchantRules, Settings])
+@DriftDatabase(tables: [Accounts, Categories, Expenses, MerchantRules, Settings, Plantings, LimitSnapshots])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase(super.executor);
+  AppDatabase(super.executor, {this.clock = DateTime.now});
+
+  /// L'ora di adesso; nei test una data fissa.
+  final DateTime Function() clock;
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -91,6 +123,10 @@ class AppDatabase extends _$AppDatabase {
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) await m.addColumn(categories, categories.monthlyLimitCents);
+          if (from < 3) {
+            await m.createTable(plantings);
+            await m.createTable(limitSnapshots);
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
@@ -135,16 +171,19 @@ class AppDatabase extends _$AppDatabase {
         ..orderBy([(c) => OrderingTerm(expression: c.sortOrder)]))
       .get();
 
-  Future<int> saveCategory(CategoriesCompanion c) async {
-    if (c.id.present) {
-      await (update(categories)..where((t) => t.id.equals(c.id.value))).write(c);
-      return c.id.value;
-    }
-    final maxOrder = await (selectOnly(categories)..addColumns([categories.sortOrder.max()]))
-        .map((r) => r.read(categories.sortOrder.max()))
-        .getSingleOrNull();
-    return into(categories).insert(c.copyWith(sortOrder: Value((maxOrder ?? 0) + 1)));
-  }
+  Future<int> saveCategory(CategoriesCompanion c) => transaction(() async {
+        // Prima di toccare un limite, i mesi dell'isola già fissati se lo
+        // tengono com'era.
+        await snapshotLimits();
+        if (c.id.present) {
+          await (update(categories)..where((t) => t.id.equals(c.id.value))).write(c);
+          return c.id.value;
+        }
+        final maxOrder = await (selectOnly(categories)..addColumns([categories.sortOrder.max()]))
+            .map((r) => r.read(categories.sortOrder.max()))
+            .getSingleOrNull();
+        return into(categories).insert(c.copyWith(sortOrder: Value((maxOrder ?? 0) + 1)));
+      });
 
   Future<int> categoryExpenseCount(int id) async {
     final n = expenses.id.count();
@@ -157,6 +196,7 @@ class AppDatabase extends _$AppDatabase {
   /// Elimina una categoria. Le sue spese (e gli esercenti imparati) passano
   /// a [moveTo]; senza [moveTo] la categoria deve essere vuota.
   Future<void> deleteCategory(int id, {int? moveTo}) => transaction(() async {
+        await snapshotLimits();
         if (moveTo != null) {
           await (update(expenses)..where((e) => e.categoryId.equals(id)))
               .write(ExpensesCompanion(categoryId: Value(moveTo)));
@@ -261,6 +301,70 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  // --- Isola (docs/ISLAND.md) ---------------------------------------------
+
+  /// I limiti di adesso: id categoria → centesimi.
+  Future<Map<int, int>> currentLimits() async {
+    final rows = await (select(categories)
+          ..where((c) => c.archived.equals(false) & c.monthlyLimitCents.isNotNull()))
+        .get();
+    return {for (final c in rows) c.id: c.monthlyLimitCents!};
+  }
+
+  /// Copia i limiti di ogni mese dell'isola che ha passato il giorno 5 e non
+  /// ne ha ancora una copia. I limiti cambiano solo da qui (saveCategory,
+  /// deleteCategory, che la chiamano prima di scrivere): così la copia di un
+  /// mese è sempre quella della fine del 5, anche se l'app quel giorno non
+  /// era aperta.
+  Future<void> snapshotLimits() async {
+    final start = int.tryParse(await setting(islandStartSetting) ?? '');
+    if (start == null) return;
+    final now = clock();
+    final have = {for (final s in await select(limitSnapshots).get()) s.month};
+    final missing = [
+      for (final m in monthsBetween(start, monthKey(now)))
+        if (!have.contains(m) && !now.isBefore(limitsFixedAt(m))) m,
+    ];
+    if (missing.isEmpty) return;
+    final limits = jsonEncode({for (final e in (await currentLimits()).entries) '${e.key}': e.value});
+    await batch((b) {
+      for (final m in missing) {
+        b.insert(limitSnapshots, LimitSnapshotsCompanion.insert(month: Value(m), limits: limits),
+            mode: InsertMode.insertOrIgnore);
+      }
+    });
+  }
+
+  /// Le copie dei limiti, per mese.
+  Future<Map<int, Map<int, int>>> limitSnapshotsByMonth() async => {
+        for (final s in await select(limitSnapshots).get())
+          s.month: {
+            for (final e in (jsonDecode(s.limits) as Map<String, dynamic>).entries)
+              int.parse(e.key): (e.value as num).toInt(),
+          },
+      };
+
+  /// Le spese da [from] in poi, ridotte a data, categoria e importo.
+  Future<List<ExpenseFact>> expenseFactsSince(DateTime from) async {
+    final q = selectOnly(expenses)
+      ..addColumns([expenses.date, expenses.categoryId, expenses.amountCents])
+      ..where(expenses.date.isBiggerOrEqualValue(from));
+    return q
+        .map((r) => ExpenseFact(r.read(expenses.date)!, r.read(expenses.categoryId)!, r.read(expenses.amountCents)!))
+        .get();
+  }
+
+  /// La data della prima spesa registrata, null se non ce ne sono.
+  Future<DateTime?> firstExpenseDate() async {
+    final first = expenses.date.min();
+    return (selectOnly(expenses)..addColumns([first])).map((r) => r.read(first)).getSingle();
+  }
+
+  Future<List<Planting>> allPlantings() =>
+      (select(plantings)..orderBy([(p) => OrderingTerm(expression: p.month)])).get();
+
+  Future<void> addPlanting(PlantingsCompanion p) => into(plantings).insert(p);
+
   // --- Impostazioni --------------------------------------------------------
 
   Future<String?> setting(String key) async =>
@@ -269,6 +373,10 @@ class AppDatabase extends _$AppDatabase {
   Future<void> setSetting(String key, String value) =>
       into(settings).insertOnConflictUpdate(SettingsCompanion.insert(key: key, value: value));
 }
+
+/// Primo mese della prima isola (aaaamm) e mese regalato, se c'è.
+const islandStartSetting = 'island_start';
+const islandGiftSetting = 'island_gift';
 
 /// Il database dell'app (documenti/spese.sqlite), cifrato con la chiave
 /// dei dati. Si apre solo quando [key] è pronta, cioè dopo lo sblocco: le

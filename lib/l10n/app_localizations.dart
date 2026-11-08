@@ -1651,6 +1651,474 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Download di {size}'**
   String updateDownloadSize(String size);
+
+  /// No description provided for @islandTooltip.
+  ///
+  /// In it, this message translates to:
+  /// **'La tua isola'**
+  String get islandTooltip;
+
+  /// No description provided for @islandTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Isola {year}'**
+  String islandTitle(String year);
+
+  /// No description provided for @islandHowTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Come funziona'**
+  String get islandHowTitle;
+
+  /// No description provided for @islandHowBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Ogni mese in cui resti nei limiti puoi piantare qualcosa sull\'isola: scegli tu cosa e dove.\n\nConta il totale delle categorie che hanno un limite: se una sfora ma le altre compensano, il mese vale lo stesso. Serve almeno un limite.\n\nIl mese deve essere registrato con la regolarità di sempre: non registrare non è risparmiare. Conta la data della spesa, non quando la inserisci.\n\nValgono i limiti del giorno 5: se li cambi dopo, per l\'isola contano dal mese successivo.\n\nOgni anno è un\'isola nuova. Se a fine anno hai piantato più di metà dei posti, al centro spunta una sorpresa.'**
+  String get islandHowBody;
+
+  /// No description provided for @islandPendingCount.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Hai una pianta da mettere} other{Hai {count} piante da mettere}}'**
+  String islandPendingCount(int count);
+
+  /// No description provided for @islandChoosePlant.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli la pianta di {month}'**
+  String islandChoosePlant(String month);
+
+  /// No description provided for @islandGiftNote.
+  ///
+  /// In it, this message translates to:
+  /// **'La pianta di {month} è un regalo, per vedere come funziona.'**
+  String islandGiftNote(String month);
+
+  /// No description provided for @islandTapSpot.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca un posto libero sull\'isola'**
+  String get islandTapSpot;
+
+  /// No description provided for @islandPlaced.
+  ///
+  /// In it, this message translates to:
+  /// **'{plant} è sull\'isola'**
+  String islandPlaced(String plant);
+
+  /// No description provided for @islandPickerTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Cosa vuoi piantare?'**
+  String get islandPickerTitle;
+
+  /// No description provided for @islandGroupTree.
+  ///
+  /// In it, this message translates to:
+  /// **'Alberi'**
+  String get islandGroupTree;
+
+  /// No description provided for @islandGroupFruitTree.
+  ///
+  /// In it, this message translates to:
+  /// **'Alberi da frutto'**
+  String get islandGroupFruitTree;
+
+  /// No description provided for @islandGroupConifer.
+  ///
+  /// In it, this message translates to:
+  /// **'Conifere'**
+  String get islandGroupConifer;
+
+  /// No description provided for @islandGroupPalm.
+  ///
+  /// In it, this message translates to:
+  /// **'Palme'**
+  String get islandGroupPalm;
+
+  /// No description provided for @islandGroupShrub.
+  ///
+  /// In it, this message translates to:
+  /// **'Arbusti'**
+  String get islandGroupShrub;
+
+  /// No description provided for @islandGroupFlower.
+  ///
+  /// In it, this message translates to:
+  /// **'Fiori'**
+  String get islandGroupFlower;
+
+  /// No description provided for @islandGroupSucculent.
+  ///
+  /// In it, this message translates to:
+  /// **'Piante grasse'**
+  String get islandGroupSucculent;
+
+  /// No description provided for @islandBlooms.
+  ///
+  /// In it, this message translates to:
+  /// **'Fiorisce {range}'**
+  String islandBlooms(String range);
+
+  /// No description provided for @islandFruits.
+  ///
+  /// In it, this message translates to:
+  /// **'Frutti {range}'**
+  String islandFruits(String range);
+
+  /// No description provided for @islandFruitsAllYear.
+  ///
+  /// In it, this message translates to:
+  /// **'Frutti tutto l\'anno'**
+  String get islandFruitsAllYear;
+
+  /// No description provided for @islandEvergreen.
+  ///
+  /// In it, this message translates to:
+  /// **'Sempreverde'**
+  String get islandEvergreen;
+
+  /// No description provided for @islandDeciduous.
+  ///
+  /// In it, this message translates to:
+  /// **'Spoglio d\'inverno'**
+  String get islandDeciduous;
+
+  /// No description provided for @islandGiftLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'regalo'**
+  String get islandGiftLabel;
+
+  /// No description provided for @islandRewardProgress.
+  ///
+  /// In it, this message translates to:
+  /// **'Piante: {planted} su {needed}. Con {needed} a fine anno, al centro spunta una sorpresa.'**
+  String islandRewardProgress(int planted, int needed);
+
+  /// No description provided for @islandRewardReady.
+  ///
+  /// In it, this message translates to:
+  /// **'Ci sei: a fine anno al centro spunta una sorpresa.'**
+  String get islandRewardReady;
+
+  /// No description provided for @islandRewardEarned.
+  ///
+  /// In it, this message translates to:
+  /// **'Premio dell\'anno: {name}'**
+  String islandRewardEarned(String name);
+
+  /// No description provided for @islandRewardMissed.
+  ///
+  /// In it, this message translates to:
+  /// **'Quest\'anno niente premio: servivano {needed} piante.'**
+  String islandRewardMissed(int needed);
+
+  /// No description provided for @islandComplete.
+  ///
+  /// In it, this message translates to:
+  /// **'Isola completa!'**
+  String get islandComplete;
+
+  /// No description provided for @islandCurrentMonth.
+  ///
+  /// In it, this message translates to:
+  /// **'{month} finora: {spent} su {limit}'**
+  String islandCurrentMonth(String month, String spent, String limit);
+
+  /// No description provided for @islandCurrentOver.
+  ///
+  /// In it, this message translates to:
+  /// **'Sei oltre i limiti: questo mese niente pianta.'**
+  String get islandCurrentOver;
+
+  /// No description provided for @islandCurrentGap.
+  ///
+  /// In it, this message translates to:
+  /// **'{days} giorni di fila senza spese: per il mese il massimo è {max}.'**
+  String islandCurrentGap(int days, int max);
+
+  /// No description provided for @islandCurrentOk.
+  ///
+  /// In it, this message translates to:
+  /// **'Registrazioni regolari'**
+  String get islandCurrentOk;
+
+  /// No description provided for @islandNoLimits.
+  ///
+  /// In it, this message translates to:
+  /// **'Per piantare serve almeno un limite mensile: impostalo in Categorie.'**
+  String get islandNoLimits;
+
+  /// No description provided for @islandMonthPending.
+  ///
+  /// In it, this message translates to:
+  /// **'Da piantare'**
+  String get islandMonthPending;
+
+  /// No description provided for @islandMonthOver.
+  ///
+  /// In it, this message translates to:
+  /// **'Oltre i limiti: {spent} su {limit}'**
+  String islandMonthOver(String spent, String limit);
+
+  /// No description provided for @islandMonthNoLimits.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun limite'**
+  String get islandMonthNoLimits;
+
+  /// No description provided for @islandMonthNoRecords.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna spesa registrata'**
+  String get islandMonthNoRecords;
+
+  /// No description provided for @islandMonthGap.
+  ///
+  /// In it, this message translates to:
+  /// **'{days} giorni di fila senza spese'**
+  String islandMonthGap(int days);
+
+  /// No description provided for @islandMonthFew.
+  ///
+  /// In it, this message translates to:
+  /// **'Poche spese registrate: {records}, ne servivano {minimum}'**
+  String islandMonthFew(int records, int minimum);
+
+  /// No description provided for @islandMonthInProgress.
+  ///
+  /// In it, this message translates to:
+  /// **'In corso'**
+  String get islandMonthInProgress;
+
+  /// No description provided for @islandLimitChangeTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Per l\'isola vale da {month}'**
+  String islandLimitChangeTitle(String month);
+
+  /// No description provided for @islandLimitChangeBody.
+  ///
+  /// In it, this message translates to:
+  /// **'I limiti cambiati dopo il 5 contano per l\'isola dal mese successivo: per {month} resta quello di prima. Gli avvisi invece usano subito il nuovo limite.'**
+  String islandLimitChangeBody(String month);
+
+  /// No description provided for @plantOak.
+  ///
+  /// In it, this message translates to:
+  /// **'Quercia'**
+  String get plantOak;
+
+  /// No description provided for @plantOlive.
+  ///
+  /// In it, this message translates to:
+  /// **'Ulivo'**
+  String get plantOlive;
+
+  /// No description provided for @plantMaple.
+  ///
+  /// In it, this message translates to:
+  /// **'Acero'**
+  String get plantMaple;
+
+  /// No description provided for @plantBirch.
+  ///
+  /// In it, this message translates to:
+  /// **'Betulla'**
+  String get plantBirch;
+
+  /// No description provided for @plantWillow.
+  ///
+  /// In it, this message translates to:
+  /// **'Salice piangente'**
+  String get plantWillow;
+
+  /// No description provided for @plantStonePine.
+  ///
+  /// In it, this message translates to:
+  /// **'Pino domestico'**
+  String get plantStonePine;
+
+  /// No description provided for @plantLemon.
+  ///
+  /// In it, this message translates to:
+  /// **'Limone'**
+  String get plantLemon;
+
+  /// No description provided for @plantOrange.
+  ///
+  /// In it, this message translates to:
+  /// **'Arancio'**
+  String get plantOrange;
+
+  /// No description provided for @plantApple.
+  ///
+  /// In it, this message translates to:
+  /// **'Melo'**
+  String get plantApple;
+
+  /// No description provided for @plantCherry.
+  ///
+  /// In it, this message translates to:
+  /// **'Ciliegio'**
+  String get plantCherry;
+
+  /// No description provided for @plantAlmond.
+  ///
+  /// In it, this message translates to:
+  /// **'Mandorlo'**
+  String get plantAlmond;
+
+  /// No description provided for @plantFig.
+  ///
+  /// In it, this message translates to:
+  /// **'Fico'**
+  String get plantFig;
+
+  /// No description provided for @plantFir.
+  ///
+  /// In it, this message translates to:
+  /// **'Abete'**
+  String get plantFir;
+
+  /// No description provided for @plantCypress.
+  ///
+  /// In it, this message translates to:
+  /// **'Cipresso'**
+  String get plantCypress;
+
+  /// No description provided for @plantDatePalm.
+  ///
+  /// In it, this message translates to:
+  /// **'Palma da dattero'**
+  String get plantDatePalm;
+
+  /// No description provided for @plantFanPalm.
+  ///
+  /// In it, this message translates to:
+  /// **'Palma nana'**
+  String get plantFanPalm;
+
+  /// No description provided for @plantLavender.
+  ///
+  /// In it, this message translates to:
+  /// **'Lavanda'**
+  String get plantLavender;
+
+  /// No description provided for @plantRosemary.
+  ///
+  /// In it, this message translates to:
+  /// **'Rosmarino'**
+  String get plantRosemary;
+
+  /// No description provided for @plantOleander.
+  ///
+  /// In it, this message translates to:
+  /// **'Oleandro'**
+  String get plantOleander;
+
+  /// No description provided for @plantHydrangea.
+  ///
+  /// In it, this message translates to:
+  /// **'Ortensia'**
+  String get plantHydrangea;
+
+  /// No description provided for @plantBougainvillea.
+  ///
+  /// In it, this message translates to:
+  /// **'Bouganville'**
+  String get plantBougainvillea;
+
+  /// No description provided for @plantSunflower.
+  ///
+  /// In it, this message translates to:
+  /// **'Girasole'**
+  String get plantSunflower;
+
+  /// No description provided for @plantPoppy.
+  ///
+  /// In it, this message translates to:
+  /// **'Papavero'**
+  String get plantPoppy;
+
+  /// No description provided for @plantDaisy.
+  ///
+  /// In it, this message translates to:
+  /// **'Margherita'**
+  String get plantDaisy;
+
+  /// No description provided for @plantTulip.
+  ///
+  /// In it, this message translates to:
+  /// **'Tulipano'**
+  String get plantTulip;
+
+  /// No description provided for @plantRose.
+  ///
+  /// In it, this message translates to:
+  /// **'Rosa'**
+  String get plantRose;
+
+  /// No description provided for @plantIris.
+  ///
+  /// In it, this message translates to:
+  /// **'Iris'**
+  String get plantIris;
+
+  /// No description provided for @plantPricklyPear.
+  ///
+  /// In it, this message translates to:
+  /// **'Fico d\'India'**
+  String get plantPricklyPear;
+
+  /// No description provided for @plantAgave.
+  ///
+  /// In it, this message translates to:
+  /// **'Agave'**
+  String get plantAgave;
+
+  /// No description provided for @plantAloe.
+  ///
+  /// In it, this message translates to:
+  /// **'Aloe'**
+  String get plantAloe;
+
+  /// No description provided for @plantCactus.
+  ///
+  /// In it, this message translates to:
+  /// **'Cactus'**
+  String get plantCactus;
+
+  /// No description provided for @centerpieceLighthouse.
+  ///
+  /// In it, this message translates to:
+  /// **'un faro'**
+  String get centerpieceLighthouse;
+
+  /// No description provided for @centerpieceFountain.
+  ///
+  /// In it, this message translates to:
+  /// **'una fontana'**
+  String get centerpieceFountain;
+
+  /// No description provided for @centerpieceTemple.
+  ///
+  /// In it, this message translates to:
+  /// **'un tempietto'**
+  String get centerpieceTemple;
+
+  /// No description provided for @centerpieceStatue.
+  ///
+  /// In it, this message translates to:
+  /// **'una statua'**
+  String get centerpieceStatue;
+
+  /// No description provided for @centerpieceObelisk.
+  ///
+  /// In it, this message translates to:
+  /// **'un obelisco'**
+  String get centerpieceObelisk;
 }
 
 class _AppLocalizationsDelegate
