@@ -64,13 +64,15 @@ Future<void> _afterUnlock(AppDatabase db, ReceiptPhotos photos, ValueNotifier<Ap
   final saved = await AppearanceSettings.load(db);
   appearance.value = saved;
   await saved.cache();
-  await art.init();
   try {
-    // Alla prima volta crea l'isola (col regalo) e copia i limiti del mese.
+    // Alla prima volta crea l'isola (col regalo) e copia i limiti: subito,
+    // prima del quadro del giorno che può aspettare la rete, così nessun
+    // limite cambiato nel frattempo passa per "quello del primo avvio".
     await island.init();
   } catch (_) {
     // Riprova quando si apre l'isola.
   }
+  await art.init();
   await _cleanOrphanReceipts(db, photos);
   try {
     final cache = await getTemporaryDirectory();

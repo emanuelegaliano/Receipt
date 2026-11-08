@@ -663,6 +663,7 @@
       }
     }
   },
+  "islandPlantFailed": "Non si può piantare: qualcosa è cambiato, riprova.",
   "islandPickerTitle": "Cosa vuoi piantare?",
   "islandGroupTree": "Alberi",
   "islandGroupFruitTree": "Alberi da frutto",
@@ -798,7 +799,7 @@
       }
     }
   },
-  "islandLimitChangeBody": "I limiti cambiati dopo il 5 contano per l'isola dal mese successivo: per {month} resta quello di prima. Gli avvisi invece usano subito il nuovo limite.",
+  "islandLimitChangeBody": "I limiti cambiati dopo il 5 contano per l'isola dal mese successivo: per {month} restano quelli di inizio mese. Gli avvisi invece usano subito il nuovo limite.",
   "@islandLimitChangeBody": {
     "placeholders": {
       "month": {

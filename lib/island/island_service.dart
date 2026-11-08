@@ -101,7 +101,9 @@ class IslandService extends ChangeNotifier {
     await refresh();
     _changes ??= db
         .tableUpdates(
-          TableUpdateQuery.onAllTables([db.expenses, db.categories, db.plantings, db.limitSnapshots, db.settings]),
+          // Non le impostazioni: cambiano spesso (tema, lingua) e un ripristino
+          // da backup tocca comunque anche piante e spese.
+          TableUpdateQuery.onAllTables([db.expenses, db.categories, db.plantings, db.limitSnapshots]),
         )
         .listen((_) {
           _debounce?.cancel();
@@ -143,10 +145,28 @@ class IslandService extends ChangeNotifier {
     final planted = {for (final p in plantings) p.month};
     final facts = await db.expenseFactsSince(monthStart(start).subtract(const Duration(days: historyDays + 1)));
 
+    // Le spese sono in ordine di data: per ogni mese basta la sua finestra
+    // (i 90 giorni prima e il mese), trovata per bisezione.
+    int firstFrom(DateTime t) {
+      var lo = 0, hi = facts.length;
+      while (lo < hi) {
+        final mid = (lo + hi) ~/ 2;
+        if (facts[mid].date.isBefore(t)) {
+          lo = mid + 1;
+        } else {
+          hi = mid;
+        }
+      }
+      return lo;
+    }
+
     MonthResult evaluate(int m) => evaluateMonth(
       month: m,
       limits: snapshots[m] ?? currentLimits,
-      expenses: facts,
+      expenses: facts.sublist(
+        firstFrom(monthStart(m).subtract(const Duration(days: historyDays + 1))),
+        firstFrom(monthStart(addMonths(m, 1))),
+      ),
       firstRecord: firstRecord,
       until: m == current ? now : null,
     );
@@ -186,9 +206,18 @@ class IslandService extends ChangeNotifier {
     );
   }
 
+  Future<void> _planting = Future.value();
+
   /// Mette [plant] al posto [slot] dell'isola di [month]. Il mese deve essere
-  /// da piantare (regalo o superato) e il posto libero.
-  Future<void> plant(int month, String plant, int slot) async {
+  /// da piantare (regalo o superato) e il posto libero. Una alla volta: due
+  /// tocchi di fila non piantano due volte lo stesso mese.
+  Future<void> plant(int month, String plant, int slot) {
+    final next = _planting.catchError((_) {}).then((_) => _plant(month, plant, slot));
+    _planting = next;
+    return next;
+  }
+
+  Future<void> _plant(int month, String plant, int slot) async {
     final s = await load(db);
     if (!s.pending.contains(month)) throw const PlantingException('month not plantable');
     final island = s.yearOf(month);

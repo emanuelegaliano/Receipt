@@ -29,10 +29,10 @@ String centsToInput(BuildContext context, int cents) {
   return context.localeTag.startsWith('en') ? s : s.replaceAll('.', ',');
 }
 
-String formatMonth(BuildContext context, DateTime m) {
-  final s = DateFormat.yMMMM(context.localeTag).format(m);
-  return s[0].toUpperCase() + s.substring(1);
-}
+/// [s] con la prima lettera maiuscola ("novembre" → "Novembre").
+String capitalized(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+
+String formatMonth(BuildContext context, DateTime m) => capitalized(DateFormat.yMMMM(context.localeTag).format(m));
 
 String formatDay(BuildContext context, DateTime d) {
   final today = DateTime.now();

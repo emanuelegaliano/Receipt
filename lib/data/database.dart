@@ -206,6 +206,15 @@ class AppDatabase extends _$AppDatabase {
           await (delete(merchantRules)..where((r) => r.categoryId.equals(id))).go();
         }
         await (delete(categories)..where((c) => c.id.equals(id))).go();
+        // Le sue spese ora sono in un'altra categoria: se il suo limite
+        // restasse nelle copie, l'isola conterebbe il limite senza le spese.
+        // Via limite e spese insieme, anche per il mese in corso.
+        for (final s in await select(limitSnapshots).get()) {
+          final limits = jsonDecode(s.limits) as Map<String, dynamic>;
+          if (limits.remove('$id') == null) continue;
+          await (update(limitSnapshots)..where((t) => t.month.equals(s.month)))
+              .write(LimitSnapshotsCompanion(limits: Value(jsonEncode(limits))));
+        }
       });
 
   Future<int> saveAccount(AccountsCompanion a) async {
@@ -344,11 +353,12 @@ class AppDatabase extends _$AppDatabase {
           },
       };
 
-  /// Le spese da [from] in poi, ridotte a data, categoria e importo.
+  /// Le spese da [from] in poi, ridotte a data, categoria e importo, in ordine di data.
   Future<List<ExpenseFact>> expenseFactsSince(DateTime from) async {
     final q = selectOnly(expenses)
       ..addColumns([expenses.date, expenses.categoryId, expenses.amountCents])
-      ..where(expenses.date.isBiggerOrEqualValue(from));
+      ..where(expenses.date.isBiggerOrEqualValue(from))
+      ..orderBy([OrderingTerm(expression: expenses.date)]);
     return q
         .map((r) => ExpenseFact(r.read(expenses.date)!, r.read(expenses.categoryId)!, r.read(expenses.amountCents)!))
         .get();

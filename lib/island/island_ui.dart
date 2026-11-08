@@ -85,8 +85,6 @@ String _groupName(PlantShape s, AppLocalizations l) => switch (s) {
 /// "ottobre", "October": il nome del mese, senza anno.
 String _monthName(BuildContext context, int month) => DateFormat.MMMM(context.localeTag).format(monthStart(month));
 
-String _capitalized(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
-
 /// Quando fiorisce o fa i frutti, per il catalogo.
 String _season(BuildContext context, PlantSpecies s) {
   final l = context.l10n;
@@ -184,14 +182,20 @@ class _IslandScreenState extends State<IslandScreen> with SingleTickerProviderSt
     final month = _placingMonth, plant = _placingPlant;
     if (month != null && plant != null && month ~/ 100 == year.year) {
       if (year.bySlot.containsKey(slot)) return;
+      var planted = true;
       try {
         await AppServices.of(context).island.plant(month, plant, slot);
       } on PlantingException {
-        // Lo stato è cambiato nel frattempo (es. una spesa tolta): si ricomincia.
+        // Lo stato è cambiato nel frattempo (es. una spesa tolta, o un
+        // secondo tocco sullo stesso mese): niente pianta, lo si dice.
+        planted = false;
       }
       if (!mounted) return;
       _stopPlacing();
-      messenger.showSnackBar(SnackBar(content: Text(l.islandPlaced(plantName(plant, l)))));
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(content: Text(planted ? l.islandPlaced(plantName(plant, l)) : l.islandPlantFailed)),
+      );
       return;
     }
     final p = year.bySlot[slot];
@@ -540,7 +544,7 @@ class _CurrentMonthCard extends StatelessWidget {
           children: [
             Text(
               l.islandCurrentMonth(
-                _capitalized(_monthName(context, r.month)),
+                capitalized(_monthName(context, r.month)),
                 formatCents(context, r.spent),
                 formatCents(context, r.limit),
               ),
@@ -653,7 +657,7 @@ class _MonthTile extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: SizedBox(width: 40, height: 40, child: Center(child: leading)),
-      title: Text(_capitalized(_monthName(context, month))),
+      title: Text(capitalized(_monthName(context, month))),
       subtitle: Text(subtitle),
     );
   }

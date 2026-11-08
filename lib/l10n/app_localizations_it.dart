@@ -1036,6 +1036,10 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String get islandPlantFailed =>
+      'Non si può piantare: qualcosa è cambiato, riprova.';
+
+  @override
   String get islandPickerTitle => 'Cosa vuoi piantare?';
 
   @override
@@ -1163,7 +1167,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String islandLimitChangeBody(String month) {
-    return 'I limiti cambiati dopo il 5 contano per l\'isola dal mese successivo: per $month resta quello di prima. Gli avvisi invece usano subito il nuovo limite.';
+    return 'I limiti cambiati dopo il 5 contano per l\'isola dal mese successivo: per $month restano quelli di inizio mese. Gli avvisi invece usano subito il nuovo limite.';
   }
 
   @override

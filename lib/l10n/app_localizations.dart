@@ -1736,6 +1736,12 @@ abstract class AppLocalizations {
   /// **'{plant} è sull\'isola'**
   String islandPlaced(String plant);
 
+  /// No description provided for @islandPlantFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non si può piantare: qualcosa è cambiato, riprova.'**
+  String get islandPlantFailed;
+
   /// No description provided for @islandPickerTitle.
   ///
   /// In it, this message translates to:
@@ -1937,7 +1943,7 @@ abstract class AppLocalizations {
   /// No description provided for @islandLimitChangeBody.
   ///
   /// In it, this message translates to:
-  /// **'I limiti cambiati dopo il 5 contano per l\'isola dal mese successivo: per {month} resta quello di prima. Gli avvisi invece usano subito il nuovo limite.'**
+  /// **'I limiti cambiati dopo il 5 contano per l\'isola dal mese successivo: per {month} restano quelli di inizio mese. Gli avvisi invece usano subito il nuovo limite.'**
   String islandLimitChangeBody(String month);
 
   /// No description provided for @plantOak.

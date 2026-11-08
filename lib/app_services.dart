@@ -109,11 +109,11 @@ class AppearanceSettings {
   Map<String, Object> toJson() => {'mode': mode.name, 'accent': accent, 'custom': ?custom, 'language': language};
 
   static AppearanceSettings fromJson(Map<String, dynamic> json) => AppearanceSettings(
-    mode: ThemeMode.values.firstWhere((m) => m.name == json['mode'], orElse: () => ThemeMode.system),
-    accent: json['accent'] is int ? json['accent'] as int : 0,
-    custom: json['custom'] is int ? json['custom'] as int : null,
-    language: appLanguages.contains(json['language']) ? json['language'] as String : 'system',
-  );
+        mode: ThemeMode.values.firstWhere((m) => m.name == json['mode'], orElse: () => ThemeMode.system),
+        accent: json['accent'] is int ? json['accent'] as int : 0,
+        custom: json['custom'] is int ? json['custom'] as int : null,
+        language: appLanguages.contains(json['language']) ? json['language'] as String : 'system',
+      );
 
   /// Copia non cifrata di tema, colore e lingua, per la schermata di blocco
   /// (il database si apre solo dopo). Non contiene niente di personale.

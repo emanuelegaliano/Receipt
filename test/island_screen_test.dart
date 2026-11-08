@@ -171,7 +171,7 @@ void main() {
     await tester.tap(find.text('salva'));
     await tester.pumpAndSettle();
     expect(find.text('Per l\'isola vale da dicembre'), findsOneWidget);
-    expect(find.textContaining('per novembre resta quello di prima'), findsOneWidget);
+    expect(find.textContaining('per novembre restano quelli di inizio mese'), findsOneWidget);
     await tester.tap(find.text('Annulla'));
     await tester.pumpAndSettle();
     expect(answer, isFalse);

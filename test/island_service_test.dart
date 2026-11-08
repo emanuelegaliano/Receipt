@@ -122,13 +122,14 @@ void main() {
         {groceries.id: 10000},
       ],
     );
-    // Anche eliminare una categoria con limite è un cambio di limiti: il
-    // limite messo il 3 febbraio vale per febbraio anche se il 9 sparisce.
+    // Eliminando una categoria con limite, limite e spese escono insieme
+    // dalle copie: le sue spese passano a un'altra categoria e non devono
+    // lasciare dietro un limite "vuoto" che fa sembrare il mese nei limiti.
     now = DateTime(2027, 2, 3);
     await setLimit(leisure, 2000);
     now = DateTime(2027, 2, 9);
     await db.deleteCategory(leisure.id);
-    expect((await db.limitSnapshotsByMonth())[202702], {groceries.id: 99900, leisure.id: 2000});
+    expect((await db.limitSnapshotsByMonth())[202702], {groceries.id: 99900});
   });
 
   test('novembre nei limiti e registrato bene si pianta a dicembre; il posto si sceglie', () async {
@@ -155,6 +156,19 @@ void main() {
     });
     expect(s.years.single.freeSlots, [1]);
     await expectLater(island.plant(202611, 'fig', 1), throwsA(isA<PlantingException>()), reason: 'già piantato');
+    island.dispose();
+  });
+
+  test('due tocchi di fila sullo stesso mese piantano una volta sola', () async {
+    final island = IslandService(db);
+    await island.init();
+    final results = await Future.wait([
+      island.plant(202610, 'olive', 0).then((_) => 'ok', onError: (e) => '$e'),
+      island.plant(202610, 'oak', 1).then((_) => 'ok', onError: (e) => '$e'),
+    ]);
+    expect(results.first, 'ok');
+    expect(results.last, contains('PlantingException'));
+    expect((await db.allPlantings()).map((p) => (p.month, p.plant, p.slot)), [(202610, 'olive', 0)]);
     island.dispose();
   });
 
