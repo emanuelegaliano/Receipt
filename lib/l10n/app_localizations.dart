@@ -818,6 +818,24 @@ abstract class AppLocalizations {
   /// **'Grafite'**
   String get accentGraphite;
 
+  /// No description provided for @accentCustom.
+  ///
+  /// In it, this message translates to:
+  /// **'Altro colore'**
+  String get accentCustom;
+
+  /// No description provided for @customColorTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli il colore'**
+  String get customColorTitle;
+
+  /// No description provided for @useColor.
+  ///
+  /// In it, this message translates to:
+  /// **'Usa'**
+  String get useColor;
+
   /// No description provided for @sectionSecurity.
   ///
   /// In it, this message translates to:

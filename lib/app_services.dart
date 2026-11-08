@@ -74,10 +74,13 @@ const appLanguages = ['system', 'it', 'en'];
 class AppearanceSettings {
   final ThemeMode mode;
   final int accent;
-  final String language;
-  const AppearanceSettings({this.mode = ThemeMode.system, this.accent = 0, this.language = 'system'});
 
-  Color get seed => accentColors[accent.clamp(0, accentColors.length - 1)];
+  /// Un colore scelto col cerchio dei colori (ARGB); se c'è, vale al posto di [accent].
+  final int? custom;
+  final String language;
+  const AppearanceSettings({this.mode = ThemeMode.system, this.accent = 0, this.custom, this.language = 'system'});
+
+  Color get seed => custom != null ? Color(custom!) : accentColors[accent.clamp(0, accentColors.length - 1)];
 
   /// null = lingua del telefono.
   Locale? get locale => language == 'system' ? null : Locale(language);
@@ -85,10 +88,12 @@ class AppearanceSettings {
   static Future<AppearanceSettings> load(AppDatabase db) async {
     final mode = await db.setting('theme_mode');
     final accent = int.tryParse(await db.setting('theme_accent') ?? '') ?? 0;
+    final custom = int.tryParse(await db.setting('theme_custom') ?? '', radix: 16);
     final language = await db.setting('app_lang');
     return AppearanceSettings(
       mode: ThemeMode.values.firstWhere((m) => m.name == mode, orElse: () => ThemeMode.system),
       accent: accent,
+      custom: custom,
       language: appLanguages.contains(language) ? language! : 'system',
     );
   }
@@ -96,17 +101,19 @@ class AppearanceSettings {
   Future<void> save(AppDatabase db) async {
     await db.setSetting('theme_mode', mode.name);
     await db.setSetting('theme_accent', '$accent');
+    await db.setSetting('theme_custom', custom?.toRadixString(16) ?? '');
     await db.setSetting('app_lang', language);
     await cache();
   }
 
-  Map<String, Object> toJson() => {'mode': mode.name, 'accent': accent, 'language': language};
+  Map<String, Object> toJson() => {'mode': mode.name, 'accent': accent, 'custom': ?custom, 'language': language};
 
   static AppearanceSettings fromJson(Map<String, dynamic> json) => AppearanceSettings(
-        mode: ThemeMode.values.firstWhere((m) => m.name == json['mode'], orElse: () => ThemeMode.system),
-        accent: json['accent'] is int ? json['accent'] as int : 0,
-        language: appLanguages.contains(json['language']) ? json['language'] as String : 'system',
-      );
+    mode: ThemeMode.values.firstWhere((m) => m.name == json['mode'], orElse: () => ThemeMode.system),
+    accent: json['accent'] is int ? json['accent'] as int : 0,
+    custom: json['custom'] is int ? json['custom'] as int : null,
+    language: appLanguages.contains(json['language']) ? json['language'] as String : 'system',
+  );
 
   /// Copia non cifrata di tema, colore e lingua, per la schermata di blocco
   /// (il database si apre solo dopo). Non contiene niente di personale.
@@ -129,6 +136,14 @@ class AppearanceSettings {
     }
   }
 
-  AppearanceSettings copyWith({ThemeMode? mode, int? accent, String? language}) => AppearanceSettings(
-      mode: mode ?? this.mode, accent: accent ?? this.accent, language: language ?? this.language);
+  /// Cambia tema o lingua; il colore resta quello che è.
+  AppearanceSettings copyWith({ThemeMode? mode, String? language}) =>
+      AppearanceSettings(mode: mode ?? this.mode, accent: accent, custom: custom, language: language ?? this.language);
+
+  /// Uno dei colori proposti: toglie quello scelto col cerchio.
+  AppearanceSettings withAccent(int accent) => AppearanceSettings(mode: mode, accent: accent, language: language);
+
+  /// Un colore scelto col cerchio.
+  AppearanceSettings withCustom(Color color) =>
+      AppearanceSettings(mode: mode, accent: accent, custom: color.toARGB32(), language: language);
 }

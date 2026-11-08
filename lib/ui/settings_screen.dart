@@ -16,6 +16,7 @@ import '../data/demo_data.dart';
 import '../screens/ocr_screen.dart';
 import '../security/lock_screens.dart';
 import '../update/update_ui.dart';
+import 'color_wheel.dart';
 import 'format.dart';
 import 'l10n.dart';
 
@@ -574,7 +575,7 @@ class _AppearancePicker extends StatelessWidget {
                       message: accentNames[i],
                       child: InkWell(
                         customBorder: const CircleBorder(),
-                        onTap: () => update(appearance.copyWith(accent: i)),
+                        onTap: () => update(appearance.withAccent(i)),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           width: 44,
@@ -583,14 +584,52 @@ class _AppearancePicker extends StatelessWidget {
                             color: accentColors[i],
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: i == appearance.accent ? scheme.onSurface : Colors.transparent,
+                              color: appearance.custom == null && i == appearance.accent
+                                  ? scheme.onSurface
+                                  : Colors.transparent,
                               width: 3,
                             ),
                           ),
-                          child: i == appearance.accent ? const Icon(Icons.check, color: Colors.white) : null,
+                          child: appearance.custom == null && i == appearance.accent
+                              ? const Icon(Icons.check, color: Colors.white)
+                              : null,
                         ),
                       ),
                     ),
+                  // Un colore qualsiasi, dal cerchio dei colori.
+                  Tooltip(
+                    message: l.accentCustom,
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () async {
+                        final color = await showColorWheel(context, appearance.seed);
+                        if (color != null) update(services.appearance.value.withCustom(color));
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: appearance.custom == null ? null : Color(appearance.custom!),
+                          gradient: appearance.custom == null
+                              ? SweepGradient(colors: [
+                                  for (var h = 0; h <= 360; h += 60) HSVColor.fromAHSV(1, h % 360.0, 0.8, 0.9).toColor(),
+                                ])
+                              : null,
+                          border: Border.all(
+                            color: appearance.custom != null ? scheme.onSurface : Colors.transparent,
+                            width: 3,
+                          ),
+                        ),
+                        child: Icon(
+                          appearance.custom != null ? Icons.check : Icons.colorize,
+                          color: Colors.white,
+                          size: appearance.custom != null ? 24 : 20,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ],

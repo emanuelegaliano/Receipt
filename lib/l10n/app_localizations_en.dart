@@ -450,6 +450,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accentGraphite => 'Graphite';
 
   @override
+  String get accentCustom => 'Other colour';
+
+  @override
+  String get customColorTitle => 'Choose a colour';
+
+  @override
+  String get useColor => 'Use';
+
+  @override
   String get sectionSecurity => 'Security';
 
   @override
