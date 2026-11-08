@@ -29,13 +29,14 @@ void main() {
     expect(prudentRate(5, 0), 0);
   });
 
-  test('buco tollerato: 5 giorni a 2 al giorno, 8 a 1 al giorno, 14 sotto 1 ogni 2', () {
+  test('buco tollerato: 5 giorni a 2 al giorno, 8 a 1 al giorno, mai più di 10', () {
     expect(gapLimit(2), 5);
     expect(gapLimit(1), closeTo(8.0, 0.01));
-    expect(gapLimit(0.5), 14);
-    expect(gapLimit(0.1), 14);
-    expect(gapLimit(0.001), 14, reason: 'con λ quasi zero la formula non vale');
-    expect(gapLimit(0), 14);
+    expect(gapLimit(0.8), closeTo(9.7, 0.05));
+    expect(gapLimit(0.5), 10);
+    expect(gapLimit(0.1), 10);
+    expect(gapLimit(0.001), 10, reason: 'con λ quasi zero la formula non vale');
+    expect(gapLimit(0), 10);
   });
 
   /// Una registrazione per ognuno dei [days] giorni.
@@ -93,10 +94,10 @@ void main() {
       expect(checkRecording(month: 202611, dates: [...nov, ...history], firstRecord: first).ok, isTrue);
     });
 
-    test('il primo mese contano solo i giorni dalla prima spesa, con buco massimo 14', () {
+    test('il primo mese contano solo i giorni dalla prima spesa, con buco massimo 10', () {
       final oct = [DateTime(2026, 10, 20), DateTime(2026, 10, 25), DateTime(2026, 10, 31, 20)];
       final c = checkRecording(month: 202610, dates: oct, firstRecord: oct.first);
-      expect((c.rate, c.days, c.records, c.longestGap, c.gapAllowed), (0.0, 12, 3, 5, 14.0));
+      expect((c.rate, c.days, c.records, c.longestGap, c.gapAllowed), (0.0, 12, 3, 5, 10.0));
       expect(c.ok, isTrue);
     });
 
@@ -121,13 +122,19 @@ void main() {
     });
 
     test('con pochi dati il controllo è morbido', () {
-      // Primo mese: 10 spese. Il secondo mese ne bastano 2, con buchi fino a 14 giorni.
+      // Primo mese: 10 spese. Il secondo mese ne bastano 2, con buchi fino a 10 giorni.
       final oct = everyDay(DateTime(2026, 10, 1), 30, step: 3);
-      final nov = [DateTime(2026, 11, 2), DateTime(2026, 11, 16), DateTime(2026, 11, 29)];
+      final nov = [DateTime(2026, 11, 2), DateTime(2026, 11, 11), DateTime(2026, 11, 20), DateTime(2026, 11, 29)];
       final c = checkRecording(month: 202611, dates: [...oct, ...nov], firstRecord: oct.first);
       expect(c.rate, closeTo(10 / 31 - 2 * 3.1623 / 31, 0.001));
-      expect((c.minimum, c.gapAllowed, c.longestGap), (2, 14.0, 13));
+      expect((c.minimum, c.gapAllowed, c.longestGap), (2, 10.0, 8));
       expect(c.ok, isTrue);
+      // Chi registra una spesa ogni due settimane invece no, anche se è il suo ritmo.
+      final rare = checkRecording(
+          month: 202611,
+          dates: [...oct, DateTime(2026, 11, 2), DateTime(2026, 11, 16), DateTime(2026, 11, 29)],
+          firstRecord: oct.first);
+      expect((rare.longestGap, rare.ok), (13, false));
     });
   });
 

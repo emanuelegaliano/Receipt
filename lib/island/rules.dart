@@ -45,8 +45,10 @@ int firstMonthOfLimitChange(DateTime now) => now.day <= limitChangeDays ? monthK
 /// Quanti giorni prima del mese guarda il modello del ritmo.
 const historyDays = 90;
 
-/// Buco più lungo tollerato, in giorni, qualunque sia il ritmo.
-const minGap = 5, maxGap = 14;
+/// Buco più lungo tollerato, in giorni, qualunque sia il ritmo. Il massimo
+/// vale anche per chi registra poco: raramente passano 10 giorni senza
+/// nemmeno una spesa, quindi chi registra solo ogni tanto non passa.
+const minGap = 5, maxGap = 10;
 
 /// Stima prudente delle registrazioni al giorno: N registrazioni in T giorni
 /// danno (N − 2√N) / T, il limite basso invece della media. Con pochi dati
@@ -60,9 +62,9 @@ double prudentRate(int records, int days) {
 /// Il buco più lungo (giorni di fila senza registrazioni) che il ritmo
 /// [rate] rende improbabile: con un processo di Poisson, in un mese di 30
 /// giorni i buchi lunghi almeno G sono in media 30λ·e^(−λG); G è quello che
-/// li porta sotto 1 su 100, cioè ln(3000λ)/λ, tenuto tra 5 e 14 giorni.
+/// li porta sotto 1 su 100, cioè ln(3000λ)/λ, tenuto tra 5 e 10 giorni.
 double gapLimit(double rate) {
-  // Sotto circa 0,5 al giorno la formula dà già più di 14; con λ quasi zero
+  // Sotto circa 0,75 al giorno la formula dà già più di 10; con λ quasi zero
   // non ha più senso (non ci sono registrazioni da cui far partire un buco).
   if (rate < 0.01) return maxGap.toDouble();
   final g = math.log(3000 * rate) / rate;

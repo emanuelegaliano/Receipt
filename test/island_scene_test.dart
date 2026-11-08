@@ -101,6 +101,17 @@ void main() {
     }
   });
 
+  test('lanterne e sassi stanno sull\'isola, anche ai lati e nell\'isola più piccola', () {
+    for (final slots in [1, 3, 12]) {
+      final g = IslandGeometry(200, slots);
+      // Basi e larghezza degli oggetti (6 pixel per lato) dentro la sabbia.
+      for (final (x, y) in [...g.lanterns, ...g.rocks]) {
+        final dx = (x - g.cx).abs() + 6, dy = (y - g.cy).abs() + 1;
+        expect((dx / g.rx) * (dx / g.rx) + (dy / g.ry) * (dy / g.ry), lessThan(1), reason: '$slots: ($x, $y)');
+      }
+    }
+  });
+
   test('i pixel del disegno sono sempre un numero intero di pixel dello schermo', () {
     for (final (width, dpr) in [(328.0, 2.625), (360.0, 3.0), (411.0, 2.0), (600.0, 1.0), (150.0, 1.0)]) {
       final fit = PixelFit.forWidth(width, dpr);

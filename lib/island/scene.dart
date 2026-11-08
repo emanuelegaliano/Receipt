@@ -55,8 +55,10 @@ class IslandGeometry {
     (0.0, -0.82), (-0.53, 0.63), (0.53, 0.63), (-0.79, 0.2), (0.79, 0.2), (-0.47, -0.68), //
     (0.47, -0.68), (-0.8, -0.3), (0.8, -0.3), (-0.42, 0.04), (0.42, 0.04), (0.0, -0.5),
   ];
-  static const _lanterns = [(-0.2, 0.9), (0.2, 0.9), (-0.99, -0.06), (0.99, -0.06)];
-  static const _rocks = [(0.97, 0.45), (-0.88, -0.55), (0.78, 0.82), (-0.7, 0.86), (0.5, -0.94)];
+  /// Lanterne e sassi sull'anello di sabbia, a 0,9 del raggio: con la loro
+  /// larghezza restano dentro l'isola anche ai lati.
+  static const _lanterns = [(-0.2, 0.88), (0.2, 0.88), (-0.9, -0.05), (0.9, -0.05)];
+  static const _rocks = [(0.75, 0.52), (-0.75, 0.52), (0.88, -0.25), (-0.88, -0.25), (-0.24, -0.88)];
 
   double get horizon => 58;
   double get cx => width / 2;
@@ -70,8 +72,11 @@ class IslandGeometry {
     return at(u, v);
   }
 
-  Iterable<(double, double)> get lanterns => _lanterns.map((l) => at(l.$1, l.$2));
-  Iterable<(double, double)> get rocks => _rocks.map((r) => at(r.$1, r.$2));
+  /// Come [at], ma in un'ellisse rientrata di mezza lanterna: anche
+  /// nell'isola più piccola la loro larghezza resta sulla sabbia.
+  (double, double) _inset(double u, double v) => (cx + u * (rx - 7), cy + v * (ry - 2));
+  Iterable<(double, double)> get lanterns => _lanterns.map((l) => _inset(l.$1, l.$2));
+  Iterable<(double, double)> get rocks => _rocks.map((r) => _inset(r.$1, r.$2));
 
   /// Il posto toccato in ([x], [y]), pixel del disegno.
   ///

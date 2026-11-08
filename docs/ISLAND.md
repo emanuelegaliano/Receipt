@@ -44,17 +44,18 @@ The recording rhythm is modelled as a Poisson process with rate λ (records per 
 - Only the days of M from the first record ever are considered.
 - **Count:** the records in M must be at least half of the expected ones, λ × days considered. Half, because saving
   can also mean going out less.
-- **Gaps:** no run of days without records longer than G, where G = ln(3000·λ) / λ, kept between 5 and 14 days (14
+- **Gaps:** no run of days without records longer than G, where G = ln(3000·λ) / λ, kept between 5 and 10 days (10
   when λ = 0). With this G, a gap that long happens by chance less than once in a hundred normal months.
 
 | Rhythm | Longest gap |
 |---|---|
 | 2 a day | 5 days |
 | 1 a day | 8 days |
-| 1 every 2 days or less | 14 days |
+| 1 every 2 days or less | 10 days |
 
 The date of the expense counts, not when it was entered: recording all the week's receipts on Sunday is fine. A
-month without any record is never recorded well. With no history (the first month) only the 14-day gap remains.
+month without any record is never recorded well. With no history (the first month) only the 10-day gap remains. The 10-day ceiling also stops someone who records
+only now and then: it is rare to go 10 days without a single expense.
 
 ### The gift
 
