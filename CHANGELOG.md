@@ -2,6 +2,28 @@
 
 What changes in Receipt, one section per published version.
 
+## 0.4.0
+
+### New
+- The island. Every month you close within your limits, you can plant something on this year's island: you choose
+  the plant (trees, fruit trees, palms, shrubs, flowers and succulents, 32 in all) and where it goes. Every year
+  starts a new island; the old ones stay, and the arrows above the island take you back to them.
+  - "Within your limits" means the total of the categories that have a limit, so one category over can be made up
+    by the others. A limit changed after the 5th counts for the island from the next month, and Receipt tells you
+    when you change one.
+  - The month also has to be recorded as usual, never with more than 10 days in a row without expenses: otherwise
+    not recording would look like saving.
+  - If more than half of the island is planted by the end of the year, something appears in the middle.
+  - The island follows the seasons (snow in winter, flowers in spring, fallen leaves in autumn), and with the dark
+    theme you see it at night, with the moon in the phase of that day.
+  - The first time, last month's plant is a gift (except in January). If you already have expenses this year, those
+    months count too.
+- The app colour and the colour of each category can now be any colour, picked from a colour wheel with a brightness
+  slider, besides the ones already there.
+
+### Changed
+- Export data now includes the island. A backup made with 0.4.0 can't be restored on 0.3.x.
+
 ## 0.3.5
 
 ### New
