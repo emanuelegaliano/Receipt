@@ -242,6 +242,62 @@ Season seasonOf(int month) => switch (month) {
   _ => Season.autumn,
 };
 
+/// Giorno dell'anno (1-365) senza bisestili: il 29 febbraio vale il 28.
+int dayOfYear(DateTime d) {
+  const before = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+  return before[d.month - 1] + math.min(d.day, d.month == 2 ? 28 : 31);
+}
+
+double _between(int day, int from, int to) => ((day - from) / (to - from)).clamp(0, 1).toDouble();
+
+/// Come appare l'isola in un giorno: le stagioni non cambiano di colpo il
+/// primo del mese, ma sfumano nei giorni attorno al cambio.
+class SeasonLook {
+  /// Neve sul prato: arriva a chiazze dal 25 novembre, copre tutto dal 10
+  /// dicembre al 25 febbraio, si scioglie a chiazze entro il 15 marzo.
+  final double snow;
+
+  /// Foglie cadute: crescono dal 1° settembre al 15 novembre (poi le copre la neve).
+  final double leaves;
+
+  /// Fiorellini nel prato: spuntano in marzo, tanti in aprile e maggio, calano a giugno.
+  final double flowers;
+
+  /// Erba secca: da metà giugno, piena da fine luglio a fine agosto, poi cala.
+  final double dry;
+
+  /// Quanto pesa ogni stagione (inverno, primavera, estate, autunno) nei
+  /// colori di prato, cielo e mare: 1 a metà stagione, un misto attorno al cambio.
+  final List<double> weights;
+
+  const SeasonLook._(this.snow, this.leaves, this.flowers, this.dry, this.weights);
+
+  factory SeasonLook.at(DateTime date) {
+    final d = dayOfYear(date);
+    final snow = d >= 329 ? _between(d, 329, 344) : (d <= 56 ? 1.0 : 1 - _between(d, 56, 74));
+    final leaves = d < 244 ? 0.0 : _between(d, 244, 319) * (1 - snow);
+    final flowers = d < 151 ? _between(d, 60, 100) : 1 - _between(d, 151, 181);
+    final dry = d < 232 ? _between(d, 166, 201) : 1 - _between(d, 232, 273);
+    // Centri delle stagioni: metà gennaio, aprile, luglio, ottobre.
+    const centers = [15, 105, 196, 288];
+    var i = 3;
+    for (var k = 0; k < 4; k++) {
+      if (d >= centers[k]) i = k;
+    }
+    final from = centers[i], to = i == 3 ? centers[0] + 365 : centers[i + 1];
+    final t = ((d < centers[0] ? d + 365 : d) - from) / (to - from);
+    // Ferma a metà stagione, sfuma nel terzo centrale (attorno al cambio).
+    final x = ((t - 0.33) / 0.34).clamp(0, 1).toDouble();
+    final mixT = x * x * (3 - 2 * x);
+    final weights = List<double>.filled(4, 0);
+    weights[i] = 1 - mixT;
+    weights[(i + 1) % 4] += mixT;
+    return SeasonLook._(snow, leaves, flowers, dry, weights);
+  }
+
+  double get winter => weights[0];
+}
+
 /// Mese sinodico (da luna nuova a luna nuova), in giorni.
 const synodicMonth = 29.530588853;
 

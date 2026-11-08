@@ -992,6 +992,12 @@ class AppLocalizationsIt extends AppLocalizations {
       'Ogni mese in cui resti nei limiti puoi piantare qualcosa sull\'isola: scegli tu cosa e dove.\n\nConta il totale delle categorie che hanno un limite: se una sfora ma le altre compensano, il mese vale lo stesso. Serve almeno un limite.\n\nIl mese deve essere registrato con la regolarità di sempre: non registrare non è risparmiare. Conta la data della spesa, non quando la inserisci.\n\nValgono i limiti del giorno 5: se li cambi dopo, per l\'isola contano dal mese successivo.\n\nOgni anno è un\'isola nuova. Se a fine anno hai piantato più di metà dei posti, al centro spunta una sorpresa.';
 
   @override
+  String get islandPreviousYear => 'Isola dell\'anno prima';
+
+  @override
+  String get islandNextYear => 'Isola dell\'anno dopo';
+
+  @override
   String islandPendingCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

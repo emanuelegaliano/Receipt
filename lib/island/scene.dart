@@ -55,6 +55,7 @@ class IslandGeometry {
     (0.0, -0.82), (-0.53, 0.63), (0.53, 0.63), (-0.79, 0.2), (0.79, 0.2), (-0.47, -0.68), //
     (0.47, -0.68), (-0.8, -0.3), (0.8, -0.3), (-0.42, 0.04), (0.42, 0.04), (0.0, -0.5),
   ];
+
   /// Lanterne e sassi sull'anello di sabbia, a 0,9 del raggio: con la loro
   /// larghezza restano dentro l'isola anche ai lati.
   static const _lanterns = [(-0.2, 0.88), (0.2, 0.88), (-0.9, -0.05), (0.9, -0.05)];
@@ -120,8 +121,9 @@ class IslandSceneSpec {
   final Map<int, (String, int)> plants;
   final String? centerpiece;
 
-  /// Mese dell'anno (stagione) e luna, arrotondata a un sessantesimo del ciclo.
-  final int month;
+  /// Il giorno (stagione, sfumata giorno per giorno) e la luna, arrotondata a
+  /// un sessantesimo del ciclo.
+  final DateTime date;
   final double moonAge;
   final bool night;
   final int seed;
@@ -134,14 +136,16 @@ class IslandSceneSpec {
     required DateTime now,
     required this.night,
     required this.seed,
-  }) : month = now.month,
+  }) : date = DateTime(now.year, now.month, now.day),
        moonAge = (_moonAgeAt(now) * 60).round() / 60;
+
+  int get month => date.month;
 
   String get key {
     final p = (plants.entries.toList()..sort((a, b) => a.key.compareTo(b.key)))
         .map((e) => '${e.key}:${e.value.$1}:${e.value.$2}')
         .join(',');
-    return '$width|$slots|$p|$centerpiece|$month|$moonAge|$night|$seed';
+    return '$width|$slots|$p|$centerpiece|${dayOfYear(date)}|$moonAge|$night|$seed';
   }
 }
 
@@ -166,19 +170,34 @@ ui.Picture islandPicture(IslandSceneSpec spec) {
 
 // --- Il disegno ------------------------------------------------------------
 
-/// Colori del cielo (alto, basso) e del mare (vicino all'orizzonte, in fondo).
-(int, int, int, int) _palette(Season season, bool night) {
-  if (night) {
-    return season == Season.winter
-        ? (0xFF0E1430, 0xFF34405E, 0xFF253457, 0xFF111C38)
-        : (0xFF0A0F2E, 0xFF2B3766, 0xFF22345E, 0xFF0E1A3A);
+/// Media dei colori pesata (inverno, primavera, estate, autunno).
+int _blend(List<int> colors, List<double> w) {
+  double r = 0, g = 0, b = 0;
+  for (var i = 0; i < colors.length; i++) {
+    r += ((colors[i] >> 16) & 0xFF) * w[i];
+    g += ((colors[i] >> 8) & 0xFF) * w[i];
+    b += (colors[i] & 0xFF) * w[i];
   }
-  return switch (season) {
-    Season.spring => (0xFF63B9F0, 0xFFC6EAF8, 0xFF5BB6DE, 0xFF2F7DB6),
-    Season.summer => (0xFF3FA6EE, 0xFFB4E4F8, 0xFF3FB0DE, 0xFF1F72B0),
-    Season.autumn => (0xFF7FA9D0, 0xFFF0D2A8, 0xFF5E9EC4, 0xFF2D6697),
-    Season.winter => (0xFF9DB1C4, 0xFFDDE5EC, 0xFF6F9AB8, 0xFF3D6788),
-  };
+  return rgb(r.round(), g.round(), b.round());
+}
+
+/// Colori del cielo (alto, basso) e del mare (vicino all'orizzonte, in fondo),
+/// sfumati tra le stagioni.
+List<int> _palette(SeasonLook look, bool night) {
+  if (night) {
+    const other = [0xFF0A0F2E, 0xFF2B3766, 0xFF22345E, 0xFF0E1A3A];
+    const winter = [0xFF0E1430, 0xFF34405E, 0xFF253457, 0xFF111C38];
+    return [for (var i = 0; i < 4; i++) mix(other[i], winter[i], look.winter)];
+  }
+  const bySeason = [
+    [0xFF9DB1C4, 0xFFDDE5EC, 0xFF6F9AB8, 0xFF3D6788], // inverno
+    [0xFF63B9F0, 0xFFC6EAF8, 0xFF5BB6DE, 0xFF2F7DB6], // primavera
+    [0xFF3FA6EE, 0xFFB4E4F8, 0xFF3FB0DE, 0xFF1F72B0], // estate
+    [0xFF7FA9D0, 0xFFF0D2A8, 0xFF5E9EC4, 0xFF2D6697], // autunno
+  ];
+  return [
+    for (var i = 0; i < 4; i++) _blend([for (final s in bySeason) s[i]], look.weights),
+  ];
 }
 
 /// Sfumatura a bande con il retino: [colors] dall'alto in basso.
@@ -198,11 +217,14 @@ List<int> _steps(int a, int b, int n) => [for (var i = 0; i < n; i++) mix(a, b, 
 
 Px renderIsland(IslandSceneSpec spec) {
   final g = IslandGeometry(spec.width, spec.slots);
-  final season = seasonOf(spec.month);
-  final winter = season == Season.winter;
-  final r = math.Random(spec.seed * 31 + spec.month);
+  final look = SeasonLook.at(spec.date);
+  // La stagione che pesa di più, per le cose che non si sfumano (le nuvole).
+  final main = [for (var i = 0; i < 4; i++) i].reduce((a, b) => look.weights[a] >= look.weights[b] ? a : b);
+  final snowy = look.snow > 0.5;
+  // Stesse stelle, nuvole e onde per tutto l'anno.
+  final r = math.Random(spec.seed * 31);
   final bg = Px(spec.width, sceneHeight);
-  final (skyTop, skyBottom, seaTop, seaBottom) = _palette(season, spec.night);
+  final [skyTop, skyBottom, seaTop, seaBottom] = _palette(look, spec.night);
   final horizon = g.horizon.round();
 
   // Cielo.
@@ -221,11 +243,8 @@ Px renderIsland(IslandSceneSpec spec) {
     }
     _moon(bg, bodyX, bodyY, 7.5, spec.moonAge);
   } else {
-    final sun = switch (season) {
-      Season.winter => 0xFFFFF0C0,
-      Season.autumn => 0xFFFFC266,
-      _ => 0xFFFFDC5E,
-    };
+    final sun = _blend(const [0xFFFFF0C0, 0xFFFFDC5E, 0xFFFFDC5E, 0xFFFFC266], look.weights);
+    final winter = look.winter > 0.5;
     for (var y = (bodyY - 13).floor(); y <= bodyY + 13; y++) {
       for (var x = (bodyX - 13).floor(); x <= bodyX + 13; x++) {
         final d = math.sqrt((x + 0.5 - bodyX) * (x + 0.5 - bodyX) + (y + 0.5 - bodyY) * (y + 0.5 - bodyY));
@@ -235,18 +254,14 @@ Px renderIsland(IslandSceneSpec spec) {
     final tones = ramp(sun);
     bg.disc(bodyX, bodyY, winter ? 6 : 7, tones[3]);
     bg.disc(bodyX - 1, bodyY - 1, winter ? 4 : 5, tones[4]);
-    final clouds = switch (season) {
-      Season.winter => 5,
-      Season.summer => 2,
-      _ => 3,
-    };
+    final clouds = const [5, 3, 2, 3][main];
     for (var i = 0; i < clouds; i++) {
       _cloud(
         bg,
         r.nextDouble() * (spec.width - 40) + 14,
         10 + r.nextDouble() * (horizon - 26),
         0.7 + r.nextDouble() * 0.6,
-        winter ? 0xFFEDF1F5 : 0xFFFFFFFF,
+        mix(0xFFFFFFFF, 0xFFEDF1F5, look.winter),
         r,
       );
     }
@@ -296,7 +311,7 @@ Px renderIsland(IslandSceneSpec spec) {
 
   // L'isola su un foglio a parte, per scurirla di notte senza toccare il cielo.
   final land = Px(spec.width, sceneHeight);
-  _land(land, g, season, r);
+  _land(land, g, look, math.Random(spec.seed * 31 + 5), spec.seed);
 
   final things = <(double, void Function())>[];
   void place(Sprite s, double x, double y, {double shadow = 0}) {
@@ -314,29 +329,30 @@ Px renderIsland(IslandSceneSpec spec) {
     final plant = spec.plants[i];
     final species = plant == null ? null : speciesByKey(plant.$1);
     if (species == null) {
-      _emptySlot(land, x, y, season, math.Random(spec.seed + i));
+      _emptySlot(land, x, y, snowy, math.Random(spec.seed + i));
     } else {
-      final sprite = plantSprite(species, month: spec.month, seed: plant!.$2);
+      final sprite = plantSprite(species, month: spec.month, seed: plant!.$2, snow: look.snow);
       place(sprite, x, y, shadow: species.shape == PlantShape.flower ? 7 : 10);
     }
   }
-  final lantern = lanternSprite(lit: spec.night, snow: winter);
+  final lantern = lanternSprite(lit: spec.night, snow: snowy);
   for (final (x, y) in g.lanterns) {
     place(lantern, x, y, shadow: 3);
   }
   var i = 0;
   for (final (x, y) in g.rocks) {
-    place(rockSprite(spec.seed + i++, snow: winter), x, y);
+    place(rockSprite(spec.seed + i++, snow: snowy), x, y);
   }
   final (cx, cy) = (g.cx, g.cy + 2);
   if (spec.centerpiece != null) {
     place(centerpieceSprite(spec.centerpiece!, lit: spec.night), cx, cy, shadow: 13);
   } else {
-    _rewardSpot(land, cx, cy, winter);
+    _rewardSpot(land, cx, cy, snowy);
   }
-  if (season == Season.autumn) {
-    for (var k = 0; k < 4; k++) {
-      final (x, y) = _freeSpot(g, r);
+  if (look.leaves > 0.4 && look.snow < 0.3) {
+    final spots = math.Random(spec.seed * 31 + 6);
+    for (var k = 0; k < (look.leaves * 4).round(); k++) {
+      final (x, y) = _freeSpot(g, spots);
       place(mushroomSprite(red: k.isEven), x, y);
     }
   }
@@ -370,9 +386,9 @@ Px renderIsland(IslandSceneSpec spec) {
       _glow(bg, lx, ly, 14);
     }
   }
-  if (winter) {
+  if (look.snow > 0.2) {
     final flakes = math.Random(spec.seed + 99);
-    for (var k = 0; k < 55; k++) {
+    for (var k = 0; k < (55 * look.snow).round(); k++) {
       final x = flakes.nextInt(spec.width), y = flakes.nextInt(sceneHeight);
       bg.set(x, y, 0xFFFFFFFF);
       if (flakes.nextDouble() < 0.3) bg.set(x + 1, y, 0xFFE4ECF5);
@@ -430,10 +446,21 @@ void _moon(Px p, double cx, double cy, double rad, double age) {
   }
 }
 
-/// Fianco di terra, spiaggia e prato (o neve) della stagione.
-void _land(Px p, IslandGeometry g, Season season, math.Random r) {
+/// Chiazze morbide (0..1) per la neve che arriva e se ne va: dove il valore
+/// è basso la neve c'è già, dove è alto arriva per ultima.
+double _patch(int x, int y) =>
+    (math.sin(x * 0.29 + y * 0.53) + math.sin(x * 0.11 - y * 0.37 + 1.7) + math.sin((x + 2 * y) * 0.07 + 0.4) + 3) / 6;
+
+bool _snowAt(int x, int y, double snow) => snow >= 1 || (snow > 0 && _patch(x, y) < 0.2 + snow * 0.85);
+
+/// Fianco di terra, spiaggia e prato della stagione: neve a chiazze che
+/// arrivano e si sciolgono, fiorellini, erba secca e foglie cadute che
+/// crescono e calano giorno per giorno. Ogni cosa ha i suoi posti fissi per
+/// tutto l'anno, così di giorno in giorno se ne aggiunge o se ne toglie
+/// qualcuna invece di cambiare tutto.
+void _land(Px p, IslandGeometry g, SeasonLook look, math.Random r, int seed) {
   final dirt = ramp(0xFF9C6B45);
-  final sand = ramp(season == Season.winter ? 0xFFE3DED2 : 0xFFE9D3A0);
+  final sand = ramp(mix(0xFFE9D3A0, 0xFFE3DED2, look.snow));
   p.ellipse(g.cx, g.cy + 8, g.rx, g.ry, dirt[1]);
   p.ellipse(g.cx, g.cy + 5, g.rx, g.ry, dirt[2]);
   for (var k = 0; k < 40; k++) {
@@ -449,76 +476,87 @@ void _land(Px p, IslandGeometry g, Season season, math.Random r) {
   }
   p.outline((n) => darken(n, 0.55));
 
-  final grassBase = switch (season) {
-    Season.spring => 0xFF7CC152,
-    Season.summer => 0xFF9DB84A,
-    Season.autumn => 0xFFA3A24C,
-    Season.winter => 0xFFEEF3F9,
-  };
-  final grass = ramp(grassBase);
+  // Il verde del prato scivola da una stagione all'altra (d'inverno è
+  // quello che si vede sotto la neve che si scioglie).
+  final grass = ramp(_blend(const [0xFF8FA36A, 0xFF7CC152, 0xFF9DB84A, 0xFFA3A24C], look.weights));
+  final snow = ramp(0xFFEEF3F9);
   final (gx, gy, grx, gry) = (g.cx, g.cy - 2, g.rx * 0.86, g.ry * 0.8);
   // Il bordo del prato fa un piccolo gradino sulla sabbia.
-  p.ellipse(gx, gy + 2, grx, gry, grass[1]);
-  p.ellipse(gx, gy + 1, grx, gry, season == Season.winter ? grass[1] : grass[0]);
+  p.ellipse(gx, gy + 2, grx, gry, look.snow > 0.5 ? snow[1] : grass[1]);
+  p.ellipse(gx, gy + 1, grx, gry, look.snow > 0.5 ? snow[1] : grass[0]);
   for (var y = (gy - gry).floor(); y <= gy + gry; y++) {
     for (var x = (gx - grx).floor(); x <= gx + grx; x++) {
       final e = _e(x + 0.5, y + 0.5, gx, gy, grx, gry);
       if (e > 1) continue;
-      var c = grass[2];
-      if (e > 0.86 && y < gy) c = grass[3];
-      if (season == Season.winter) {
+      int c;
+      if (_snowAt(x, y, look.snow)) {
+        c = snow[2];
+        if (e > 0.86 && y < gy) c = snow[3];
         // Ombre azzurre a chiazze sulla neve.
-        if (math.sin(x * 0.35) + math.cos(y * 0.6 + x * 0.1) > 1.3 && dither(x, y, 0.5)) c = grass[1];
-      } else if (dither(x, y, 0.1)) {
-        c = grass[3];
-      } else if (dither(x + 2, y + 1, 0.06)) {
-        c = grass[1];
+        if (math.sin(x * 0.35) + math.cos(y * 0.6 + x * 0.1) > 1.3 && dither(x, y, 0.5)) c = snow[1];
+      } else {
+        c = grass[2];
+        if (e > 0.86 && y < gy) c = grass[3];
+        if (dither(x, y, 0.1)) {
+          c = grass[3];
+        } else if (dither(x + 2, y + 1, 0.06)) {
+          c = grass[1];
+        }
       }
       p.set(x, y, c);
     }
   }
-  // Ciuffi d'erba (d'inverno pochi, che spuntano dalla neve).
-  final tuft = season == Season.winter ? ramp(0xFF7F9A6A) : grass;
-  for (var k = 0; k < (season == Season.winter ? 14 : 40); k++) {
-    final (x, y) = (gx + (r.nextDouble() * 2 - 1) * grx * 0.9, gy + (r.nextDouble() * 2 - 1) * gry * 0.85);
-    if (!_inEll(x, y, gx, gy, grx * 0.92, gry * 0.88)) continue;
-    final xi = x.floor(), yi = y.floor();
-    p.set(xi, yi, tuft[1]);
-    p.set(xi - 1, yi - 1, tuft[season == Season.winter ? 2 : 1]);
-    p.set(xi + 1, yi - 1, tuft[season == Season.winter ? 2 : 3]);
-  }
-  // Quello che c'è sul prato in ogni stagione.
-  for (var k = 0; k < 34; k++) {
-    final (x, y) = (gx + (r.nextDouble() * 2 - 1) * grx * 0.9, gy + (r.nextDouble() * 2 - 1) * gry * 0.85);
-    if (!_inEll(x, y, gx, gy, grx * 0.9, gry * 0.85)) continue;
-    final xi = x.floor(), yi = y.floor();
-    switch (season) {
-      case Season.spring:
-        if (k > 22) break;
-        final petal = [0xFFFFFFFF, 0xFFFFE066, 0xFFF7A8C4, 0xFFC9B6F2][k % 4];
-        for (final (dx, dy) in [(0, -1), (-1, 0), (1, 0)]) {
-          p.set(xi + dx, yi + dy, petal);
-        }
-        p.set(xi, yi, 0xFFF2B33D);
-      case Season.summer:
-        if (k > 16) break;
-        final dry = ramp(0xFFD6C26A);
-        p.set(xi, yi, dry[2]);
-        p.set(xi - 1, yi - 1, dry[3]);
-        p.set(xi + 1, yi - 1, dry[2]);
-        if (k.isEven) p.set(xi + 3, yi + 1, 0xFFFFE066);
-      case Season.autumn:
-        p.set(xi, yi, [0xFFE07B2E, 0xFFC4432A, 0xFFE3B23C, 0xFF9A5B30][k % 4]);
-        if (k.isOdd) p.set(xi + 1, yi, [0xFFE07B2E, 0xFFC4432A][k % 2]);
-      case Season.winter:
-        if (k > 10) break;
-        // Mucchietti di neve con l'ombra.
-        p.set(xi, yi, grass[4]);
-        p.set(xi + 1, yi, grass[4]);
-        p.set(xi, yi + 1, grass[1]);
-        p.set(xi + 1, yi + 1, grass[1]);
+
+  /// [n] punti fissi del prato per il seme [salt], i primi [count] disegnati.
+  void each(int salt, int n, int count, void Function(int x, int y, int k) draw) {
+    final at = math.Random(seed * 131 + salt);
+    for (var k = 0; k < n; k++) {
+      final (x, y) = (gx + (at.nextDouble() * 2 - 1) * grx * 0.9, gy + (at.nextDouble() * 2 - 1) * gry * 0.85);
+      if (k >= count || !_inEll(x, y, gx, gy, grx * 0.9, gry * 0.85)) continue;
+      draw(x.floor(), y.floor(), k);
     }
   }
+
+  // Ciuffi d'erba: sulla neve ne spunta qualcuno.
+  final tuftGreen = ramp(0xFF7F9A6A);
+  each(1, 40, 40, (x, y, k) {
+    final onSnow = _snowAt(x, y, look.snow);
+    if (onSnow && k >= 14) return;
+    final t = onSnow ? tuftGreen : grass;
+    p.set(x, y, t[1]);
+    p.set(x - 1, y - 1, t[onSnow ? 2 : 1]);
+    p.set(x + 1, y - 1, t[onSnow ? 2 : 3]);
+  });
+  // Primavera: fiorellini.
+  each(2, 22, (22 * look.flowers).round(), (x, y, k) {
+    if (_snowAt(x, y, look.snow)) return;
+    final petal = const [0xFFFFFFFF, 0xFFFFE066, 0xFFF7A8C4, 0xFFC9B6F2][k % 4];
+    for (final (dx, dy) in [(0, -1), (-1, 0), (1, 0)]) {
+      p.set(x + dx, y + dy, petal);
+    }
+    p.set(x, y, 0xFFF2B33D);
+  });
+  // Estate: erba secca e qualche fiore giallo.
+  final dry = ramp(0xFFD6C26A);
+  each(3, 16, (16 * look.dry).round(), (x, y, k) {
+    p.set(x, y, dry[2]);
+    p.set(x - 1, y - 1, dry[3]);
+    p.set(x + 1, y - 1, dry[2]);
+    if (k.isEven) p.set(x + 3, y + 1, 0xFFFFE066);
+  });
+  // Autunno: foglie cadute.
+  each(4, 34, (34 * look.leaves).round(), (x, y, k) {
+    if (_snowAt(x, y, look.snow)) return;
+    p.set(x, y, const [0xFFE07B2E, 0xFFC4432A, 0xFFE3B23C, 0xFF9A5B30][k % 4]);
+    if (k.isOdd) p.set(x + 1, y, const [0xFFE07B2E, 0xFFC4432A][k % 2]);
+  });
+  // Inverno: mucchietti di neve con l'ombra.
+  each(5, 10, look.snow > 0.3 ? (10 * look.snow).round() : 0, (x, y, k) {
+    p.set(x, y, snow[4]);
+    p.set(x + 1, y, snow[4]);
+    p.set(x, y + 1, snow[1]);
+    p.set(x + 1, y + 1, snow[1]);
+  });
 }
 
 (double, double) _freeSpot(IslandGeometry g, math.Random r) {
@@ -545,12 +583,12 @@ void _shadow(Px p, double x, double y, double w) {
   }
 }
 
-void _emptySlot(Px p, double x, double y, Season season, math.Random r) {
-  final tones = season == Season.winter ? ramp(0xFF7F9A6A) : ramp(0xFF5E8F45);
+void _emptySlot(Px p, double x, double y, bool snowy, math.Random r) {
+  final tones = snowy ? ramp(0xFF7F9A6A) : ramp(0xFF5E8F45);
   final xi = x.floor(), yi = y.floor();
   for (final (dx, h) in [(-2, 2), (-1, 3), (0, 4), (1, 3), (2, 2)]) {
     for (var k = 0; k < h; k++) {
-      if (season == Season.winter && k == h - 1) {
+      if (snowy && k == h - 1) {
         p.set(xi + dx, yi - k, 0xFFF4F8FF);
       } else {
         p.set(xi + dx, yi - k, tones[k == h - 1 ? 3 : 2]);
@@ -668,7 +706,7 @@ class PlantThumbnailPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final (picture, bounds) = _thumbs[species.key] ??= () {
-      final sprite = plantSprite(species, month: species.best, seed: 7, weather: false);
+      final sprite = plantSprite(species, month: species.best, seed: 7);
       return (sprite.px.toPicture(), sprite.px.bounds() ?? (0, 0, 1, 1));
     }();
     final (x0, y0, x1, y1) = bounds;

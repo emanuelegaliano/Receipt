@@ -321,6 +321,8 @@
   "islandTitle": "Island {year}",
   "islandHowTitle": "How it works",
   "islandHowBody": "Every month you stay within your limits you can plant something on the island: you choose what and where.\n\nWhat counts is the total of the categories that have a limit: if one goes over but the others make up for it, the month still counts. You need at least one limit.\n\nThe month must be recorded as regularly as usual: not recording is not saving. The date of the expense counts, not when you enter it.\n\nThe limits of the 5th are the ones that count: if you change them later, for the island they apply from the next month.\n\nEvery year is a new island. If by the end of the year you have planted more than half of its spots, a surprise appears in the middle.",
+  "islandPreviousYear": "Previous year's island",
+  "islandNextYear": "Next year's island",
   "islandPendingCount": "{count, plural, =1{You have a plant to place} other{You have {count} plants to place}}",
   "islandChoosePlant": "Choose the plant for {month}",
   "islandGiftNote": "The plant for {month} is a gift, to show how it works.",

@@ -17,7 +17,7 @@ void main() {
     for (final s in plantCatalog) {
       for (var m = 1; m <= 12; m++) {
         for (final weather in [true, false]) {
-          final sprite = plantSprite(s, month: m, seed: 202600 + m, weather: weather);
+          final sprite = plantSprite(s, month: m, seed: 202600 + m, snow: weather ? 1 : 0);
           final b = sprite.px.bounds();
           expect(b, isNotNull, reason: '${s.key} $m');
           final (x0, _, x1, y1) = b!;
@@ -31,24 +31,30 @@ void main() {
     }
   });
 
-  test('la stagione cambia le piante: spoglie d\'inverno, mandorlo in fiore a febbraio, neve solo se c\'è il tempo', () {
-    int white(Sprite s) => count(s.px, (c) => c == 0xFFF4F8FF);
-    final oak = speciesByKey('oak')!;
-    final leaves = ramp(0xFF4F7F3A).toSet();
-    expect(count(plantSprite(oak, month: 7, seed: 1).px, leaves.contains), greaterThan(300));
-    expect(count(plantSprite(oak, month: 1, seed: 1).px, leaves.contains), 0, reason: 'spoglia');
-    expect(count(plantSprite(oak, month: 10, seed: 1).px, leaves.contains), 0, reason: 'colori d\'autunno');
-    expect(white(plantSprite(oak, month: 1, seed: 1)), greaterThan(0));
-    expect(white(plantSprite(oak, month: 1, seed: 1, weather: false)), 0);
-    expect(white(plantSprite(oak, month: 7, seed: 1)), 0);
-    final almond = speciesByKey('almond')!;
-    bool blossom(int c) => c == 0xFFFFF1F4 || c == 0xFFF7C4D2;
-    expect(count(plantSprite(almond, month: 2, seed: 1, weather: false).px, blossom), greaterThan(10));
-    expect(count(plantSprite(almond, month: 7, seed: 1).px, blossom), 0);
-    // Due ulivi piantati in mesi diversi non sono uguali.
-    final olive = speciesByKey('olive')!;
-    expect(plantSprite(olive, month: 6, seed: 202601).px.data, isNot(plantSprite(olive, month: 6, seed: 202602).px.data));
-  });
+  test(
+    'la stagione cambia le piante: spoglie d\'inverno, mandorlo in fiore a febbraio, neve solo se c\'è il tempo',
+    () {
+      int white(Sprite s) => count(s.px, (c) => c == 0xFFF4F8FF);
+      final oak = speciesByKey('oak')!;
+      final leaves = ramp(0xFF4F7F3A).toSet();
+      expect(count(plantSprite(oak, month: 7, seed: 1).px, leaves.contains), greaterThan(300));
+      expect(count(plantSprite(oak, month: 1, seed: 1).px, leaves.contains), 0, reason: 'spoglia');
+      expect(count(plantSprite(oak, month: 10, seed: 1).px, leaves.contains), 0, reason: 'colori d\'autunno');
+      expect(white(plantSprite(oak, month: 1, seed: 1, snow: 1)), greaterThan(0));
+      expect(white(plantSprite(oak, month: 1, seed: 1)), 0);
+      expect(white(plantSprite(oak, month: 7, seed: 1)), 0);
+      final almond = speciesByKey('almond')!;
+      bool blossom(int c) => c == 0xFFFFF1F4 || c == 0xFFF7C4D2;
+      expect(count(plantSprite(almond, month: 2, seed: 1).px, blossom), greaterThan(10));
+      expect(count(plantSprite(almond, month: 7, seed: 1).px, blossom), 0);
+      // Due ulivi piantati in mesi diversi non sono uguali.
+      final olive = speciesByKey('olive')!;
+      expect(
+        plantSprite(olive, month: 6, seed: 202601).px.data,
+        isNot(plantSprite(olive, month: 6, seed: 202602).px.data),
+      );
+    },
+  );
 
   test('le isole di ogni stagione, di giorno e di notte', () {
     final keys = plantCatalog.map((s) => s.key).toList();
@@ -75,8 +81,17 @@ void main() {
     }
     // D'inverno il prato è neve.
     final g = IslandGeometry(210, 12);
-    final winter = renderIsland(IslandSceneSpec(
-        width: 210, slots: 12, plants: const {}, centerpiece: null, now: DateTime(2027, 1, 10), night: false, seed: 1));
+    final winter = renderIsland(
+      IslandSceneSpec(
+        width: 210,
+        slots: 12,
+        plants: const {},
+        centerpiece: null,
+        now: DateTime(2027, 1, 10),
+        night: false,
+        seed: 1,
+      ),
+    );
     final grass = winter.get(g.cx.round() + 30, g.cy.round());
     expect((grass >> 16) & 0xFF, greaterThan(200));
   });

@@ -283,12 +283,13 @@ void _fallen(_S s, List<int> tones, int n) {
 }
 
 /// Il disegno di [species] nel mese [month].
-Sprite plantSprite(PlantSpecies species, {required int month, required int seed, bool weather = true}) {
+/// [snow] (0..1) è quanta neve c'è sull'isola: le cime delle piante se ne coprono.
+Sprite plantSprite(PlantSpecies species, {required int month, required int seed, double snow = 0}) {
   final s = _S(math.Random(seed * 7919 + species.key.hashCode), month);
   final p = s.p;
   final bloom = species.bloom.contains(month), fruit = species.fruit.contains(month);
   final leaf = _leafOf(species, month);
-  var snow = true;
+  var snowy = true;
 
   switch (species.key) {
     case 'oak':
@@ -631,7 +632,7 @@ Sprite plantSprite(PlantSpecies species, {required int month, required int seed,
         }
       }
     case 'lavender':
-      snow = false;
+      snowy = false;
       final stem = ramp(0xFF8DA08A);
       final tips = <(double, double)>[];
       for (var i = 0; i < 14; i++) {
@@ -652,7 +653,7 @@ Sprite plantSprite(PlantSpecies species, {required int month, required int seed,
           }
         }
       }
-      if (weather && _winter(month)) _snow(p, s.r, amount: 0.5);
+      if (snow > 0) _snow(p, s.r, amount: 0.5 * snow);
     case 'rosemary':
       final tones = ramp(0xFF4F6E50);
       _foliage(s, cx: 36, cy: 68, ext: 14, inside: (dx, dy) => _ell(dx, dy, 0, 0, 10, 6.5), tones: tones, cr: 2.8);
@@ -800,13 +801,13 @@ Sprite plantSprite(PlantSpecies species, {required int month, required int seed,
       final leaves = ramp(0xFF6C9A5A);
       if (!bloom && month != 5 && month != 6) {
         // Bulbi sotto terra: una zolla con le punte.
-        snow = false;
+        snowy = false;
         p.ellipse(36, 74, 8, 2.6, ramp(0xFF8B6B4A)[2]);
         p.ellipse(35, 73.5, 5, 1.4, ramp(0xFF8B6B4A)[3]);
         for (final x in [32, 36, 40]) {
           p.set(x, 71, leaves[3]);
         }
-        if (weather && _winter(month)) _snow(p, s.r, amount: 0.9);
+        if (snow > 0) _snow(p, s.r, amount: 0.9 * snow);
         break;
       }
       for (var i = 0; i < 5; i++) {
@@ -1008,7 +1009,7 @@ Sprite plantSprite(PlantSpecies species, {required int month, required int seed,
       }
   }
 
-  if (weather && snow && _winter(month)) _snow(p, s.r);
+  if (snowy && snow > 0) _snow(p, s.r, amount: 0.8 * snow);
   p.outline((n) => darken(n, 0.6));
   return Sprite(p, _bx, _by);
 }

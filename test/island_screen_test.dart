@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:receipt_app/app_services.dart';
 import 'package:receipt_app/art/daily_art.dart';
 import 'package:receipt_app/data/database.dart';
+import 'package:receipt_app/data/demo_data.dart';
 import 'package:receipt_app/data/photos.dart';
 import 'package:receipt_app/island/scene.dart';
 import 'package:receipt_app/island/island_service.dart';
@@ -97,6 +98,26 @@ void main() {
     Navigator.of(tester.element(find.text('Isola 2026'))).pop();
     await tester.pumpAndSettle();
     expect(tester.widget<Badge>(find.byType(Badge)).isLabelVisible, isFalse);
+    await finish(tester);
+  });
+
+  testWidgets('con più isole si passa all\'anno prima con la freccia o con i pallini', (tester) async {
+    await tester.runAsync(() async {
+      await island.init();
+      await loadDemoIsland(db);
+      await island.refresh();
+    });
+    await pumpApp(tester, const IslandScreen());
+    await tester.pumpAndSettle();
+    expect(find.text('Isola 2026'), findsOneWidget);
+    expect(tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.chevron_right)).onPressed, isNull);
+    await tester.tap(find.byTooltip("Isola dell'anno prima"));
+    await tester.pumpAndSettle();
+    expect(find.text('Isola 2025'), findsOneWidget);
+    expect(find.textContaining('Premio dell\'anno'), findsOneWidget);
+    await tester.tap(find.bySemanticsLabel('Isola 2026'));
+    await tester.pumpAndSettle();
+    expect(find.text('Isola 2026'), findsOneWidget);
     await finish(tester);
   });
 

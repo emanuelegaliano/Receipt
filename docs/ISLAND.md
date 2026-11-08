@@ -111,6 +111,12 @@ created again as on the first update. No free plants: the ones planted after tha
   - autumn: olive grass with fallen leaves and mushrooms, a warm hazy sky;
   - winter: snow on the island, rocks and lanterns, a grey sky and falling flakes.
 
+  The change is gradual, day by day, not on the 1st of the month: snow comes in patches from 25 November, covers
+  everything from 10 December to 25 February and melts in patches by 15 March; fallen leaves grow from September to
+  mid-November; flowers appear in March, are many in April and May and fade in June; dry grass grows from mid-June
+  and fades in September. The colours of grass, sky and sea blend between seasons in the weeks around each change.
+  Each decoration has a fixed place for the whole year, so from one day to the next a few are added or removed.
+
   The catalog shows each plant at its best, without snow, with when it flowers.
 
 ### Catalog
@@ -130,7 +136,8 @@ New species are a new entry in the catalog, and can be announced in "what's new"
 ## In the app
 
 - A plant icon in the Summary bar, left of the painting's (i) (next to the settings when the (i) is hidden), with a
-  dot when there is something to plant. It opens the island of the current year; swiping goes to older islands.
+  dot when there is something to plant. It opens the island of the current year; the islands of past years are one
+  swipe away, or through the arrows and the dots (one per year) above the island.
 - Planting: choose the plant, then tap a free slot.
 - Changing a limit after the 5th shows a note: for the island it counts from the next month.
 - Builds with `--dart-define=DEMO=true`: "Load demo data" also plants a demo archipelago (2025 complete with its

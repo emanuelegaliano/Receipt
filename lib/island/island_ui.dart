@@ -233,23 +233,98 @@ class _IslandScreenState extends State<IslandScreen> with SingleTickerProviderSt
               ),
             ],
           ),
-          body: PageView.builder(
-            controller: _pages,
-            itemCount: s.years.length,
-            onPageChanged: (i) => setState(() => _page = i),
-            itemBuilder: (context, i) => _IslandPage(
-              state: s,
-              year: s.years[i],
-              placingMonth: _placingMonth,
-              placingPlant: _placingPlant,
-              pulse: _pulse,
-              onChoose: (m) => _choose(s, m),
-              onCancelPlacing: _stopPlacing,
-              onTapSlot: (slot) => _tap(s, s.years[i], slot),
-            ),
+          body: Column(
+            children: [
+              // Le isole degli anni passati: frecce e pallini (si può anche scorrere).
+              if (s.years.length > 1)
+                _YearBar(
+                  years: [for (final y in s.years) y.year],
+                  page: _page,
+                  onPage: (i) =>
+                      _pages?.animateToPage(i, duration: const Duration(milliseconds: 350), curve: Curves.easeOut),
+                ),
+              Expanded(
+                child: PageView.builder(
+                  controller: _pages,
+                  itemCount: s.years.length,
+                  onPageChanged: (i) => setState(() => _page = i),
+                  itemBuilder: (context, i) => _IslandPage(
+                    state: s,
+                    year: s.years[i],
+                    placingMonth: _placingMonth,
+                    placingPlant: _placingPlant,
+                    pulse: _pulse,
+                    onChoose: (m) => _choose(s, m),
+                    onCancelPlacing: _stopPlacing,
+                    onTapSlot: (slot) => _tap(s, s.years[i], slot),
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
+    );
+  }
+}
+
+/// Per passare da un'isola all'altra: l'anno prima, l'anno dopo e un pallino
+/// per ogni anno (toccandolo si va a quell'isola).
+class _YearBar extends StatelessWidget {
+  final List<int> years;
+  final int page;
+  final void Function(int page) onPage;
+  const _YearBar({required this.years, required this.page, required this.onPage});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 4),
+      child: Row(
+        children: [
+          IconButton(
+            tooltip: l.islandPreviousYear,
+            icon: const Icon(Icons.chevron_left),
+            onPressed: page > 0 ? () => onPage(page - 1) : null,
+          ),
+          Expanded(
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              children: [
+                for (var i = 0; i < years.length; i++)
+                  Semantics(
+                    button: true,
+                    label: l.islandTitle('${years[i]}'),
+                    selected: i == page,
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () => onPage(i),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: i == page ? 22 : 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: i == page ? scheme.primary : scheme.outlineVariant,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: l.islandNextYear,
+            icon: const Icon(Icons.chevron_right),
+            onPressed: page < years.length - 1 ? () => onPage(page + 1) : null,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -307,8 +382,11 @@ class _IslandPage extends StatelessWidget {
               final geometry = IslandGeometry(fit.width, year.slots);
               return GestureDetector(
                 onTapUp: (d) {
-                  final slot = geometry.slotAt(d.localPosition.dx / fit.scale, d.localPosition.dy / fit.scale,
-                      among: _placingHere ? year.freeSlots.toSet() : null);
+                  final slot = geometry.slotAt(
+                    d.localPosition.dx / fit.scale,
+                    d.localPosition.dy / fit.scale,
+                    among: _placingHere ? year.freeSlots.toSet() : null,
+                  );
                   if (slot != null) onTapSlot(slot);
                 },
                 child: AnimatedBuilder(

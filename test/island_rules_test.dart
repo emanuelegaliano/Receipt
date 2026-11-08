@@ -131,9 +131,10 @@ void main() {
       expect(c.ok, isTrue);
       // Chi registra una spesa ogni due settimane invece no, anche se è il suo ritmo.
       final rare = checkRecording(
-          month: 202611,
-          dates: [...oct, DateTime(2026, 11, 2), DateTime(2026, 11, 16), DateTime(2026, 11, 29)],
-          firstRecord: oct.first);
+        month: 202611,
+        dates: [...oct, DateTime(2026, 11, 2), DateTime(2026, 11, 16), DateTime(2026, 11, 29)],
+        firstRecord: oct.first,
+      );
       expect((rare.longestGap, rare.ok), (13, false));
     });
   });
@@ -223,6 +224,35 @@ void main() {
         'summer', 'summer', 'autumn', 'autumn', 'autumn', 'winter',
       ],
     );
+  });
+
+  test('le stagioni sfumano: neve, foglie, fiori ed erba secca arrivano e se ne vanno', () {
+    SeasonLook at(int m, int d) => SeasonLook.at(DateTime(2026, m, d));
+    expect(dayOfYear(DateTime(2026, 1, 1)), 1);
+    expect(dayOfYear(DateTime(2028, 2, 29)), dayOfYear(DateTime(2028, 2, 28)));
+    expect(dayOfYear(DateTime(2026, 12, 31)), 365);
+    // Neve: niente a metà novembre, un po' a fine mese, tutta da metà dicembre, via a metà marzo.
+    expect(at(11, 15).snow, 0);
+    expect(at(12, 1).snow, inExclusiveRange(0.2, 0.6));
+    expect([at(12, 20).snow, at(1, 20).snow, at(2, 20).snow], [1, 1, 1]);
+    expect(at(3, 5).snow, inExclusiveRange(0.2, 0.8));
+    expect(at(3, 20).snow, 0);
+    // Foglie: crescono in autunno, sotto la neve spariscono.
+    expect(at(9, 1).leaves, 0);
+    expect(at(10, 8).leaves, inExclusiveRange(0.4, 0.6));
+    expect(at(11, 20).leaves, 1);
+    expect(at(1, 10).leaves, 0);
+    // Fiori in primavera, erba secca in estate.
+    expect([at(3, 1).flowers, at(4, 20).flowers, at(6, 15).flowers, at(7, 15).flowers], [0, 1, 0.5, 0]);
+    expect([at(6, 1).dry, at(8, 1).dry, at(10, 15).dry], [0, 1, 0]);
+    // I colori: una stagione sola a metà stagione, un misto attorno al cambio.
+    for (final (m, d) in [(1, 15), (4, 15), (7, 15), (10, 15), (12, 1), (6, 1)]) {
+      expect(at(m, d).weights.reduce((a, b) => a + b), closeTo(1, 1e-9));
+    }
+    expect(at(1, 15).weights, [1, 0, 0, 0]);
+    expect(at(7, 15).weights, [0, 0, 1, 0]);
+    expect(at(6, 1).weights[1], inExclusiveRange(0.2, 0.8), reason: 'tra primavera ed estate');
+    expect(at(12, 1).weights[3], inExclusiveRange(0.2, 0.8), reason: 'tra autunno e inverno');
   });
 
   test('fasi della luna sulle eclissi del 2026', () {

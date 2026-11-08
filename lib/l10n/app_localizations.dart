@@ -1676,6 +1676,18 @@ abstract class AppLocalizations {
   /// **'Ogni mese in cui resti nei limiti puoi piantare qualcosa sull\'isola: scegli tu cosa e dove.\n\nConta il totale delle categorie che hanno un limite: se una sfora ma le altre compensano, il mese vale lo stesso. Serve almeno un limite.\n\nIl mese deve essere registrato con la regolarità di sempre: non registrare non è risparmiare. Conta la data della spesa, non quando la inserisci.\n\nValgono i limiti del giorno 5: se li cambi dopo, per l\'isola contano dal mese successivo.\n\nOgni anno è un\'isola nuova. Se a fine anno hai piantato più di metà dei posti, al centro spunta una sorpresa.'**
   String get islandHowBody;
 
+  /// No description provided for @islandPreviousYear.
+  ///
+  /// In it, this message translates to:
+  /// **'Isola dell\'anno prima'**
+  String get islandPreviousYear;
+
+  /// No description provided for @islandNextYear.
+  ///
+  /// In it, this message translates to:
+  /// **'Isola dell\'anno dopo'**
+  String get islandNextYear;
+
   /// No description provided for @islandPendingCount.
   ///
   /// In it, this message translates to:
