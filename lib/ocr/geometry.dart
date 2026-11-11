@@ -1,3 +1,11 @@
+// clipperOffsetRound is ported from Clipper 6.4.2 (http://www.angusj.com),
+// Copyright Angus Johnson 2010-2017, under the Boost Software License 1.0
+// (see NOTICES). Changed for Receipt: translated from C++ to
+// Dart, only the round offset of a closed polygon. orderMiniBox and
+// orderPointsClockwise follow RapidOCR 1.4.4 (https://github.com/RapidAI/RapidOCR),
+// derived from PaddleOCR: Copyright (c) 2020 PaddlePaddle Authors, Apache
+// License 2.0 (see NOTICES).
+
 import 'dart:math' as math;
 
 class Point2 {

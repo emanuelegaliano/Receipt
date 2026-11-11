@@ -842,6 +842,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get licenseTitle => 'Licence';
+
+  @override
+  String licenseNotice(String copyright) {
+    return '$copyright. Receipt is free software: you can use, change and redistribute it under the GNU GPL v3, with no warranty. Tap to read the licence and those of third-party software.';
+  }
+
+  @override
   String get updateUpToDate => 'You already have the latest version';
 
   @override

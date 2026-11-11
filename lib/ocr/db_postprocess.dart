@@ -1,3 +1,8 @@
+// Ported to Dart from RapidOCR 1.4.4 (https://github.com/RapidAI/RapidOCR),
+// itself derived from PaddleOCR: Copyright (c) 2020 PaddlePaddle Authors.
+// Licensed under the Apache License 2.0 (see NOTICES).
+// Changed for Receipt: translated from Python to Dart and adapted to the app.
+
 import 'dart:math' as math;
 import 'dart:typed_data';
 

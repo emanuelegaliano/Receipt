@@ -218,3 +218,28 @@ The APK job needs two repository secrets:
 | `ANDROID_KEYSTORE_PASSWORD` | its password |
 
 Without them the workflow still deploys the website and skips the APK.
+
+## Licence
+
+Receipt © 2026 Emanuele Galiano, released under the [GNU General Public License v3.0](LICENSE) (GPL-3.0-only).
+You can use, study and change it freely; if you redistribute it, changed or not, as source or as an APK, you must
+keep this copyright notice, release it under the same licence and provide its full source code. The app shows these
+notices in Settings → Updates → Licence, and changed versions must keep showing them.
+
+Under section 7(e) of the GPL, the licence grants no right to use the name "Receipt" or its icon: a changed version
+published by someone else must use a different name and icon.
+
+Parts that come from other projects keep their own licence, all compatible with the GPL. Their notices and licence
+texts are in [`NOTICES`](NOTICES), which Flutter reads instead of `LICENSE` to fill the app's licence page (one entry
+per block, separated by a line of 80 dashes: the first lines are the names shown, then a blank line and the text):
+
+| Part | Where | Copyright | Licence |
+|---|---|---|---|
+| RapidOCR 1.4.4, ported to Dart | `lib/ocr/` | PaddlePaddle Authors, RapidAI | Apache-2.0 |
+| PP-OCRv4 models (PaddleOCR), converted to ONNX | `assets/models/` | PaddlePaddle Authors | Apache-2.0 |
+| Clipper 6.4.2 round offset, ported to Dart | `lib/ocr/geometry.dart` | Angus Johnson | BSL-1.0 |
+| ONNX Runtime (native library) | APK | Microsoft Corporation | MIT |
+| SQLite3MultipleCiphers (native library) | APK | Ulrich Telle | MIT |
+| Paintings list | `assets/art/paintings.json` | see [Painting of the day](#painting-of-the-day) | CC0, Wikipedia texts CC BY-SA 4.0 |
+
+The Dart packages from pub.dev (MIT, BSD and Apache-2.0) are collected by Flutter and listed in the same page.

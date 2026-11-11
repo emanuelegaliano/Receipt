@@ -19,6 +19,7 @@ import '../update/update_ui.dart';
 import 'color_wheel.dart';
 import 'format.dart';
 import 'l10n.dart';
+import 'licenses.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -417,6 +418,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: _version == null ? null : Text(l.updateInstalledVersion(_version!)),
             enabled: !_checking,
             onTap: _checkNow,
+          ),
+          ListTile(
+            leading: const Icon(Icons.gavel_outlined),
+            title: Text(l.licenseTitle),
+            subtitle: Text(l.licenseNotice(receiptCopyright)),
+            isThreeLine: true,
+            onTap: () => showReceiptLicenses(context, _version),
           ),
           if (demoEnabled)
             ListTile(

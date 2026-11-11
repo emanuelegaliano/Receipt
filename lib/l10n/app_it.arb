@@ -511,6 +511,15 @@
       }
     }
   },
+  "licenseTitle": "Licenza",
+  "licenseNotice": "{copyright}. Receipt è software libero: puoi usarlo, modificarlo e ridistribuirlo alle condizioni della GNU GPL v3, senza alcuna garanzia. Tocca per leggere la licenza e quelle del software di terzi.",
+  "@licenseNotice": {
+    "placeholders": {
+      "copyright": {
+        "type": "String"
+      }
+    }
+  },
   "updateUpToDate": "Hai già l'ultima versione",
   "updateCheckFailed": "Non riesco a controllare gli aggiornamenti: sei connesso?",
   "scanRecovered": "Android aveva chiuso Receipt mentre scattavi: ecco la foto, la leggo ora.",

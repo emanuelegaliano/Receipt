@@ -1424,6 +1424,18 @@ abstract class AppLocalizations {
   /// **'Versione installata: {version}'**
   String updateInstalledVersion(String version);
 
+  /// No description provided for @licenseTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Licenza'**
+  String get licenseTitle;
+
+  /// No description provided for @licenseNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'{copyright}. Receipt è software libero: puoi usarlo, modificarlo e ridistribuirlo alle condizioni della GNU GPL v3, senza alcuna garanzia. Tocca per leggere la licenza e quelle del software di terzi.'**
+  String licenseNotice(String copyright);
+
   /// No description provided for @updateUpToDate.
   ///
   /// In it, this message translates to:

@@ -221,6 +221,8 @@
   "updateCheckOnStartHint": "Reads the available version from the Receipt website. None of your data is sent.",
   "updateCheckNow": "Check now",
   "updateInstalledVersion": "Installed version: {version}",
+  "licenseTitle": "Licence",
+  "licenseNotice": "{copyright}. Receipt is free software: you can use, change and redistribute it under the GNU GPL v3, with no warranty. Tap to read the licence and those of third-party software.",
   "updateUpToDate": "You already have the latest version",
   "updateCheckFailed": "Can't check for updates: are you online?",
   "scanRecovered": "Android closed Receipt while you were taking the photo: here it is, reading it now.",
