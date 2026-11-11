@@ -2,6 +2,14 @@
 
 What changes in Receipt, one section per published version.
 
+## 0.4.1
+
+### New
+- Receipt is now free software under the GNU GPL v3: anyone can use, study and change it, and whoever redistributes
+  it has to keep the same licence, credit the author and share the source code. Settings → Updates → Licence shows
+  the notice and opens the licence, together with those of the third-party software inside the app (RapidOCR and its
+  PP-OCRv4 models, Clipper, ONNX Runtime, SQLite3MultipleCiphers and the Dart packages).
+
 ## 0.4.0
 
 ### New
